@@ -17,6 +17,7 @@ const ADMIN_ONLY_PATHS = [
 
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  const isDevBypass = process.env.AUTH_MODE === "dev-bypass";
 
   // Inngest webhook — pass through, Inngest handles its own auth via signing key
   if (path.startsWith("/api/inngest")) {
@@ -28,7 +29,8 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-const sessionCookie = getSessionCookie(req) || "dev-bypass";
+// const sessionCookie = getSessionCookie(req);
+   const sessionCookie = isDevBypass ? "dev-bypass" : getSessionCookie(req);
 
   // Admin-only routes — require session cookie (role checked server-side)
   if (ADMIN_ONLY_PATHS.some((p) => path.startsWith(p))) {

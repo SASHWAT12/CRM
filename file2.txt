@@ -1,0 +1,2 @@
+lib/prisma.ts:  const client = new PrismaClient({
+prisma/seeds/seed.ts:const prisma = new PrismaClient({ adapter });
