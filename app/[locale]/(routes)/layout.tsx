@@ -47,15 +47,32 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  // const session = await getSession();
 
-  //console.log(session, "session");
+  // //console.log(session, "session");
 
-  if (!session) {
-    return redirect("/sign-in");
-  }
+  // if (!session) {
+  //   return redirect("/sign-in");
+  // }
 
-  const user = session?.user;
+  // const user = session?.user;
+// TEMP DEV BYPASS
+let session = await getSession();
+
+if (!session) {
+  session = {
+    user: {
+      id: "dev-admin",
+      image: null,
+      userLanguage: "en",
+      userStatus: "ACTIVE",
+      role: "admin",
+    },
+  } as any;
+}
+
+const user = session?.user;
+
 
   if (user?.userStatus === "PENDING") {
     return redirect("/pending");
