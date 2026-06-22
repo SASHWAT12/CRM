@@ -6,7 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
-import type { EnrichmentField } from "@/lib/enrichment/types";
+export interface EnrichmentField {
+  name: string;
+  displayName: string;
+  description?: string;
+  type?: string;
+  required?: boolean;
+}
 
 const PRESET_FIELDS: EnrichmentField[] = [
   { name: "position",         displayName: "Position / Job Title",  description: "The contact's job title or role at their company", type: "string", required: false },

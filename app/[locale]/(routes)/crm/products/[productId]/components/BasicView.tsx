@@ -18,8 +18,16 @@ import {
   Ruler,
 } from "lucide-react";
 import moment from "moment";
-import { Decimal } from "@prisma/client/runtime/client";
-import { formatCurrency } from "@/lib/currency";
+
+function formatInr(amount: number) {
+  const isWhole = amount % 1 === 0;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: isWhole ? 0 : 2,
+    maximumFractionDigits: isWhole ? 0 : 2,
+  }).format(amount);
+}
 
 interface BasicViewProps {
   data: {
@@ -31,7 +39,6 @@ interface BasicViewProps {
     description: string | null;
     unit_price: number;
     unit_cost: number | null;
-    currency: string;
     tax_rate: number | null;
     unit: string | null;
     is_recurring: boolean;
@@ -61,7 +68,7 @@ export function BasicView({ data }: BasicViewProps) {
 
   const formatValue = (value: number | null | undefined) =>
     value != null
-      ? formatCurrency(new Decimal(value.toString()), data.currency || "EUR")
+      ? formatInr(value)
       : "N/A";
 
   const marginPercentage =

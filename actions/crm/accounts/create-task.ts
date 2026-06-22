@@ -77,41 +77,6 @@ export const createTask = async (data: {
       }
     }
 
-    // Notification to account watchers
-    try {
-      const accountWatchers = await prismadb.accountWatchers.findMany({
-        where: {
-          account_id: account,
-          user_id: { not: session.user.id },
-        },
-        include: { user: true },
-      });
-
-      for (const watcher of accountWatchers) {
-        await resend.emails.send({
-          from:
-            process.env.NEXT_PUBLIC_APP_NAME +
-            " <" +
-            process.env.EMAIL_FROM +
-            ">",
-          to: watcher.user?.email!,
-          subject:
-            session.user.userLanguage === "en"
-              ? `New task - ${title}.`
-              : `Nový úkol - ${title}.`,
-          text: "",
-          react: NewTaskFromCRMToWatchersEmail({
-            taskFromUser: session.user.name!,
-            username: watcher.user?.name!,
-            userLanguage: watcher.user?.userLanguage!,
-            taskData: task,
-          }),
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-
     revalidatePath("/[locale]/(routes)/crm/accounts", "page");
     return { data: task };
   } catch (error) {

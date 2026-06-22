@@ -20,10 +20,9 @@ import type { crm_ProductCategories } from "@prisma/client";
 interface ProductsViewProps {
   data: any[];
   categories: crm_ProductCategories[];
-  currencies: { code: string; name: string; symbol: string }[];
 }
 
-const ProductsView = ({ data, categories, currencies }: ProductsViewProps) => {
+const ProductsView = ({ data, categories }: ProductsViewProps) => {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -38,7 +37,6 @@ const ProductsView = ({ data, categories, currencies }: ProductsViewProps) => {
             <ImportProductsDialog />
             <CreateProductForm
               categories={categories}
-              currencies={currencies}
             />
           </div>
         </div>

@@ -26,10 +26,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Eye, EyeOff } from "lucide-react";
 import { deleteAccount } from "@/actions/crm/accounts/delete-account";
-import { watchAccount } from "@/actions/crm/accounts/watch-account";
-import { unwatchAccount } from "@/actions/crm/accounts/unwatch-account";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -61,40 +58,6 @@ export function DataTableRowActions<TData>({
       setLoading(false);
       setOpen(false);
       router.refresh();
-    }
-  };
-
-  const onWatch = async () => {
-    setLoading(true);
-    try {
-      const result = await watchAccount(account.id);
-      if (result.error) {
-        toast.error("Error");
-      } else {
-        toast.success(`You are now Account: ${account.name}, watcher`);
-      }
-    } catch (error) {
-      toast.error("Error");
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onUnWatch = async () => {
-    setLoading(true);
-    try {
-      const result = await unwatchAccount(account.id);
-      if (result.error) {
-        toast.error("Error");
-      } else {
-        toast.success(`You are no longer Account: ${account.name}, watcher`);
-      }
-    } catch (error) {
-      toast.error("Error");
-      console.log(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -136,15 +99,6 @@ export function DataTableRowActions<TData>({
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setUpdateOpen(true)}>
             Update
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onWatch}>
-            <Eye className="mr-2 w-4 h-4" />
-            Watch Account
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onUnWatch}>
-            <EyeOff className="mr-2 w-4 h-4" />
-            Stop watching Account
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setOpen(true)}>

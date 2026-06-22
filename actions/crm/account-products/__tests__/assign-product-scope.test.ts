@@ -12,10 +12,6 @@ jest.mock("@/lib/prisma", () => ({
 }));
 jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
 jest.mock("@/lib/audit-log", () => ({ writeAuditLog: jest.fn() }));
-jest.mock("@/lib/currency", () => ({
-  getSnapshotRate: jest.fn().mockResolvedValue(null),
-  getDefaultCurrency: jest.fn().mockResolvedValue("USD"),
-}));
 
 import { getSession } from "@/lib/auth-server";
 import { prismadb } from "@/lib/prisma";

@@ -32,17 +32,6 @@ export const getContacts = cache(async () => {
       },
       // Include assigned accounts
       assigned_accounts: true,
-      // Include opportunities through ContactsToOpportunities junction table
-      opportunities: {
-        include: {
-          opportunity: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
       // Include documents through DocumentsToContacts junction table
       documents: {
         include: {

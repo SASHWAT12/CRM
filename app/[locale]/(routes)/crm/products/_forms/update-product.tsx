@@ -31,7 +31,6 @@ interface UpdateProductFormProps {
     status: string;
     unit_price: number;
     unit_cost: number | null;
-    currency: string;
     tax_rate: number | null;
     unit: string | null;
     is_recurring: boolean;
@@ -39,7 +38,6 @@ interface UpdateProductFormProps {
     category: { id: string; name: string } | null;
   };
   categories: crm_ProductCategories[];
-  currencies?: { code: string; name: string; symbol: string }[];
 }
 
 const UpdateProductForm = ({
@@ -47,7 +45,6 @@ const UpdateProductForm = ({
   setOpen,
   product,
   categories,
-  currencies = [],
 }: UpdateProductFormProps) => {
   const router = useRouter();
   const [isRecurring, setIsRecurring] = useState(product.is_recurring);
@@ -74,7 +71,6 @@ const UpdateProductForm = ({
       | undefined;
     const unit_price = (formData.get("unit_price") as string) || undefined;
     const unit_cost = (formData.get("unit_cost") as string) || undefined;
-    const currency = (formData.get("currency") as string) || undefined;
     const tax_rate = (formData.get("tax_rate") as string) || undefined;
     const unit = (formData.get("unit") as string) || undefined;
     const categoryId = (formData.get("categoryId") as string) || null;
@@ -96,7 +92,6 @@ const UpdateProductForm = ({
       status,
       unit_price,
       unit_cost,
-      currency,
       tax_rate,
       unit,
       is_recurring: isRecurring,
@@ -169,17 +164,6 @@ const UpdateProductForm = ({
             defaultValue={product.unit_cost != null ? String(product.unit_cost) : ""}
           />
         </div>
-        <FormSelect
-          id="currency"
-          label="Currency"
-          type="hidden"
-          data={currencies.map((c) => ({
-            id: c.code,
-            name: `${c.symbol} ${c.code} — ${c.name}`,
-          }))}
-          errors={fieldErrors}
-          defaultValue={product.currency}
-        />
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             id="tax_rate"

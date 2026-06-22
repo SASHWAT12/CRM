@@ -17,14 +17,12 @@ import { FormDatePicker } from "@/components/form/form-datepicker";
 
 interface AssignProductFormProps {
   accountId: string;
-  products: { id: string; name: string; currency: string }[];
-  currencies: { code: string; name: string; symbol: string }[];
+  products: { id: string; name: string }[];
 }
 
 const AssignProductForm = ({
   accountId,
   products,
-  currencies,
 }: AssignProductFormProps) => {
   const router = useRouter();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -61,7 +59,6 @@ const AssignProductForm = ({
       productId,
       quantity,
       custom_price,
-      currency,
       status,
       start_date,
       end_date,
@@ -96,16 +93,6 @@ const AssignProductForm = ({
           id="custom_price"
           label="Custom Price (optional)"
           type="text"
-          errors={fieldErrors}
-        />
-        <FormSelect
-          id="currency"
-          label="Currency"
-          type="hidden"
-          data={currencies.map((c) => ({
-            id: c.code,
-            name: `${c.symbol} ${c.code} — ${c.name}`,
-          }))}
           errors={fieldErrors}
         />
         <FormSelect

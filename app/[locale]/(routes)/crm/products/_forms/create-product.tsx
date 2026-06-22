@@ -21,10 +21,8 @@ import { Label } from "@/components/ui/label";
 
 const CreateProductForm = ({
   categories,
-  currencies = [],
 }: {
   categories: crm_ProductCategories[];
-  currencies?: { code: string; name: string; symbol: string }[];
 }) => {
   const router = useRouter();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -48,7 +46,6 @@ const CreateProductForm = ({
     const status = formData.get("status") as "DRAFT" | "ACTIVE" | "ARCHIVED";
     const unit_price = formData.get("unit_price") as string;
     const unit_cost = (formData.get("unit_cost") as string) || undefined;
-    const currency = formData.get("currency") as string;
     const tax_rate = (formData.get("tax_rate") as string) || undefined;
     const unit = (formData.get("unit") as string) || undefined;
     const categoryId = (formData.get("categoryId") as string) || undefined;
@@ -69,7 +66,6 @@ const CreateProductForm = ({
       status,
       unit_price,
       unit_cost,
-      currency,
       tax_rate,
       unit,
       is_recurring: isRecurring,
@@ -135,16 +131,6 @@ const CreateProductForm = ({
             errors={fieldErrors}
           />
         </div>
-        <FormSelect
-          id="currency"
-          label="Currency"
-          type="hidden"
-          data={currencies.map((c) => ({
-            id: c.code,
-            name: `${c.symbol} ${c.code} — ${c.name}`,
-          }))}
-          errors={fieldErrors}
-        />
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             id="tax_rate"

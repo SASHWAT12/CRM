@@ -5,7 +5,6 @@ import Link from "next/link";
 import Container from "../../../components/ui/Container";
 import { getUserCRMTasks } from "@/actions/crm/tasks/get-user-tasks";
 import { getUserLeads } from "@/actions/crm/get-user-leads";
-import { getUserOpportunities } from "@/actions/crm/get-user-opportunities";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -29,17 +28,13 @@ const UserDashboardPage = async () => {
     redirect("/auth/signin");
   }
 
-  const [tasks, leads, opportunities] = await Promise.all([
-    getUserCRMTasks(session.user.id),
-    getUserLeads(session.user.id),
-    getUserOpportunities(session.user.id),
+  const [tasks, leads] = await Promise.all([
+    getUserCRMTasks(session.user.id) as Promise<any[]>,
+    getUserLeads(session.user.id) as Promise<any[]>,
   ]);
 
-  const openTasks = tasks.filter((t) => t.taskStatus === "ACTIVE");
+  const openTasks = tasks.filter((t: any) => t.taskStatus === "ACTIVE");
   const openLeads = leads;
-  const activeOpportunities = opportunities.filter(
-    (o) => o.status === "ACTIVE"
-  );
 
   return (
     <Container
@@ -47,7 +42,7 @@ const UserDashboardPage = async () => {
       description="Your personal CRM overview"
     >
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -78,18 +73,6 @@ const UserDashboardPage = async () => {
             <div className="text-2xl font-bold">{openLeads.length}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Opportunities
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {activeOpportunities.length}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -113,7 +96,7 @@ const UserDashboardPage = async () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tasks.slice(0, 8).map((task) => (
+                  {tasks.slice(0, 8).map((task: any) => (
                     <TableRow key={task.id}>
                       <TableCell className="font-medium">
                         <Link
@@ -153,52 +136,8 @@ const UserDashboardPage = async () => {
           </CardContent>
         </Card>
 
-        {/* Opportunities */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">My Opportunities</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {opportunities.length === 0 ? (
-              <p className="text-sm text-muted-foreground px-6 pb-4">
-                No opportunities assigned.
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead>Budget</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {opportunities.slice(0, 8).map((opp) => (
-                    <TableRow key={opp.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/crm/opportunities/${opp.id}`}
-                          className="hover:underline"
-                        >
-                          {opp.name ?? "—"}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        {opp.assigned_sales_stage?.name ?? "—"}
-                      </TableCell>
-                      <TableCell>
-                        {opp.budget ? `$${Number(opp.budget).toLocaleString()}` : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Leads */}
-        <Card className="md:col-span-2">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">My Leads</CardTitle>
           </CardHeader>
@@ -219,7 +158,7 @@ const UserDashboardPage = async () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leads.slice(0, 10).map((lead) => (
+                  {leads.slice(0, 10).map((lead: any) => (
                     <TableRow key={lead.id}>
                       <TableCell className="font-medium">
                         <Link

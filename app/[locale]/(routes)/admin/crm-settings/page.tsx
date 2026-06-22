@@ -8,16 +8,12 @@ export default async function CrmSettingsPage() {
     leadSources,
     leadStatuses,
     leadTypes,
-    opportunityTypes,
-    salesStages,
   ] = await Promise.all([
     getConfigValues("industry"),
     getConfigValues("contactType"),
     getConfigValues("leadSource"),
     getConfigValues("leadStatus"),
     getConfigValues("leadType"),
-    getConfigValues("opportunityType"),
-    getConfigValues("salesStage"),
   ]);
 
   const tabs = [
@@ -26,8 +22,6 @@ export default async function CrmSettingsPage() {
     { key: "leadSource" as const,      label: "Lead Sources",      values: leadSources },
     { key: "leadStatus" as const,      label: "Lead Statuses",     values: leadStatuses },
     { key: "leadType" as const,        label: "Lead Types",        values: leadTypes },
-    { key: "opportunityType" as const, label: "Opportunity Types", values: opportunityTypes },
-    { key: "salesStage" as const,      label: "Sales Stages",      values: salesStages },
   ];
 
   return (

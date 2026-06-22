@@ -1,7 +1,6 @@
 import Container from "@/app/[locale]/(routes)/components/ui/Container";
 import { getProduct } from "@/actions/crm/products/get-product";
 import { getProductCategories } from "@/actions/crm/products/get-product-categories";
-import { getAllCrmData } from "@/actions/crm/get-crm-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { serializeDecimals, serializeDecimalsList } from "@/lib/serialize-decimals";
 
@@ -18,10 +17,9 @@ const ProductPage = async (props: ProductDetailPageProps) => {
   const params = await props.params;
   const { productId } = params;
 
-  const [product, categories, crmData] = await Promise.all([
+  const [product, categories] = await Promise.all([
     getProduct(productId),
     getProductCategories(),
-    getAllCrmData(),
   ]);
 
   if (!product) return <div>Product not found</div>;
@@ -30,14 +28,6 @@ const ProductPage = async (props: ProductDetailPageProps) => {
   const serializedProduct = serializeDecimals(product);
   const serializedAssignments = serializeDecimalsList(
     product.accountProducts ?? []
-  );
-
-  const currencies = crmData.currencies.map(
-    (c: { code: string; name: string; symbol: string }) => ({
-      code: c.code,
-      name: c.name,
-      symbol: c.symbol,
-    })
   );
 
   const productForEdit = {
@@ -49,7 +39,6 @@ const ProductPage = async (props: ProductDetailPageProps) => {
     status: serializedProduct.status,
     unit_price: serializedProduct.unit_price as unknown as number,
     unit_cost: serializedProduct.unit_cost as unknown as number | null,
-    currency: serializedProduct.currency,
     tax_rate: serializedProduct.tax_rate as unknown as number | null,
     unit: serializedProduct.unit,
     is_recurring: serializedProduct.is_recurring,
@@ -66,7 +55,6 @@ const ProductPage = async (props: ProductDetailPageProps) => {
         <EditProductButton
           product={productForEdit}
           categories={categories}
-          currencies={currencies}
         />
       </div>
       <Tabs defaultValue="basic">
@@ -91,7 +79,6 @@ const ProductPage = async (props: ProductDetailPageProps) => {
           <AccountsTab
             assignments={serializedAssignments as any}
             productPrice={serializedProduct.unit_price as unknown as number}
-            productCurrency={serializedProduct.currency}
           />
         </TabsContent>
         <TabsContent value="history">

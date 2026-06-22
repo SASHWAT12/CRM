@@ -18,7 +18,6 @@ export const createLead = async (data: {
   lead_status_id?: string;
   lead_type_id?: string;
   refered_by?: string;
-  campaign?: string;
   assigned_to?: string;
   accountIDs?: string;
 }) => {
@@ -38,7 +37,6 @@ export const createLead = async (data: {
     lead_status_id,
     lead_type_id,
     refered_by,
-    campaign,
     assigned_to,
     accountIDs,
   } = data;
@@ -60,7 +58,6 @@ export const createLead = async (data: {
         lead_status_id: lead_status_id || undefined,
         lead_type_id: lead_type_id || undefined,
         refered_by: refered_by || undefined,
-        campaign: campaign || undefined,
         assigned_to: assigned_to || userId,
         accountsIDs: accountIDs || undefined,
       },

@@ -29,7 +29,6 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { PanelTopClose, PanelTopOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BulkEnrichModal } from "../components/BulkEnrichModal";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -100,26 +99,11 @@ export function ContactsDataTable<TData, TValue>({
         <>
           <DataTableToolbar table={table} />
           {table.getSelectedRowModel().rows.length > 0 && (
-            <>
-              <div className="flex items-center gap-2 py-2 px-1 bg-muted/50 rounded-md border">
-                <span className="text-sm text-muted-foreground">
-                  {table.getSelectedRowModel().rows.length} selected
-                </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setBulkEnrichOpen(true)}
-                >
-                  <Sparkles className="h-4 w-4 mr-1 text-orange-500" />
-                  Enrich {table.getSelectedRowModel().rows.length} contacts
-                </Button>
-              </div>
-              <BulkEnrichModal
-                contactIds={table.getSelectedRowModel().rows.map((row) => (row.original as { id: string }).id)}
-                open={bulkEnrichOpen}
-                onOpenChange={setBulkEnrichOpen}
-              />
-            </>
+            <div className="flex items-center gap-2 py-2 px-1 bg-muted/50 rounded-md border">
+              <span className="text-sm text-muted-foreground">
+                {table.getSelectedRowModel().rows.length} selected
+              </span>
+            </div>
           )}
           <div className="rounded-md border overflow-x-auto w-full">
             <Table data-testid="contacts-table">

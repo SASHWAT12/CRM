@@ -65,10 +65,9 @@ function chunkText(text: string): string[] {
   return chunks;
 }
 
-function classifyByFilename(name: string): "RECEIPT" | "CONTRACT" | "OFFER" | "OTHER" {
+function classifyByFilename(name: string): "RECEIPT" | "OFFER" | "OTHER" {
   const lower = name.toLowerCase();
   if (/invoice|receipt|bill|payment/.test(lower)) return "RECEIPT";
-  if (/contract|agreement|nda|terms/.test(lower)) return "CONTRACT";
   if (/offer|quote|proposal|estimate/.test(lower)) return "OFFER";
   return "OTHER";
 }
@@ -200,7 +199,7 @@ export const enrichDocument = inngest.createFunction(
           {
             role: "system",
             content:
-              "Classify this document into exactly one of these categories: RECEIPT, CONTRACT, OFFER, OTHER. Respond with only the category name, nothing else.",
+              "Classify this document into exactly one of these categories: RECEIPT, OFFER, OTHER. Respond with only the category name, nothing else.",
           },
           {
             role: "user",
@@ -211,8 +210,8 @@ export const enrichDocument = inngest.createFunction(
       });
 
       const raw = response.choices[0]?.message?.content?.trim().toUpperCase() ?? "OTHER";
-      const systemType = ["RECEIPT", "CONTRACT", "OFFER", "OTHER"].includes(raw)
-        ? (raw as "RECEIPT" | "CONTRACT" | "OFFER" | "OTHER")
+      const systemType = ["RECEIPT", "OFFER", "OTHER"].includes(raw)
+        ? (raw as "RECEIPT" | "OFFER" | "OTHER")
         : "OTHER";
 
       await prismadb.documents.update({

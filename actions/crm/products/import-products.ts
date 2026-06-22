@@ -5,7 +5,7 @@ import { writeAuditLog } from "@/lib/audit-log";
 import { revalidatePath } from "next/cache";
 import { requireRole, AuthenticationError, AuthorizationError } from "@/lib/authz";
 
-const REQUIRED_FIELDS = ["name", "type", "unit_price", "currency"];
+const REQUIRED_FIELDS = ["name", "type", "unit_price"];
 const MAX_ROWS = 500;
 
 export async function importProducts(
@@ -34,9 +34,8 @@ export async function importProducts(
     throw new Error(`Import limited to ${MAX_ROWS} rows. File contains ${data.length} rows.`);
   }
 
-  const [categories, currencies, existingSkus] = await Promise.all([
+  const [categories, existingSkus] = await Promise.all([
     prismadb.crm_ProductCategories.findMany({ where: { isActive: true } }),
-    prismadb.currency.findMany({ where: { isEnabled: true } }),
     prismadb.crm_Products.findMany({
       where: { sku: { not: null } },
       select: { sku: true },
@@ -44,7 +43,6 @@ export async function importProducts(
   ]);
 
   const categoryMap = new Map(categories.map((c) => [c.name.toLowerCase(), c.id]));
-  const currencyCodes = new Set(currencies.map((c) => c.code));
   const existingSkuSet = new Set(existingSkus.map((p) => p.sku?.toLowerCase()));
   const seenSkus = new Set<string>();
 
@@ -63,12 +61,6 @@ export async function importProducts(
     const type = row.type?.trim().toUpperCase();
     if (type !== "PRODUCT" && type !== "SERVICE") {
       errors.push(`Row ${rowNum}: invalid type "${row.type}" (must be PRODUCT or SERVICE)`);
-      return;
-    }
-
-    const currency = row.currency?.trim().toUpperCase();
-    if (!currencyCodes.has(currency)) {
-      errors.push(`Row ${rowNum}: unknown currency "${row.currency}"`);
       return;
     }
 
@@ -137,7 +129,7 @@ export async function importProducts(
       status: "DRAFT",
       unit_price: unitPrice,
       unit_cost: unitCost ?? null,
-      currency,
+      currency: "INR",
       tax_rate: taxRate ?? null,
       unit: row.unit?.trim() || null,
       is_recurring: isRecurring,

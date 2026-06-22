@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import moment from "moment";
-import { Decimal } from "@prisma/client/runtime/client";
-import { formatCurrency } from "@/lib/currency-format";
 
 import {
   Table,
@@ -26,10 +24,19 @@ interface Assignment {
   account: { id: string; name: string };
 }
 
+function formatInr(amount: number) {
+  const isWhole = amount % 1 === 0;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: isWhole ? 0 : 2,
+    maximumFractionDigits: isWhole ? 0 : 2,
+  }).format(amount);
+}
+
 interface AccountsTabProps {
   assignments: Assignment[];
   productPrice: number;
-  productCurrency: string;
 }
 
 const statusColor: Record<string, "default" | "secondary" | "destructive"> = {
@@ -42,14 +49,13 @@ const statusColor: Record<string, "default" | "secondary" | "destructive"> = {
 export function AccountsTab({
   assignments,
   productPrice,
-  productCurrency,
 }: AccountsTabProps) {
   const formatDate = (date: string | Date | null | undefined) =>
     date ? moment(date).format("MMM DD, YYYY") : "-";
 
-  const formatPrice = (value: number | null) => {
+  const formatPriceValue = (value: number | null) => {
     const amount = value ?? productPrice;
-    return formatCurrency(new Decimal(amount.toString()), productCurrency);
+    return formatInr(amount);
   };
 
   if (!assignments || assignments.length === 0) {
@@ -91,7 +97,7 @@ export function AccountsTab({
             </TableCell>
             <TableCell className="text-right">{a.quantity}</TableCell>
             <TableCell className="text-right">
-              {formatPrice(a.custom_price)}
+              {formatPriceValue(a.custom_price)}
             </TableCell>
             <TableCell>{formatDate(a.start_date)}</TableCell>
             <TableCell>{formatDate(a.end_date)}</TableCell>

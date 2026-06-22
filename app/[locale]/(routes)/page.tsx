@@ -16,29 +16,25 @@ import Link from "next/link";
 
 import Container from "./components/ui/Container";
 import LoadingBox from "./components/dasboard/loading-box";
-import StorageQuota from "./components/dasboard/storage-quota";
+// import StorageQuota from "./components/dasboard/storage-quota"; commenting_get_storage_size
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
   getTasksCount,
   getUsersTasksCount,
 } from "@/actions/dashboard/get-tasks-count";
-import { getInvoicesCount } from "@/actions/dashboard/get-invoices-count";
-import { getCampaignsCount } from "@/actions/dashboard/get-campaigns-count";
-import { getTargetsCount } from "@/actions/dashboard/get-targets-count";
+// import { getInvoicesCount } from "@/actions/dashboard/get-invoices-count";
+// import { getCampaignsCount } from "@/actions/dashboard/get-campaigns-count";
+// import { getTargetsCount } from "@/actions/dashboard/get-targets-count";
 import { getLeadsCount } from "@/actions/dashboard/get-leads-count";
-import { getBoardsCount } from "@/actions/dashboard/get-boards-count";
-import { getStorageSize } from "@/actions/documents/get-storage-size";
+// import { getStorageSize } from "@/actions/documents/get-storage-size"; commenting_get_storage_size
 import { getContactCount } from "@/actions/dashboard/get-contacts-count";
 import { getAccountsCount } from "@/actions/dashboard/get-accounts-count";
-import { getContractsCount } from "@/actions/dashboard/get-contracts-count";
+// import { getContractsCount } from "@/actions/dashboard/get-contracts-count";
 import { getDocumentsCount } from "@/actions/dashboard/get-documents-count";
 import { getActiveUsersCount } from "@/actions/dashboard/get-active-users-count";
-import { getOpportunitiesCount } from "@/actions/dashboard/get-opportunities-count";
-import { getExpectedRevenue } from "@/actions/crm/opportunity/get-expected-revenue";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
-import { getDefaultCurrency, formatCurrency as formatCurrencyUtil } from "@/lib/currency";
 import { Decimal } from "@prisma/client/runtime/client";
 
 const DashboardPage = async () => {
@@ -49,8 +45,6 @@ const DashboardPage = async () => {
   const userId = session?.user?.id;
 
   const cookieStore = await cookies();
-  const defaultCurrency = await getDefaultCurrency();
-  const displayCurrency = cookieStore.get("display_currency")?.value || defaultCurrency;
 
   //Get user language
   const lang = session?.user?.userLanguage;
@@ -59,18 +53,16 @@ const DashboardPage = async () => {
   const dict = await getTranslations("DashboardPage");
   const leads = await getLeadsCount();
   const tasks = await getTasksCount();
-  const invoices = await getInvoicesCount();
-  const campaigns = await getCampaignsCount();
-  const targets = await getTargetsCount();
-  const storage = await getStorageSize();
-  const projects = await getBoardsCount();
+  // const invoices = await getInvoicesCount();
+  // const campaigns = await getCampaignsCount();
+  // const targets = await getTargetsCount();
+  // const storage = await getStorageSize(); commenting_get_storage_size
   const contacts = await getContactCount();
-  const contracts = await getContractsCount();
+  // const contracts = await getContractsCount();
   const users = await getActiveUsersCount();
   const accounts = await getAccountsCount();
-  const revenue = await getExpectedRevenue(displayCurrency);
   const documents = await getDocumentsCount();
-  const opportunities = await getOpportunitiesCount();
+  // const opportunities = await getOpportunitiesCount();
   const usersTasks = await getUsersTasksCount(userId);
 
   return (
@@ -102,11 +94,6 @@ const DashboardPage = async () => {
               </CardTitle>
               <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-medium">
-                {formatCurrencyUtil(new Decimal(revenue), displayCurrency)}
-              </div>
-            </CardContent>
           </Card>
         </Suspense>
 
@@ -116,36 +103,36 @@ const DashboardPage = async () => {
           IconComponent={UserIcon}
           content={users}
         />
-        <DashboardCard
+        {/* <DashboardCard
           href="/invoices"
           title={dict("invoices")}
           IconComponent={FileText}
           content={invoices}
-        />
-        <DashboardCard
+        /> */}
+        {/* <DashboardCard
           href="/campaigns"
           title={dict("campaigns")}
           IconComponent={Megaphone}
           content={campaigns}
-        />
-        <DashboardCard
+        /> */}
+        {/* <DashboardCard
           href="/crm/targets"
           title={dict("targets")}
           IconComponent={Target}
           content={targets}
-        />
+        /> */}
         <DashboardCard
           href="/crm/accounts"
           title={dict("accounts")}
           IconComponent={LandmarkIcon}
           content={accounts}
         />
-        <DashboardCard
+        {/* <DashboardCard
           href="/crm/opportunities"
           title={dict("opportunities")}
           IconComponent={HeartHandshakeIcon}
           content={opportunities}
-        />
+        /> */}
         <DashboardCard
           href="/crm/contacts"
           title={dict("contacts")}
@@ -158,30 +145,13 @@ const DashboardPage = async () => {
           IconComponent={CoinsIcon}
           content={leads}
         />
-        <DashboardCard
+        {/* <DashboardCard
           href="/crm/contracts"
           title={dict("contracts")}
           IconComponent={FilePenLine}
           content={contracts}
-        />
-        <DashboardCard
-          href="/projects"
-          title={dict("projects")}
-          IconComponent={CoinsIcon}
-          content={projects}
-        />
-        <DashboardCard
-          href="/projects/tasks"
-          title={dict("tasks")}
-          IconComponent={CoinsIcon}
-          content={tasks}
-        />
-        <DashboardCard
-          href={`/projects/tasks/${userId}`}
-          title={dict("myTasks")}
-          IconComponent={CoinsIcon}
-          content={usersTasks}
-        />
+        /> */}
+
         <DashboardCard
           href="/documents"
           title={dict("documents")}
@@ -189,7 +159,7 @@ const DashboardPage = async () => {
           content={documents}
         />
 
-        <StorageQuota actual={storage} title={dict("storage")} />
+        {/* <StorageQuota actual={storage} title={dict("storage")} /> commenting_get_storage_size */}
       </div>
     </Container>
   );

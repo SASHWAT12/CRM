@@ -3,15 +3,14 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 import Header from "./components/Header";
-import Footer from "./components/Footer";
+// import Footer from "./components/Footer";
 
 import { Metadata } from "next";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { getTranslations } from "next-intl/server";
 import { AvatarProvider } from "@/context/avatar-context";
-import { CurrencyProvider } from "@/context/currency-context";
-import { getEnabledCurrencies, getDefaultCurrency } from "@/lib/currency";
+// import { getEnabledCurrencies, getDefaultCurrency } from "@/lib/currency";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -99,7 +98,6 @@ export default async function AppLayout({
       targets: dict("crm.targets"),
       targetLists: dict("crm.targetLists"),
     },
-    projects: dict("projects"),
     emails: dict("emails"),
     reports: dict("reports"),
     documents: dict("documents"),
@@ -110,18 +108,17 @@ export default async function AppLayout({
   const cookieStore = await cookies();
   const sidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";
 
-  const enabledCurrencies = await getEnabledCurrencies();
-  const defaultCurrency = await getDefaultCurrency();
-  const cookieCurrency = cookieStore.get("display_currency")?.value;
-  const displayCurrency = cookieCurrency && enabledCurrencies.some((c: { code: string }) => c.code === cookieCurrency)
-    ? cookieCurrency
-    : defaultCurrency;
-  const currencyList = enabledCurrencies.map((c: { code: string; name: string; symbol: string }) => ({ code: c.code, name: c.name, symbol: c.symbol }));
+  // const enabledCurrencies = await getEnabledCurrencies();
+  // const defaultCurrency = await getDefaultCurrency();
+  // const cookieCurrency = cookieStore.get("display_currency")?.value;
+  // const displayCurrency = cookieCurrency && enabledCurrencies.some((c: { code: string }) => c.code === cookieCurrency)
+  //   ? cookieCurrency
+  //   : defaultCurrency;
+  // const currencyList = enabledCurrencies.map((c: { code: string; name: string; symbol: string }) => ({ code: c.code, name: c.name, symbol: c.symbol }));
 
   //console.log(typeof build, "build");
   return (
     <AvatarProvider initialAvatar={user?.image}>
-    <CurrencyProvider initialCurrency={displayCurrency} currencies={currencyList}>
     <SidebarProvider defaultOpen={sidebarOpen}>
       <AppSidebar
         dict={translations}
@@ -144,11 +141,10 @@ export default async function AppLayout({
               {children}
             </div>
           </div>
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </SidebarInset>
     </SidebarProvider>
-    </CurrencyProvider>
     </AvatarProvider>
   );
 }

@@ -8,7 +8,6 @@ export const getAccount = async (accountId: string) => {
     },
     include: {
       contacts: true,
-      opportunities: true,
       // Documents relationship through DocumentsToAccounts junction table
       documents: {
         include: {
@@ -34,19 +33,6 @@ export const getAccount = async (accountId: string) => {
       assigned_to_user: {
         select: {
           name: true,
-        },
-      },
-      // Watchers relationship through AccountWatchers junction table
-      watchers: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
         },
       },
     },

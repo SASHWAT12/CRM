@@ -28,20 +28,6 @@ export const getContact = async (contactId: string) => {
       deletedAt: null,
     },
     include: {
-      // Include opportunities through ContactsToOpportunities junction table
-      opportunities: {
-        include: {
-          opportunity: {
-            select: {
-              id: true,
-              name: true,
-              sales_stage: true,
-              close_date: true,
-              budget: true,
-            },
-          },
-        },
-      },
       // Include documents through DocumentsToContacts junction table
       documents: {
         include: {

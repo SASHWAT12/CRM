@@ -20,8 +20,6 @@ export interface UnifiedSearchResults {
   accounts: SearchResult[];
   contacts: SearchResult[];
   leads: SearchResult[];
-  opportunities: SearchResult[];
-  projects: SearchResult[];
   tasks: SearchResult[];
   users: SearchResult[];
   documents: SearchResult[];
@@ -75,15 +73,12 @@ export async function unifiedSearch(
       kwAccounts,
       kwContacts,
       kwLeads,
-      kwOpportunities,
-      kwProjects,
       kwTasks,
       kwUsers,
       kwDocuments,
       semAccounts,
       semContacts,
       semLeads,
-      semOpportunities,
       semDocuments,
       semDocChunks,
     ] = await Promise.all([
@@ -139,32 +134,7 @@ export async function unifiedSearch(
         take: 10,
         select: { id: true, firstName: true, lastName: true, company: true, email: true },
       }),
-      prismadb.crm_Opportunities.findMany({
-        where: {
-          deletedAt: null,
-          AND: [
-            scope.opportunity,
-            {
-              OR: [
-                { name: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-              ],
-            },
-          ],
-        },
-        take: 10,
-        select: { id: true, name: true, status: true },
-      }),
-      prismadb.boards.findMany({
-        where: {
-          OR: [
-            { title: { contains: query, mode: "insensitive" } },
-            { description: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        take: 10,
-        select: { id: true, title: true, description: true },
-      }),
+
       prismadb.tasks.findMany({
         where: {
           AND: [
@@ -240,15 +210,6 @@ export async function unifiedSearch(
         : noSemantic,
       queryVec
         ? prismadb.$queryRaw<{ id: string; similarity: number }[]>`
-            SELECT o.id, 1 - (e.embedding <=> ${queryVec}::vector) AS similarity
-            FROM "crm_Opportunities" o
-            LEFT JOIN "crm_Embeddings_Opportunities" e ON e.opportunity_id = o.id
-            WHERE e.embedding IS NOT NULL
-            ORDER BY e.embedding <=> ${queryVec}::vector
-            LIMIT 10`
-        : noSemantic,
-      queryVec
-        ? prismadb.$queryRaw<{ id: string; similarity: number }[]>`
             SELECT d.id, 1 - (e.embedding <=> ${queryVec}::vector) AS similarity
             FROM "Documents" d
             LEFT JOIN "crm_Embeddings_Documents" e ON e.document_id = d.id
@@ -275,9 +236,8 @@ export async function unifiedSearch(
     const kwAccountIds = new Set(kwAccounts.map((r) => r.id));
     const kwContactIds = new Set(kwContacts.map((r) => r.id));
     const kwLeadIds = new Set(kwLeads.map((r) => r.id));
-    const kwOpportunityIds = new Set(kwOpportunities.map((r) => r.id));
 
-    const [extraAccounts, extraContacts, extraLeads, extraOpportunities] =
+    const [extraAccounts, extraContacts, extraLeads] =
       await Promise.all([
         prismadb.crm_Accounts.findMany({
           where: {
@@ -302,14 +262,6 @@ export async function unifiedSearch(
             AND: [scope.lead],
           },
           select: { id: true, firstName: true, lastName: true, company: true, email: true },
-        }),
-        prismadb.crm_Opportunities.findMany({
-          where: {
-            deletedAt: null,
-            id: { in: semOpportunities.map((r) => r.id).filter((id) => !kwOpportunityIds.has(id)) },
-            AND: [scope.opportunity],
-          },
-          select: { id: true, name: true, status: true },
         }),
       ]);
 
@@ -349,25 +301,7 @@ export async function unifiedSearch(
       }))
     );
 
-    const opportunities = mergeResults(
-      kwOpportunityIds,
-      semMap(semOpportunities),
-      [...kwOpportunities, ...extraOpportunities].map((r) => ({
-        id: r.id,
-        title: r.name ?? "",
-        subtitle: r.status ?? "",
-        url: `/${locale}/crm/opportunities/${r.id}`,
-      }))
-    );
 
-    const projects: SearchResult[] = kwProjects.map((r) => ({
-      id: r.id,
-      title: r.title ?? "",
-      subtitle: r.description ? r.description.slice(0, 80) : "",
-      url: `/${locale}/projects/${r.id}`,
-      score: 0.5,
-      matchType: "keyword",
-    }));
 
     const tasks: SearchResult[] = kwTasks.map((r) => ({
       id: r.id,
@@ -427,7 +361,7 @@ export async function unifiedSearch(
       }))
     );
 
-    return { accounts, contacts, leads, opportunities, projects, tasks, users, documents };
+    return { accounts, contacts, leads, tasks, users, documents };
   } catch (error) {
     console.error("[UNIFIED_SEARCH]", error);
     return { error: "Search failed" };

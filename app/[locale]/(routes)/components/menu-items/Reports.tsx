@@ -34,7 +34,6 @@ export default function getReportsMenuItem({
       { title: "Leads", url: "/reports/leads" },
       { title: "Accounts", url: "/reports/accounts" },
       { title: "Activity", url: "/reports/activity" },
-      { title: "Campaigns", url: "/reports/campaigns" },
       { title: "Users", url: "/reports/users" },
     ],
   }

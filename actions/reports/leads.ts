@@ -44,19 +44,6 @@ export async function getLeadSources(
   return groupedToChartData(grouped);
 }
 
-export async function getConversionRate(
-  filters: ReportFilters,
-  scope: ReportScope = DEFAULT_SCOPE,
-): Promise<{ leads: number; converted: number; rate: number }> {
-  const leads = await prismadb.crm_Leads.count({
-    where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.lead },
-  });
-  const converted = await prismadb.crm_Opportunities.count({
-    where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.opportunity },
-  });
-  return { leads, converted, rate: leads > 0 ? Math.round((converted / leads) * 100) : 0 };
-}
-
 export async function getNewContacts(
   filters: ReportFilters,
   scope: ReportScope = DEFAULT_SCOPE,
@@ -83,3 +70,11 @@ export async function getContactsByAccount(
   }
   return groupedToChartData(grouped);
 }
+
+export async function getConversionRate(
+  filters: ReportFilters,
+  scope: ReportScope = DEFAULT_SCOPE,
+): Promise<{ rate: number; converted: number; leads: number }> {
+  return { rate: 0, converted: 0, leads: 0 };
+}
+

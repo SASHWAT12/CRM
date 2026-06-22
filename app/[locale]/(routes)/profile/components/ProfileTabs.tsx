@@ -9,7 +9,7 @@ import { UserCircle, Lock, Globe, Code2, Mail, KeyRound } from "lucide-react";
 // Do NOT import tab content components here — they are Server Components
 // and must be passed as ReactNode props from page.tsx
 
-type Tab = "profile" | "security" | "preferences" | "developer" | "emails" | "llms";
+type Tab = "profile" | "security" | "preferences" | "developer" | "emails" ;
 
 const TAB_ICONS: Record<Tab, React.ElementType> = {
   profile: UserCircle,
@@ -17,31 +17,28 @@ const TAB_ICONS: Record<Tab, React.ElementType> = {
   preferences: Globe,
   developer: Code2,
   emails: Mail,
-  llms: KeyRound,
 };
 
 type Props = {
   profileContent: React.ReactNode;
   securityContent: React.ReactNode;
   preferencesContent: React.ReactNode;
-  developerContent: React.ReactNode;
+  // developerContent: React.ReactNode;
   emailsContent: React.ReactNode;
-  llmsContent: React.ReactNode;
 };
 
 export function ProfileTabs({
   profileContent,
   securityContent,
   preferencesContent,
-  developerContent,
+  // developerContent,
   emailsContent,
-  llmsContent,
 }: Props) {
   const t = useTranslations("ProfilePage");
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const TAB_IDS: Tab[] = ["profile", "security", "preferences", "developer", "emails", "llms"];
+  const TAB_IDS: Tab[] = ["profile", "security", "preferences", "developer", "emails"];
   const raw = searchParams.get("tab");
   const activeTab: Tab = TAB_IDS.includes(raw as Tab) ? (raw as Tab) : "profile";
 
@@ -51,19 +48,17 @@ export function ProfileTabs({
     { id: "preferences", label: t("tabs.preferences"), desc: t("tabs.preferencesDesc") },
     { id: "developer", label: t("tabs.developer"), desc: t("tabs.developerDesc") },
     { id: "emails", label: t("tabs.emails"), desc: t("tabs.emailsDesc") },
-    { id: "llms", label: t("tabs.llms"), desc: t("tabs.llmsDesc") },
   ];
 
   const activeTabMeta = tabs.find((t) => t.id === activeTab) ?? tabs[0];
 
-  const contentMap: Record<Tab, React.ReactNode> = {
-    profile: profileContent,
-    security: securityContent,
-    preferences: preferencesContent,
-    developer: developerContent,
-    emails: emailsContent,
-    llms: llmsContent,
-  };
+  // const contentMap: Record<Tab, React.ReactNode> = {
+  //   profile: profileContent,
+  //   security: securityContent,
+  //   preferences: preferencesContent,
+  //   // developer: developerContent,
+  //   emails: emailsContent,
+  // };
 
   return (
     <div className="flex min-h-[480px]">
@@ -131,7 +126,7 @@ export function ProfileTabs({
           </p>
         </div>
 
-        {contentMap[activeTab]}
+        {/* {contentMap[activeTab]} */}
       </div>
     </div>
   );

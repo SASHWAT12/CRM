@@ -22,8 +22,6 @@ export type CrmConfigType =
   | "leadSource"
   | "leadStatus"
   | "leadType"
-  | "opportunityType"
-  | "salesStage";
 
 export type ConfigValue = { id: string; name: string; usageCount: number };
 
@@ -35,8 +33,6 @@ const configMap = {
   leadSource:      { model: () => prisma.crm_Lead_Sources,                countRelation: "leads",                                 updateMany: () => prisma.crm_Leads },
   leadStatus:      { model: () => prisma.crm_Lead_Statuses,               countRelation: "leads",                                 updateMany: () => prisma.crm_Leads },
   leadType:        { model: () => prisma.crm_Lead_Types,                  countRelation: "leads",                                 updateMany: () => prisma.crm_Leads },
-  opportunityType: { model: () => prisma.crm_Opportunities_Type,          countRelation: "assigned_opportunities",                updateMany: null },
-  salesStage:      { model: () => prisma.crm_Opportunities_Sales_Stages,  countRelation: "assigned_opportunities_sales_stage",    updateMany: null },
 } as const;
 
 const fkField: Record<CrmConfigType, string | null> = {
@@ -45,8 +41,6 @@ const fkField: Record<CrmConfigType, string | null> = {
   leadSource:      "lead_source_id",
   leadStatus:      "lead_status_id",
   leadType:        "lead_type_id",
-  opportunityType: "type",
-  salesStage:      "sales_stage",
 };
 
 export async function getConfigValues(configType: CrmConfigType): Promise<ConfigValue[]> {

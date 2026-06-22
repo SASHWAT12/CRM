@@ -6,8 +6,7 @@ import { AuditAdminTable } from "./AdminTable";
 import { restoreAccount } from "@/actions/crm/accounts/restore-account";
 import { restoreContact } from "@/actions/crm/contacts/restore-contact";
 import { restoreLead } from "@/actions/crm/leads/restore-lead";
-import { restoreOpportunity } from "@/actions/crm/opportunities/restore-opportunity";
-import { restoreContract } from "@/actions/crm/contracts/restore-contract";
+// Opportunities and Contracts are no longer supported
 
 // Pass the same props as AuditAdminTable (minus onRestore which we provide internally)
 type Props = Omit<React.ComponentProps<typeof AuditAdminTable>, "onRestore">;
@@ -30,10 +29,8 @@ export function AdminAuditLogClient(props: Props) {
           result = await restoreLead(entityId);
           break;
         case "opportunity":
-          result = await restoreOpportunity(entityId);
-          break;
         case "contract":
-          result = await restoreContract(entityId);
+          result = { error: "Entity type is no longer supported" };
           break;
         default:
           result = { error: "Unknown entity type" };

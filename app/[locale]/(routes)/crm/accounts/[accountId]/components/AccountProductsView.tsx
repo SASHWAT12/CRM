@@ -33,7 +33,7 @@ interface AccountProductsViewProps {
   data: any[];
   accountId: string;
   crmData: CrmData;
-  activeProducts: { id: string; name: string; currency: string }[];
+  activeProducts: { id: string; name: string }[];
 }
 
 const statusColors: Record<string, string> = {
@@ -50,7 +50,6 @@ const AccountProductsView = ({
   activeProducts,
 }: AccountProductsViewProps) => {
   const router = useRouter();
-  const { currencies } = crmData;
 
   const handleCancel = async (id: string) => {
     const result = await removeAssignment(id);
@@ -66,8 +65,7 @@ const AccountProductsView = ({
     const price = item.custom_price ?? item.product?.unit_price;
     if (price == null) return "-";
     const num = typeof price === "number" ? price : Number(price);
-    const curr = item.currency || item.product?.currency || "EUR";
-    return `${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${curr}`;
+    return `₹${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const formatDate = (date: string | Date | null | undefined) => {
@@ -88,13 +86,6 @@ const AccountProductsView = ({
             <AssignProductForm
               accountId={accountId}
               products={activeProducts}
-              currencies={currencies.map(
-                (c: { code: string; name: string; symbol: string }) => ({
-                  code: c.code,
-                  name: c.name,
-                  symbol: c.symbol,
-                })
-              )}
             />
           </div>
         </div>
