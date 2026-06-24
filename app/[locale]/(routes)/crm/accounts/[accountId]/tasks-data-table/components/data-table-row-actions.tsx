@@ -41,11 +41,11 @@ export function DataTableRowActions<TData>({
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success("Task deleted successfully");
+        toast.success("Followup deleted successfully");
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong, during deleting task");
+      toast.error("Something went wrong, during deleting followup");
     } finally {
       setOpen(false);
       setIsLoading(false);

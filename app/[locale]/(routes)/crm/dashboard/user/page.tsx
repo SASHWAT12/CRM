@@ -46,7 +46,7 @@ const UserDashboardPage = async () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Tasks
+              Total Followups
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -56,7 +56,7 @@ const UserDashboardPage = async () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Open Tasks
+              Open Followups
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -79,12 +79,12 @@ const UserDashboardPage = async () => {
         {/* Tasks */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">My Tasks</CardTitle>
+            <CardTitle className="text-base">My Followups</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground px-6 pb-4">
-                No tasks assigned.
+                No followups assigned.
               </p>
             ) : (
               <Table>

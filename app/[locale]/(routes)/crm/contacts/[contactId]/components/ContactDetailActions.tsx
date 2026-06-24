@@ -37,9 +37,9 @@ export function ContactDetailActions({
         <SheetContent className="w-full md:max-w-[771px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
-              Update Contact - {contact?.first_name} {contact?.last_name}
+              Update Patient - {contact?.first_name} {contact?.last_name}
             </SheetTitle>
-            <SheetDescription>Update contact details</SheetDescription>
+            <SheetDescription>Update patient details</SheetDescription>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <UpdateContactForm

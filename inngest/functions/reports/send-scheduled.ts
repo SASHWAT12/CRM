@@ -7,7 +7,6 @@ import * as salesActions from "@/actions/reports/sales";
 import * as leadsActions from "@/actions/reports/leads";
 import * as accountsActions from "@/actions/reports/accounts";
 import * as activityActions from "@/actions/reports/activity";
-import * as campaignsActions from "@/actions/reports/campaigns";
 import * as usersActions from "@/actions/reports/users";
 import { getReportScope } from "@/lib/authz/scopes/report-scope";
 import type { ReportScope } from "@/lib/authz/scopes/report-scope";
@@ -21,10 +20,6 @@ export async function getReportData(category: string, filters: any, scope: Repor
     case "leads": return { data: await leadsActions.getNewLeads(filters, scope), headers: ["Month", "Leads"] as [string, string] };
     case "accounts": return { data: await accountsActions.getNewAccounts(filters, scope), headers: ["Month", "Accounts"] as [string, string] };
     case "activity": return { data: await activityActions.getTasksByAssignee(filters, scope), headers: ["Assignee", "Tasks"] as [string, string] };
-    case "campaigns": {
-      const perf = await campaignsActions.getCampaignPerformance(filters, scope);
-      return { data: [{ name: "Sent", Number: perf.sent }, { name: "Opened", Number: perf.opened }, { name: "Clicked", Number: perf.clicked }], headers: ["Metric", "Count"] as [string, string] };
-    }
     case "users": {
       if (!scope.allowUserDirectory) {
         return { data: [], headers: ["Month", "Users"] as [string, string] };

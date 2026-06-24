@@ -61,7 +61,7 @@ export function AccountsTab({
   if (!assignments || assignments.length === 0) {
     return (
       <div className="py-10 text-center text-muted-foreground">
-        No accounts assigned to this product yet.
+        No accounts assigned to this treatment yet.
       </div>
     );
   }

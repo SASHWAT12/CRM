@@ -3,7 +3,6 @@ import { inngest } from "@/inngest/client";
 import { embedAccount } from "@/inngest/functions/embed-account";
 import { embedContact } from "@/inngest/functions/embed-contact";
 import { embedLead } from "@/inngest/functions/embed-lead";
-import { embedOpportunity } from "@/inngest/functions/embed-opportunity";
 import { embedBackfill } from "@/inngest/functions/embed-backfill";
 import { emailSyncAll } from "@/inngest/functions/emails/sync-all";
 import { emailSyncAccount } from "@/inngest/functions/emails/sync-account";
@@ -23,7 +22,6 @@ export const { GET, POST, PUT } = serve({
     embedAccount,
     embedContact,
     embedLead,
-    embedOpportunity,
     embedBackfill,
     emailSyncAll,
     emailSyncAccount,

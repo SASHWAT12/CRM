@@ -29,7 +29,7 @@ const AssignProductForm = ({
 
   const { execute, fieldErrors, isLoading } = useAction(assignProduct, {
     onSuccess: () => {
-      toast.success("Product assigned successfully");
+      toast.success("Treatment assigned successfully");
       closeRef.current?.click();
       router.refresh();
     },
@@ -70,14 +70,14 @@ const AssignProductForm = ({
   return (
     <FormSheet
       trigger={"+"}
-      title="Assign Product"
-      description="Assign a product or service to this account"
+      title="Assign Treatment"
+      description="Assign a treatment or service to this account"
       onClose={closeRef}
     >
       <form action={onAction} className="space-y-4">
         <FormSelect
           id="productId"
-          label="Product"
+          label="Treatment"
           type="hidden"
           data={products.map((p) => ({ id: p.id, name: p.name }))}
           errors={fieldErrors}

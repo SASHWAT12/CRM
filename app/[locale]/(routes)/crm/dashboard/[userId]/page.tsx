@@ -23,7 +23,7 @@ const UserCRMDashboard = async () => {
         <div className="grid grid-cols-2 w-full ">
           <div className="">Calls overview</div>
           <div className="">
-            <h1>Tasks in Accounts</h1>
+            <h1>Followups in Accounts</h1>
             <pre>{JSON.stringify(task, null, 2)}</pre>
           </div>
           <div className="">Meetings overview</div>

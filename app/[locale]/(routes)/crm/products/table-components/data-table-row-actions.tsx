@@ -38,10 +38,10 @@ export function DataTableRowActions<TData>({
     setLoading(true);
     try {
       await deleteProduct(product.id);
-      toast.success("Product has been deleted");
+      toast.success("Treatment has been deleted");
     } catch (error) {
       toast.error(
-        "Something went wrong while deleting product. Please try again."
+        "Something went wrong while deleting treatment. Please try again."
       );
     } finally {
       setLoading(false);

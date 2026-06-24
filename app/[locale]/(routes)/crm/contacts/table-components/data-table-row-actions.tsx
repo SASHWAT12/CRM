@@ -54,10 +54,10 @@ export function DataTableRowActions<TData>({
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Contact has been deleted");
+        toast.success("Patient has been deleted");
       }
     } catch (error) {
-      toast.error("Something went wrong while deleting contact. Please try again.");
+      toast.error("Something went wrong while deleting patient. Please try again.");
     } finally {
       setLoading(false);
       setOpen(false);
@@ -76,8 +76,8 @@ export function DataTableRowActions<TData>({
       <Sheet open={updateOpen} onOpenChange={setUpdateOpen}>
         <SheetContent className="w-full md:max-w-[771px] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Update Contact - {contact?.first_name} {contact?.last_name}</SheetTitle>
-            <SheetDescription>Update contact details</SheetDescription>
+            <SheetTitle>Update Patient - {contact?.first_name} {contact?.last_name}</SheetTitle>
+            <SheetDescription>Update patient details</SheetDescription>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <UpdateContactForm

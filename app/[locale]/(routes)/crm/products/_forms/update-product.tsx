@@ -51,7 +51,7 @@ const UpdateProductForm = ({
 
   const { execute, fieldErrors, isLoading } = useAction(updateProduct, {
     onSuccess: () => {
-      toast.success("Product updated successfully");
+      toast.success("Treatment updated successfully");
       setOpen(false);
       router.refresh();
     },
@@ -105,8 +105,8 @@ const UpdateProductForm = ({
 
   return (
     <FormSheetNoTrigger
-      title="Update Product"
-      description="Update the product details"
+      title="Update Treatment"
+      description="Update the treatment details"
       open={onOpen}
       setOpen={setOpen}
     >
@@ -130,7 +130,7 @@ const UpdateProductForm = ({
           label="Type"
           type="hidden"
           data={[
-            { id: "PRODUCT", name: "Product" },
+            { id: "PRODUCT", name: "Treatment" },
             { id: "SERVICE", name: "Service" },
           ]}
           errors={fieldErrors}

@@ -22,7 +22,7 @@ const ProductPage = async (props: ProductDetailPageProps) => {
     getProductCategories(),
   ]);
 
-  if (!product) return <div>Product not found</div>;
+  if (!product) return <div>Treatment not found</div>;
 
   // Serialize decimal values for client components
   const serializedProduct = serializeDecimals(product);
@@ -48,7 +48,7 @@ const ProductPage = async (props: ProductDetailPageProps) => {
 
   return (
     <Container
-      title={`Product: ${product.name}`}
+      title={`Treatment: ${product.name}`}
       description={`Status: ${product.status}`}
     >
       <div className="flex justify-end mb-4">

@@ -80,10 +80,10 @@ const NewTaskForm = ({ account, onFinish }: NewTaskFormProps) => {
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success(`New task: ${data.title}, created successfully`);
+        toast.success(`New followup: ${data.title}, created successfully`);
       }
     } catch (error: any) {
-      toast.error(error?.message ?? "Something went wrong while creating the task");
+      toast.error(error?.message ?? "Something went wrong while creating the followup");
     } finally {
       setIsLoading(false);
       onFinish();
@@ -112,11 +112,11 @@ const NewTaskForm = ({ account, onFinish }: NewTaskFormProps) => {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New task name</FormLabel>
+                      <FormLabel>New followup name</FormLabel>
                       <FormControl>
                         <Input
                           disabled={isLoading}
-                          placeholder="Enter task name"
+                          placeholder="Enter followup name"
                           {...field}
                         />
                       </FormControl>
@@ -129,11 +129,11 @@ const NewTaskForm = ({ account, onFinish }: NewTaskFormProps) => {
                   name="content"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Task description</FormLabel>
+                      <FormLabel>Followup description</FormLabel>
                       <FormControl>
                         <Textarea
                           disabled={isLoading}
-                          placeholder="Enter task description"
+                          placeholder="Enter followup description"
                           {...field}
                         />
                       </FormControl>
@@ -146,7 +146,7 @@ const NewTaskForm = ({ account, onFinish }: NewTaskFormProps) => {
                   name="dueDateAt"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Task due date</FormLabel>
+                      <FormLabel>Followup due date</FormLabel>
                       <FormControl>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -202,14 +202,14 @@ const NewTaskForm = ({ account, onFinish }: NewTaskFormProps) => {
                   name="priority"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Choose task priority</FormLabel>
+                      <FormLabel>Choose followup priority</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select tasks priority" />
+                            <SelectValue placeholder="Select followup priority" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

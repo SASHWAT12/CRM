@@ -79,7 +79,7 @@ const AccountProductsView = ({
         <div className="flex justify-between">
           <CardTitle>
             <Link href="/crm/products" className="hover:underline">
-              Products
+              Treatments
             </Link>
           </CardTitle>
           <div className="flex space-x-2">
@@ -93,12 +93,12 @@ const AccountProductsView = ({
       </CardHeader>
       <CardContent>
         {!data || data.length === 0 ? (
-          "No products assigned to this account"
+          "No treatments assigned to this account"
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Product</TableHead>
+                <TableHead>Treatment</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Qty</TableHead>

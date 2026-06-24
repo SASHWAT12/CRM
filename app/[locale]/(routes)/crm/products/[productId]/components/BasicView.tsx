@@ -83,7 +83,7 @@ export function BasicView({ data }: BasicViewProps) {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex w-full justify-between items-start">
-              <CardTitle>Product Information</CardTitle>
+              <CardTitle>Treatment Information</CardTitle>
               <Badge variant={statusVariant[data.status] ?? "secondary"}>
                 {statusLabel[data.status] ?? data.status}
               </Badge>

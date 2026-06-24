@@ -158,7 +158,7 @@ export function EnrichContactDrawer({
     });
 
     if (res.ok) {
-      toast.success("Contact enriched successfully");
+      toast.success("Patient enriched successfully");
       onApplied();
       handleClose(false);
     } else {
@@ -181,14 +181,14 @@ export function EnrichContactDrawer({
           </SheetTitle>
           <SheetDescription>
             {noEmail
-              ? "Add an email to this contact to enable enrichment."
-              : "Firecrawl searches the web to fill in missing contact details."}
+              ? "Add an email to this patient to enable enrichment."
+              : "Firecrawl searches the web to fill in missing patient details."}
           </SheetDescription>
         </SheetHeader>
 
         {noEmail && (
           <div className="mt-4 text-sm text-muted-foreground">
-            No email address found on this contact.
+            No email address found on this patient.
           </div>
         )}
 

@@ -228,7 +228,7 @@ export function ActivityForm({ open, onOpenChange, entityType, entityId, activit
               Cancel
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : isEdit ? "Save changes" : "Log activity"}
+              {saving ? "Saving..." : isEdit ? "Save changes" : "Log event"}
             </Button>
           </div>
         </form>

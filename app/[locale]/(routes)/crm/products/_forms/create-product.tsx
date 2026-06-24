@@ -30,7 +30,7 @@ const CreateProductForm = ({
 
   const { execute, fieldErrors, isLoading } = useAction(createProduct, {
     onSuccess: () => {
-      toast.success("Product created successfully");
+      toast.success("Treatment created successfully");
       closeRef.current?.click();
       router.refresh();
     },
@@ -78,8 +78,8 @@ const CreateProductForm = ({
   return (
     <FormSheet
       trigger={"+"}
-      title="Create Product"
-      description="Add a new product or service to your catalog"
+      title="Create Treatment"
+      description="Add a new treatment or service to your catalog"
       onClose={closeRef}
     >
       <form action={onAction} className="space-y-4">
@@ -100,7 +100,7 @@ const CreateProductForm = ({
           label="Type"
           type="hidden"
           data={[
-            { id: "PRODUCT", name: "Product" },
+            { id: "PRODUCT", name: "Treatment" },
             { id: "SERVICE", name: "Service" },
           ]}
           errors={fieldErrors}

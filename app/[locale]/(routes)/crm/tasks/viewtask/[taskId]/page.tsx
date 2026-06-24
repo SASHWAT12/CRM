@@ -33,7 +33,7 @@ const CRMTaskPage = async (props: TaskPageProps) => {
     <div className="flex flex-col md:flex-row w-full px-2 space-x-2 ">
       <div className="flex flex-col w-full md:w-2/3">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight py-5">
-          Task details
+          Followup details
         </h4>
         <div className="w-full border rounded-lg mb-5">
           {/*          <pre>
@@ -106,7 +106,7 @@ const CRMTaskPage = async (props: TaskPageProps) => {
           <code>{JSON.stringify(taskDocuments, null, 2)}</code>
         </pre> */}
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight py-5">
-          Task documents ({taskDocuments.length})
+          Followup documents ({taskDocuments.length})
         </h4>
         <TaskDataTable data={taskDocuments} columns={columnsTask} />
         <Separator />

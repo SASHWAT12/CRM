@@ -17,7 +17,6 @@ import * as salesActions from "@/actions/reports/sales";
 import * as leadsActions from "@/actions/reports/leads";
 import * as accountsActions from "@/actions/reports/accounts";
 import * as activityActions from "@/actions/reports/activity";
-import * as campaignsActions from "@/actions/reports/campaigns";
 import * as usersActions from "@/actions/reports/users";
 
 async function getReportData(
@@ -46,20 +45,6 @@ async function getReportData(
         data: await activityActions.getTasksByAssignee(filters, scope),
         headers: ["Assignee", "Tasks"],
       };
-    case "campaigns": {
-      const perf = await campaignsActions.getCampaignPerformance(
-        filters,
-        scope,
-      );
-      return {
-        data: [
-          { name: "Sent", Number: perf.sent },
-          { name: "Opened", Number: perf.opened },
-          { name: "Clicked", Number: perf.clicked },
-        ],
-        headers: ["Metric", "Count"],
-      };
-    }
     case "users":
       return {
         data: await usersActions.getUserGrowth(filters),

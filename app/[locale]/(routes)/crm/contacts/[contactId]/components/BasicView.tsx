@@ -209,7 +209,7 @@ export async function BasicView({ data }: OppsViewProps) {
       <div className="grid grid-cols-2 gap-3 w-full">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>Contacts</CardTitle>
+            <CardTitle>Patients</CardTitle>
           </CardHeader>
           <CardContent className="gap-1">
             <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">

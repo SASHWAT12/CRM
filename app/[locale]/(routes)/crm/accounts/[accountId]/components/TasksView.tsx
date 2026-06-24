@@ -48,7 +48,7 @@ const AccountsTasksView = ({ data, account }: TasksViewProps) => {
               onClick={() => router.push("/projects/tasks")}
               className="cursor-pointer"
             >
-              Tasks
+              Followups
             </CardTitle>
             <CardDescription></CardDescription>
           </div>
@@ -64,9 +64,9 @@ const AccountsTasksView = ({ data, account }: TasksViewProps) => {
               </SheetTrigger>
               <SheetContent className="w-full overflow-y-auto">
                 <SheetHeader>
-                  <SheetTitle>Create new Task</SheetTitle>
+                  <SheetTitle>Create new Followup</SheetTitle>
                   <SheetDescription>
-                    Create a new task for this account with assigned user, due
+                    Create a new followup for this account with assigned user, due
                     date, and priority
                   </SheetDescription>
                 </SheetHeader>
@@ -84,7 +84,7 @@ const AccountsTasksView = ({ data, account }: TasksViewProps) => {
       </CardHeader>
       <CardContent>
         {!data || data.length === 0 ? (
-          "No assigned tasks found"
+          "No assigned followups found"
         ) : (
           <TasksDataTable data={data} columns={columns} />
         )}

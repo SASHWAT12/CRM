@@ -10,9 +10,9 @@ import {
 
 const ENTITY_LABELS: Record<keyof UnifiedSearchResults, string> = {
   accounts: "Accounts",
-  contacts: "Contacts",
+  contacts: "Patients",
   leads: "Leads",
-  tasks: "Tasks",
+  tasks: "Followups",
   users: "Users",
   documents: "Documents",
 };

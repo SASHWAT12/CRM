@@ -13,8 +13,7 @@ import leadSourcesData from "../initial-data/crm_Lead_Sources.json";
 import leadStatusesData from "../initial-data/crm_Lead_Statuses.json";
 import leadTypesData from "../initial-data/crm_Lead_Types.json";
 
-import { seedCurrencies } from "./currencies";
-import { seedInvoices } from "./invoices";
+
 
 const connectionString = process.env.DATABASE_URL!;
 const pool = new Pool({ connectionString });
@@ -89,11 +88,7 @@ async function main() {
   });
   console.log(`Test user seeded: ${testUserEmail}`);
 
-  // Currencies and Exchange Rates
-  await seedCurrencies(prisma);
 
-  // Invoice module defaults
-  await seedInvoices(prisma);
 
   console.log("-------- Seed DB completed --------");
 }

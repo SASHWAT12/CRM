@@ -20,11 +20,11 @@ const ContactViewPage = async (props: any) => {
 
   //  console.log(accounts, "accounts");
 
-  if (!contact) return <div>Contact not found</div>;
+  if (!contact) return <div>Patient not found</div>;
 
   return (
     <Container
-      title={`Contact detail view: ${contact?.first_name} ${contact?.last_name}`}
+      title={`Patient detail view: ${contact?.first_name} ${contact?.last_name}`}
       description={"Everything you need to know about sales potential"}
     >
       <Tabs defaultValue="overview">
