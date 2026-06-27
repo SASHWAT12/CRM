@@ -6,20 +6,23 @@ import resendHelper from "@/lib/resend";
 import NewTaskFromCRMEmail from "@/emails/NewTaskFromCRM";
 import NewTaskFromCRMToWatchersEmail from "@/emails/NewTaskFromCRMToWatchers";
 
+import { writeAuditLog } from "@/lib/audit-log";
+
 export const createTask = async (data: {
   title: string;
   user: string;
   priority: string;
   content: string;
-  account: string;
+  account?: string;
+  contact?: string;
   dueDateAt?: Date;
 }) => {
   const session = await getSession();
   if (!session) return { error: "Unauthorized" };
 
-  const { title, user, priority, content, account, dueDateAt } = data;
+  const { title, user, priority, content, account, contact, dueDateAt } = data;
 
-  if (!title || !user || !priority || !content || !account) {
+  if (!title || !user || !priority || !content) {
     return { error: "Missing one of the task data" };
   }
 
@@ -37,7 +40,8 @@ export const createTask = async (data: {
         priority,
         title,
         content,
-        account,
+        account: (account && account.trim() !== "") ? account : null,
+        contact: (contact && contact.trim() !== "") ? contact : null,
         dueDateAt,
         createdBy: user,
         updatedBy: user,
@@ -77,7 +81,22 @@ export const createTask = async (data: {
       }
     }
 
+    if (contact) {
+      await writeAuditLog({
+        entityType: "contact",
+        entityId: contact,
+        action: "created",
+        changes: [
+          { field: "followup_title", old: null, new: title },
+          { field: "followup_priority", old: null, new: priority },
+          { field: "followup_dueDateAt", old: null, new: dueDateAt ? dueDateAt.toISOString() : null }
+        ],
+        userId: session.user.id,
+      });
+    }
+
     revalidatePath("/[locale]/(routes)/crm/accounts", "page");
+    revalidatePath("/[locale]/(routes)/crm/contacts", "page");
     return { data: task };
   } catch (error) {
     console.log("[CREATE_TASK]", error);

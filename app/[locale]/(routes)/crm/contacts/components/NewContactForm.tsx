@@ -35,11 +35,13 @@ type AccountOption = {
 
 type NewContactFormProps = {
   accounts: AccountOption[];
+  contactTypes: { id: string; name: string }[];
   onFinish: () => void;
 };
 
 export function NewContactForm({
   accounts,
+  contactTypes,
   onFinish,
 }: NewContactFormProps) {
   const t = useTranslations("CrmContactForm");
@@ -101,11 +103,7 @@ export function NewContactForm({
     },
   });
 
-  const contactType = [
-    { name: t("customer"), id: "Customer" },
-    { name: t("partner"), id: "Partner" },
-    { name: t("vendor"), id: "Vendor" },
-  ];
+
 
   const onSubmit = async (data: NewAccountFormValues) => {
     const { type, ...rest } = data;
@@ -342,25 +340,77 @@ export function NewContactForm({
               )}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="assigned_to"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("assignedUser")}</FormLabel>
+              <FormField
+                control={form.control}
+                name="assigned_to"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("assignedUser")}</FormLabel>
+                    <FormControl>
+                      <UserSearchCombobox
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        placeholder={t("assignedUserPlaceholder")}
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("contactType")}</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <UserSearchCombobox
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                          placeholder={t("assignedUserPlaceholder")}
-                          disabled={form.formState.isSubmitting}
-                        />
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("contactTypePlaceholder")} />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent className="flex overflow-y-auto h-56">
+                        {contactTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 col-span-2">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-sm">
+                        {t("isActive")}
+                      </FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <details className="group border rounded-lg p-4 bg-muted/20 mt-4">
+              <summary className="cursor-pointer font-medium text-sm text-muted-foreground select-none hover:text-foreground transition-colors">
+                Additional CRM Fields (Website, Position, Social links, etc.)
+              </summary>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="assigned_account"
@@ -407,143 +457,10 @@ export function NewContactForm({
                 />
                 <FormField
                   control={form.control}
-                  name="status"
+                  name="website"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-sm">
-                          {t("isActive")}
-                        </FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("contactType")}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("contactTypePlaceholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="flex overflow-y-auto h-56">
-                          {contactType.map((type) => (
-                            <SelectItem key={type.id} value={type.id}>
-                              {type.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="social_twitter"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("twitter")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="https://www.twitter.com/john"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="social_facebook"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("facebook")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="https://www.facebook.com/john"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="social_linkedin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("linkedin")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="https://www.linkedin.com/john"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="social_skype"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("skype")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="https://www.skype.com/john"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="social_youtube"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("youtube")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="https://www.youtube.com/nextcrmio"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="social_tiktok"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("tiktok")}</FormLabel>
+                    <FormItem className="col-span-2">
+                      <FormLabel>{t("website")}</FormLabel>
                       <FormControl>
                         <Input
                           disabled={form.formState.isSubmitting}
@@ -555,8 +472,113 @@ export function NewContactForm({
                     </FormItem>
                   )}
                 />
+                <div className="col-span-2 space-y-3 mt-2">
+                  <h4 className="text-sm font-semibold text-muted-foreground">Social Networks</h4>
+                  <FormField
+                    control={form.control}
+                    name="social_twitter"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("twitter")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={form.formState.isSubmitting}
+                            placeholder="https://www.twitter.com/john"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="social_facebook"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("facebook")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={form.formState.isSubmitting}
+                            placeholder="https://www.facebook.com/john"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="social_linkedin"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("linkedin")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={form.formState.isSubmitting}
+                            placeholder="https://www.linkedin.com/john"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="social_skype"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("skype")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={form.formState.isSubmitting}
+                            placeholder="https://www.skype.com/john"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="social_youtube"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("youtube")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={form.formState.isSubmitting}
+                            placeholder="https://www.youtube.com/nextcrmio"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="social_tiktok"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("tiktok")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={form.formState.isSubmitting}
+                            placeholder="https://www.domain.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-            </div>
+            </details>
           </div>
         </div>
         <div className="grid gap-2 py-5">

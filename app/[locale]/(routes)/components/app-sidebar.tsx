@@ -12,10 +12,9 @@ import {
 import { cn } from "@/lib/utils";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import getDashboardMenuItem from "./menu-items/Dashboard";
-import getCrmMenuItem from "./menu-items/Crm";
 import getReportsMenuItem from "./menu-items/Reports";
 import getAdministrationMenuItem from "./menu-items/Administration";
+import { Home, LayoutDashboard, Eye, Users, CheckSquare, CalendarDays, Coins, Building2 } from "lucide-react";
 
 /**
  * AppSidebar Component - Task Groups 1.2, 2.2-2.7, 3.1, 5.3, 5.4
@@ -85,19 +84,47 @@ export function AppSidebar({
   const isExpanded = state === "expanded";
 
   const navItems = [
-    getDashboardMenuItem({ title: dict?.dashboard || "Dashboard" }),
-    getCrmMenuItem({ localizations: dict.crm }),
-    // getCampaignsMenuItem({
-    //   localizations: {
-    //     title: "Campaigns",
-    //     campaigns: "All Campaigns",
-    //     templates: "Templates",
-    //     targets: "Targets",
-    //     targetLists: "Target Lists",
-    //   },
-    // }),
+    {
+      title: dict?.dashboard || "Dashboard",
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: "My Dashboard",
+      url: "/crm/dashboard/user",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Overview",
+      url: "/crm",
+      icon: Eye,
+    },
+    {
+      title: dict?.crm?.contacts || "Patients",
+      url: "/crm/contacts",
+      icon: Users,
+    },
+    {
+      title: "Followups",
+      url: "/crm/tasks",
+      icon: CheckSquare,
+    },
+    {
+      title: "Appointments",
+      url: "/crm/appointments",
+      icon: CalendarDays,
+    },
+    {
+      title: dict?.crm?.leads || "Leads",
+      url: "/crm/leads",
+      icon: Coins,
+    },
+    {
+      title: dict?.crm?.accounts || "Companies",
+      url: "/crm/accounts",
+      icon: Building2,
+    },
     getReportsMenuItem({ title: dict?.reports || "Reports" }),
-    // getInvoicesMenuItem({ title: dict?.invoices || "Invoices" }),
   ];
 
   // Administration: admin users only

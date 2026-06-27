@@ -47,16 +47,25 @@ export const updateContact = async (data: {
 
   if (!id) return { error: "id is required" };
 
+  const sanitizeUuid = (val: string | null | undefined): string | null => {
+    if (!val || val.trim() === "" || val === "undefined" || val === "null") return null;
+    return val;
+  };
+
+  const cleanAssignedTo = sanitizeUuid(assigned_to);
+  const cleanAssignedAccount = sanitizeUuid(assigned_account);
+  const cleanContactTypeId = sanitizeUuid(contact_type_id);
+
   try {
-    const before = await prismadb.crm_Contacts.findUnique({ where: { id, deletedAt: null } });
+    const before = await prismadb.crm_Contacts.findFirst({ where: { id, deletedAt: null } });
     const contact = await prismadb.crm_Contacts.update({
       where: { id },
       data: {
         v: 0,
         updatedBy: userId,
-        accountsIDs: assigned_account || undefined,
-        assigned_to: assigned_to || undefined,
-        contact_type_id: contact_type_id || undefined,
+        accountsIDs: cleanAssignedAccount,
+        assigned_to: cleanAssignedTo,
+        contact_type_id: cleanContactTypeId,
         birthday:
           birthday_day && birthday_month && birthday_year
             ? birthday_day + "/" + birthday_month + "/" + birthday_year

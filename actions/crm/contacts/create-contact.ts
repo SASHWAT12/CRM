@@ -44,15 +44,24 @@ export const createContact = async (data: {
     ...rest
   } = data;
 
+  const sanitizeUuid = (val: string | null | undefined): string | null => {
+    if (!val || val.trim() === "" || val === "undefined" || val === "null") return null;
+    return val;
+  };
+
+  const cleanAssignedTo = sanitizeUuid(assigned_to);
+  const cleanAssignedAccount = sanitizeUuid(assigned_account);
+  const cleanContactTypeId = sanitizeUuid(contact_type_id);
+
   try {
     const contact = await prismadb.crm_Contacts.create({
       data: {
         v: 0,
         createdBy: userId,
         updatedBy: userId,
-        accountsIDs: assigned_account ?? undefined,
-        assigned_to: assigned_to ?? undefined,
-        contact_type_id: contact_type_id ?? undefined,
+        accountsIDs: cleanAssignedAccount,
+        assigned_to: cleanAssignedTo,
+        contact_type_id: cleanContactTypeId,
         birthday:
           birthday_day && birthday_month && birthday_year
             ? birthday_day + "/" + birthday_month + "/" + birthday_year

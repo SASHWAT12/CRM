@@ -173,6 +173,8 @@ model crm_Contacts {
   deletedBy         String?               @db.Uuid
   documents         DocumentsToContacts[]
   emails            EmailsToContacts[]
+  tasks             crm_Accounts_Tasks[]  @relation("ContactTasks")
+  appointments      crm_Appointments[]    @relation("PatientAppointments")
   assigned_accounts crm_Accounts?         @relation(fields: [accountsIDs], references: [id])
   assigned_to_user  Users?                @relation("assigned_contacts", fields: [assigned_to], references: [id])
   contact_type      crm_Contact_Types?    @relation(fields: [contact_type_id], references: [id])
@@ -370,13 +372,16 @@ model crm_Accounts_Tasks {
   user          String?                       @db.Uuid
   taskStatus    taskStatus?                   @default(ACTIVE)
   account       String?                       @db.Uuid
+  contact       String?                       @db.Uuid
   documents     DocumentsToCrmAccountsTasks[]
   crm_accounts  crm_Accounts?                 @relation(fields: [account], references: [id])
+  crm_contact   crm_Contacts?                 @relation("ContactTasks", fields: [contact], references: [id])
   assigned_user Users?                        @relation(fields: [user], references: [id])
   comments      tasksComments[]
 
   @@index([user])
   @@index([account])
+  @@index([contact])
   @@index([createdBy])
   @@index([updatedBy])
   @@index([priority])
@@ -442,6 +447,8 @@ model Users {
   crm_accounts_tasks   crm_Accounts_Tasks[]
   activities_created   crm_Activities[]      @relation("activity_created_by")
   activities_updated   crm_Activities[]      @relation("activity_updated_by")
+  doctor_appointments  crm_Appointments[]    @relation("DoctorAppointments")
+  staff_appointments   crm_Appointments[]    @relation("StaffAppointments")
   auditLogs            crm_AuditLog[]
   assigned_contacts    crm_Contacts[]        @relation("assigned_contacts")
   crated_contacts      crm_Contacts[]        @relation("created_contacts")
@@ -827,6 +834,31 @@ model crm_OpportunityLineItems {
   @@index([productId])
 }
 
+model crm_Appointments {
+  id          String            @id @default(uuid()) @db.Uuid
+  v           Int               @default(0) @map("__v")
+  patientId   String            @db.Uuid
+  doctorId    String            @db.Uuid
+  staffId     String?           @db.Uuid
+  scheduledAt DateTime
+  duration    Int
+  status      AppointmentStatus @default(SCHEDULED)
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  createdBy   String            @db.Uuid
+  updatedBy   String?           @db.Uuid
+  doctor      Users             @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patient     crm_Contacts      @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
+  staff       Users?            @relation("StaffAppointments", fields: [staffId], references: [id])
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([staffId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
 enum crm_AuditLog_Action {
   created
   updated
@@ -927,4 +959,13 @@ enum Language {
 enum EmailFolder {
   INBOX
   SENT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
 }

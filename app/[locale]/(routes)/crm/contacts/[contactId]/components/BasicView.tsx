@@ -76,16 +76,7 @@ export async function BasicView({ data }: OppsViewProps) {
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Account</p>
                   <p className="text-sm text-muted-foreground">
-                    {data.assigned_accounts?.name}
-                  </p>
-                </div>
-              </div>
-              <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-                <CoinsIcon className="mt-px h-5 w-5" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">Position</p>
-                  <p className="text-sm text-muted-foreground">
-                    {data.position ? data.position : "N/A"}
+                    {data.assigned_accounts?.name ?? "N/A"}
                   </p>
                 </div>
               </div>
@@ -120,7 +111,7 @@ export async function BasicView({ data }: OppsViewProps) {
                     Assigned to
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {users.find((user) => user.id === data.assigned_to)?.name}
+                    {users.find((user) => user.id === data.assigned_to)?.name ?? "Unassigned"}
                   </p>
                 </div>
               </div>
@@ -135,7 +126,7 @@ export async function BasicView({ data }: OppsViewProps) {
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Created by</p>
                   <p className="text-sm text-muted-foreground">
-                    {users.find((user) => user.id === data.createdBy)?.name}
+                    {users.find((user) => user.id === data.createdBy)?.name ?? "N/A"}
                   </p>
                 </div>
               </div>
@@ -154,7 +145,7 @@ export async function BasicView({ data }: OppsViewProps) {
                     Last update by
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {users.find((user) => user.id === data.updatedBy)?.name}
+                    {users.find((user) => user.id === data.updatedBy)?.name ?? "N/A"}
                   </p>
                 </div>
               </div>
@@ -174,26 +165,8 @@ export async function BasicView({ data }: OppsViewProps) {
                   <p className="text-sm text-muted-foreground">{data.contact_type?.name ?? "—"}</p>
                 </div>
               </div>
-              <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-                <CoinsIcon className="mt-px h-5 w-5" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">Member of</p>
-                  <p className="text-sm text-muted-foreground">
-                    {data.member_of}
-                  </p>
-                </div>
-              </div>
-              <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-                <CoinsIcon className="mt-px h-5 w-5" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">Industry</p>
-                  <p className="text-sm text-muted-foreground">
-                    {data.industry}
-                  </p>
-                </div>
-              </div>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 col-span-2 mt-4">
               <div> Tags:</div>
               <div className="flex flex-wrap gap-2">
                 {data.tags.map((tag: string) => (
@@ -206,10 +179,10 @@ export async function BasicView({ data }: OppsViewProps) {
           </div>
         </CardContent>
       </Card>
-      <div className="grid grid-cols-2 gap-3 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>Patients</CardTitle>
+            <CardTitle>Contact Details</CardTitle>
           </CardHeader>
           <CardContent className="gap-1">
             <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
@@ -223,7 +196,7 @@ export async function BasicView({ data }: OppsViewProps) {
                     {data.email}
                     <EnvelopeClosedIcon />
                   </Link>
-                ) : null}
+                ) : "N/A"}
               </div>
             </div>
             <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
@@ -239,14 +212,14 @@ export async function BasicView({ data }: OppsViewProps) {
                     {data.personal_email}
                     <EnvelopeClosedIcon />
                   </Link>
-                ) : null}
+                ) : "N/A"}
               </div>
             </div>
             <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
               <div className="space-y-1">
                 <p className="text-sm font-medium leading-none">Office phone</p>
                 <p className="text-sm text-muted-foreground">
-                  {data.office_phone}
+                  {data.office_phone ?? "N/A"}
                 </p>
               </div>
             </div>
@@ -254,19 +227,7 @@ export async function BasicView({ data }: OppsViewProps) {
               <div className="space-y-1">
                 <p className="text-sm font-medium leading-none">Mobile phone</p>
                 <p className="text-sm text-muted-foreground">
-                  {data.mobile_phone}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Website</p>
-                <p className="text-sm text-muted-foreground">
-                  {data?.website ? (
-                    <Link href={data.website}>{data.website}</Link>
-                  ) : (
-                    "N/A"
-                  )}
+                  {data.mobile_phone ?? "N/A"}
                 </p>
               </div>
             </div>
@@ -276,103 +237,89 @@ export async function BasicView({ data }: OppsViewProps) {
                   Billing country
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {data.billing_country}
+                  {data.billing_country ?? "N/A"}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Social networks</CardTitle>
-          </CardHeader>
-          <CardContent className="gap-1">
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <Twitter className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Twitter</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_twitter}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <Facebook className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Facebook</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_facebook}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <Linkedin className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">LinkedIn</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_linkedin}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <LayoutGrid className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Skype</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_skype}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <Instagram className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Instagram</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_instagram}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <Youtube className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">YouTube</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_youtube}
-                </p>
-              </div>
-            </div>
-            <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
-              <LayoutGrid className="mt-px h-5 w-5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">TikTok</p>
-                <p className="text-sm text-muted-foreground">
-                  {data.social_tiktok}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div>
-        {
-          //TODO: Add notes functionality
-          //TODO: Delete notes functionality
-        }
         <Card>
           <CardHeader className="pb-3">
             <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
-              {data.notes.map((note: string) => (
-                <p className="text-sm text-muted-foreground" key={note}>
-                  {note}
-                </p>
-              ))}
+              {data.notes && data.notes.length > 0 ? (
+                data.notes.map((note: string) => (
+                  <p className="text-sm text-muted-foreground border-b pb-1" key={note}>
+                    {note}
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No notes recorded.</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <details className="group border rounded-lg p-4 bg-muted/20">
+        <summary className="cursor-pointer font-medium text-sm text-muted-foreground select-none hover:text-foreground transition-colors">
+          Additional CRM Fields (Website, Position, Social Networks, etc.)
+        </summary>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Metadata & Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground">Position</p>
+                <p className="text-sm">{data.position || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground">Website</p>
+                <p className="text-sm">{data.website ? <Link href={data.website} className="text-primary hover:underline">{data.website}</Link> : "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground">Member of</p>
+                <p className="text-sm">{data.member_of || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground">Industry</p>
+                <p className="text-sm">{data.industry || "N/A"}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Social networks</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Twitter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Twitter: {data.social_twitter || "N/A"}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Facebook className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Facebook: {data.social_facebook || "N/A"}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Linkedin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">LinkedIn: {data.social_linkedin || "N/A"}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Instagram className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Instagram: {data.social_instagram || "N/A"}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Youtube className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">YouTube: {data.social_youtube || "N/A"}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </details>
     </div>
   );
 }

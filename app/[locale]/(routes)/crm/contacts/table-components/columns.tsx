@@ -86,7 +86,7 @@ export const createColumns = (contactTypes: ConfigItem[] = []): ColumnDef<Opport
   {
     accessorKey: "last_name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Sure name" />
+      <DataTableColumnHeader column={column} title="Last name" />
     ),
     cell: ({ row }) => (
       <Link href={`/crm/contacts/${row.original.id}`} data-testid="contact-row-name">

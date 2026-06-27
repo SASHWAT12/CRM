@@ -35,6 +35,8 @@ import { getDocumentsCount } from "@/actions/dashboard/get-documents-count";
 import { getActiveUsersCount } from "@/actions/dashboard/get-active-users-count";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
+import { getFollowups } from "@/actions/crm/tasks/get-followups";
+import FollowupsDashboardCard from "./crm/dashboard/_components/FollowupsDashboardCard";
 import { Decimal } from "@prisma/client/runtime/client";
 
 const DashboardPage = async () => {
@@ -64,6 +66,7 @@ const DashboardPage = async () => {
   const documents = await getDocumentsCount();
   // const opportunities = await getOpportunitiesCount();
   const usersTasks = await getUsersTasksCount(userId);
+  const { tasks: followupTasks } = await getFollowups({ status: "ALL", take: 1000 });
 
   return (
     <Container
@@ -96,6 +99,8 @@ const DashboardPage = async () => {
             </CardHeader>
           </Card>
         </Suspense>
+
+        <FollowupsDashboardCard tasks={followupTasks} />
 
         <DashboardCard
           href="/admin/users"
