@@ -67,14 +67,14 @@ export const NewTaskFromCRMToWatchersEmail = ({
                 : `
               Podrobnosti najdete zde: `}
 
-              <strong>{`${process.env.NEXT_PUBLIC_APP_URL}/crm/tasks/viewtask/${taskData.id}`}</strong>
+              <strong>{`${process.env.NEXT_PUBLIC_APP_URL}/crm/followups/viewfollowup/${taskData.id}`}</strong>
             </Text>
             <Section className="text-center mt-[32px] mb-[32px]">
               <Button
                 className="bg-slate-800 rounded-md text-white  py-3 px-4 text-xs font-semibold no-underline text-center"
-                href={`${process.env.NEXT_PUBLIC_APP_URL}/crm/tasks/viewtask/${taskData.id}`}
+                href={`${process.env.NEXT_PUBLIC_APP_URL}/crm/followups/viewfollowup/${taskData.id}`}
               >
-                {userLanguage === "en" ? "View task detail" : "Zobrazit úkol"}
+                {userLanguage === "en" ? "View followup detail" : "Zobrazit úkol"}
               </Button>
             </Section>
             <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />

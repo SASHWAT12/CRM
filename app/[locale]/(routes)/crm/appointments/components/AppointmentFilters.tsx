@@ -8,7 +8,7 @@ import { PatientSearchCombobox } from "@/components/ui/patient-search-combobox";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Plus, X, Search } from "lucide-react";
-import NewAppointmentForm from "../../contacts/[contactId]/components/NewAppointmentForm";
+import NewAppointmentForm from "../../patients/[patientId]/components/NewAppointmentForm";
 import useDebounce from "@/hooks/useDebounce";
 
 export function AppointmentFilters() {

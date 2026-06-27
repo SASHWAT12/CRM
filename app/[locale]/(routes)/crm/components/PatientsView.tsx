@@ -1,0 +1,95 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+import { createColumns } from "../patients/table-components/columns";
+import { NewPatientForm } from "../patients/components/NewPatientForm";
+import { PatientsDataTable } from "../patients/table-components/data-table";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+
+import type { getAllCrmData } from "@/actions/crm/get-crm-data";
+
+type CrmData = Awaited<ReturnType<typeof getAllCrmData>>;
+
+interface PatientsViewProps {
+  data: any[];
+  crmData: CrmData;
+  accountId?: string;
+}
+
+const PatientsView = ({ data, crmData }: PatientsViewProps) => {
+  const [open, setOpen] = useState(false);
+  const t = useTranslations("CrmPage");
+
+  const { accounts, contactTypes } = crmData;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex justify-between">
+          <div>
+            <CardTitle>
+              <Link href="/crm/patients" className="hover:underline">
+                {t("patients.viewTitle")}
+              </Link>
+            </CardTitle>
+          </div>
+          <div className="flex space-x-2">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button size="sm" aria-label={t("patients.addNew")} data-testid="add-contact-btn">+</Button>
+              </SheetTrigger>
+              <SheetContent className="w-full md:max-w-[771px] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>{t("patients.sheetTitle")}</SheetTitle>
+                  <SheetDescription>
+                    {t("patients.sheetDescription")}
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 space-y-4">
+                  <NewPatientForm
+                    accounts={accounts}
+                    contactTypes={contactTypes}
+                    onFinish={() => setOpen(false)}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+        <Separator />
+      </CardHeader>
+
+      <CardContent>
+        {!data || data.length === 0 ? (
+          t("patients.empty")
+        ) : (
+          <PatientsDataTable
+            data={data}
+            columns={createColumns(contactTypes)}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default PatientsView;

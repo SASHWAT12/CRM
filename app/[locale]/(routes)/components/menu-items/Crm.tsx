@@ -43,11 +43,11 @@ export const getCrmMenuItem = ({ localizations }: Props): NavItem => {
       },
       {
         title: localizations.contacts,
-        url: "/crm/contacts",
+        url: "/crm/patients",
       },
       {
         title: "Followups",
-        url: "/crm/tasks",
+        url: "/crm/followups",
       },
       {
         title: "Appointments",

@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { updateAppointment } from "@/actions/crm/appointments/update-appointment";
-import NewAppointmentForm from "../../contacts/[contactId]/components/NewAppointmentForm";
+import NewAppointmentForm from "../../patients/[patientId]/components/NewAppointmentForm";
 
 interface Appointment {
   id: string;
@@ -116,7 +116,7 @@ export function AppointmentList({ data }: AppointmentListProps) {
                 {data.map((appt) => (
                   <tr key={appt.id} className="hover:bg-muted/10">
                     <td className="p-3 font-semibold text-primary whitespace-nowrap">
-                      <Link href={`/crm/contacts/${appt.patientId}`} className="hover:underline">
+                      <Link href={`/crm/patients/${appt.patientId}`} className="hover:underline">
                         {appt.patient ? `${appt.patient.first_name ?? ""} ${appt.patient.last_name}` : "Unknown Patient"}
                       </Link>
                     </td>

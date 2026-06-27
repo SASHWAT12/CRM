@@ -35,7 +35,7 @@ import { getDocumentsCount } from "@/actions/dashboard/get-documents-count";
 import { getActiveUsersCount } from "@/actions/dashboard/get-active-users-count";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
-import { getFollowups } from "@/actions/crm/tasks/get-followups";
+import { getFollowups } from "@/actions/crm/followups/get-followups";
 import FollowupsDashboardCard from "./crm/dashboard/_components/FollowupsDashboardCard";
 import { Decimal } from "@prisma/client/runtime/client";
 
@@ -139,8 +139,8 @@ const DashboardPage = async () => {
           content={opportunities}
         /> */}
         <DashboardCard
-          href="/crm/contacts"
-          title={dict("contacts")}
+          href="/crm/patients"
+          title={dict("patients")}
           IconComponent={Contact}
           content={contacts}
         />

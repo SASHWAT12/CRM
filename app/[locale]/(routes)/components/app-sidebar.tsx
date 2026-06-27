@@ -95,18 +95,13 @@ export function AppSidebar({
       icon: LayoutDashboard,
     },
     {
-      title: "Overview",
-      url: "/crm",
-      icon: Eye,
-    },
-    {
       title: dict?.crm?.contacts || "Patients",
-      url: "/crm/contacts",
+      url: "/crm/patients",
       icon: Users,
     },
     {
       title: "Followups",
-      url: "/crm/tasks",
+      url: "/crm/followups",
       icon: CheckSquare,
     },
     {

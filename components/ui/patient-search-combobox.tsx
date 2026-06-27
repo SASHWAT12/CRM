@@ -19,7 +19,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import useDebounce from "@/hooks/useDebounce";
-import { searchContacts } from "@/actions/crm/contacts/search-contacts";
+import { searchPatients } from "@/actions/crm/patients/search-patients";
 
 type ContactItem = { id: string; name: string };
 
@@ -59,7 +59,7 @@ export function PatientSearchCombobox({
   useEffect(() => {
     if (!open) return;
     startTransition(async () => {
-      const data = await searchContacts({
+      const data = await searchPatients({
         search: debouncedSearch,
         skip,
         take: PAGE_SIZE,
@@ -90,7 +90,7 @@ export function PatientSearchCombobox({
   useEffect(() => {
     if (!value || selectedInList) return;
     startTransition(async () => {
-      const result = await searchContacts({ contactId: value });
+      const result = await searchPatients({ patientId: value });
       if (result.users && result.users.length > 0) {
         setSingleContact(result.users[0]);
       }

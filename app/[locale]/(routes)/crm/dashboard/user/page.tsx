@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import Container from "../../../components/ui/Container";
-import { getUserCRMTasks } from "@/actions/crm/tasks/get-user-tasks";
+import { getUserCRMFollowups } from "@/actions/crm/followups/get-user-followups";
 import { getUserLeads } from "@/actions/crm/get-user-leads";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +29,7 @@ const UserDashboardPage = async () => {
   }
 
   const [tasks, leads] = await Promise.all([
-    getUserCRMTasks(session.user.id) as Promise<any[]>,
+    getUserCRMFollowups(session.user.id) as Promise<any[]>,
     getUserLeads(session.user.id) as Promise<any[]>,
   ]);
 
@@ -100,7 +100,7 @@ const UserDashboardPage = async () => {
                     <TableRow key={task.id}>
                       <TableCell className="font-medium">
                         <Link
-                          href={`/crm/tasks/viewtask/${task.id}`}
+                          href={`/crm/followups/viewfollowup/${task.id}`}
                           className="hover:underline"
                         >
                           {task.title}

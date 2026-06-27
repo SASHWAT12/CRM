@@ -15,11 +15,11 @@ async function assertSuccessToast(page: Page) {
 test.describe("Update Contact", () => {
   test.use({ storageState: "playwright/.auth/user.json" });
 
-  test("should update contact last name via row action on /crm/contacts", async ({
+  test("should update contact last name via row action on /crm/patients", async ({
     page,
   }) => {
-    await page.goto("/en/crm/contacts");
-    await page.waitForURL(/crm\/contacts/, { timeout: 10000 });
+    await page.goto("/en/crm/patients");
+    await page.waitForURL(/crm\/patients/, { timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     const firstRow = page

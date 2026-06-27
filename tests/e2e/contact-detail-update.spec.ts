@@ -15,11 +15,11 @@ async function assertSuccessToast(page: Page) {
 test.describe("Update Contact from detail page", () => {
   test.use({ storageState: "playwright/.auth/user.json" });
 
-  test("should update contact last name via ⋯ menu on /crm/contacts/[id]", async ({
+  test("should update contact last name via ⋯ menu on /crm/patients/[id]", async ({
     page,
   }) => {
-    await page.goto("/en/crm/contacts");
-    await page.waitForURL(/crm\/contacts/, { timeout: 10000 });
+    await page.goto("/en/crm/patients");
+    await page.waitForURL(/crm\/patients/, { timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Wait for table to fully render before clicking
@@ -29,7 +29,7 @@ test.describe("Update Contact from detail page", () => {
     // Navigate to the first contact's detail page
     await contactsTable.getByTestId("contact-row-name").first().click();
 
-    await page.waitForURL(/crm\/contacts\/.+/, { timeout: 10000 });
+    await page.waitForURL(/crm\/patients\/.+/, { timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Open the ⋯ actions menu

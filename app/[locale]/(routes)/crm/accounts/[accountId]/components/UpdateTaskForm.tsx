@@ -40,7 +40,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { UserSearchCombobox } from "@/components/ui/user-search-combobox";
-import { updateTask } from "@/actions/crm/tasks/update-task";
+import { updateFollowup } from "@/actions/crm/followups/update-followup";
 
 interface UpdateTaskFormProps {
   initialData: any;
@@ -77,7 +77,7 @@ const UpdateTaskForm = ({ initialData, onFinish }: UpdateTaskFormProps) => {
   const onSubmit = async (data: UpdateTaskFormValues) => {
     setIsLoading(true);
     try {
-      const result = await updateTask({
+      const result = await updateFollowup({
         id: data.id,
         title: data.title,
         user: data.user || null,

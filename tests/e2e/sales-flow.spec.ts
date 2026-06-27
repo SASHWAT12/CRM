@@ -108,8 +108,8 @@ test.describe.serial("Sales Flow", () => {
   });
 
   test("should create a new Contact linked to the Account", async ({ page }) => {
-    await page.goto("/crm/contacts");
-    await page.waitForURL(/crm\/contacts/, { timeout: 10000 });
+    await page.goto("/crm/patients");
+    await page.waitForURL(/crm\/patients/, { timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     await page.getByTestId("add-contact-btn").click();
@@ -134,8 +134,8 @@ test.describe.serial("Sales Flow", () => {
     await assertSuccessToast(page);
 
     // Reload and filter by last name to find the contact despite pagination
-    await page.goto("/crm/contacts");
-    await page.waitForURL(/crm\/contacts/, { timeout: 10000 });
+    await page.goto("/crm/patients");
+    await page.waitForURL(/crm\/patients/, { timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Use the table filter input to narrow results to our contact
@@ -148,10 +148,10 @@ test.describe.serial("Sales Flow", () => {
     ).toBeVisible({ timeout: 15000 });
 
     await page.getByTestId("contact-row-name").filter({ hasText: contactLastName }).first().click();
-    await page.waitForURL(/crm\/contacts\/.+/, { timeout: 10000 });
+    await page.waitForURL(/crm\/patients\/.+/, { timeout: 10000 });
 
     const url = page.url();
-    testData.contactId = url.split("/crm/contacts/")[1].split("?")[0];
+    testData.contactId = url.split("/crm/patients/")[1].split("?")[0];
     testData.contactLastName = contactLastName;
     expect(testData.contactId).toBeTruthy();
   });

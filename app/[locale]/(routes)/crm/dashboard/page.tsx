@@ -1,6 +1,6 @@
 import React from "react";
 import Container from "../../components/ui/Container";
-import { getFollowups } from "@/actions/crm/tasks/get-followups";
+import { getFollowups } from "@/actions/crm/followups/get-followups";
 import FollowupsDashboardCard from "./_components/FollowupsDashboardCard";
 
 const CrmDashboardPage = async () => {

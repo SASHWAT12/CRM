@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import React from "react";
 import Container from "../../../components/ui/Container";
 import { getAccountsTasks } from "@/actions/crm/account/get-tasks";
-import { getUserCRMTasks } from "@/actions/crm/tasks/get-user-tasks";
+import { getUserCRMFollowups } from "@/actions/crm/followups/get-user-followups";
 
 const UserCRMDashboard = async () => {
   const session = await getSession();
@@ -12,7 +12,7 @@ const UserCRMDashboard = async () => {
     redirect("/auth/signin");
   }
 
-  const task = await getUserCRMTasks(session.user.id);
+  const task = await getUserCRMFollowups(session.user.id);
 
   return (
     <div>

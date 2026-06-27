@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/sheet";
 
 import { taskSchema } from "../data/schema";
-import { deleteTask } from "@/actions/crm/tasks/delete-task";
-import { updateTask } from "@/actions/crm/tasks/update-task";
+import { deleteFollowup } from "@/actions/crm/followups/delete-followup";
+import { updateFollowup } from "@/actions/crm/followups/update-followup";
 import UpdateTaskForm from "../../components/UpdateTaskForm";
 
 interface DataTableRowActionsProps<TData> {
@@ -46,7 +46,7 @@ export function DataTableRowActions<TData>({
   const onDelete = async () => {
     setIsLoading(true);
     try {
-      const result = await deleteTask(task.id);
+      const result = await deleteFollowup(task.id);
       if (result?.error) {
         toast.error(result.error);
       } else {
@@ -65,7 +65,7 @@ export function DataTableRowActions<TData>({
   const onComplete = async () => {
     setIsLoading(true);
     try {
-      const result = await updateTask({ id: task.id, taskStatus: "COMPLETE" });
+      const result = await updateFollowup({ id: task.id, taskStatus: "COMPLETE" });
       if (result?.error) {
         toast.error(result.error);
       } else {
@@ -116,7 +116,7 @@ export function DataTableRowActions<TData>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuItem
-            onClick={() => router.push(`/crm/tasks/viewtask/${task?.id}`)}
+            onClick={() => router.push(`/crm/followups/viewfollowup/${task?.id}`)}
           >
             View
           </DropdownMenuItem>

@@ -7,7 +7,6 @@ import { Users, Settings, SlidersHorizontal, ClipboardList } from "lucide-react"
 
 const navItems = [
   { label: "Users",        href: "/admin/users",        icon: Users },
-  { label: "Services",     href: "/admin/services",     icon: Settings },
   { label: "CRM Settings", href: "/admin/crm-settings", icon: SlidersHorizontal },
   { label: "Audit Log",    href: "/admin/audit-log",    icon: ClipboardList },
 ];

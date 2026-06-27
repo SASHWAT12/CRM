@@ -3,7 +3,7 @@ import React from "react";
 import { BasicView } from "./components/BasicView";
 import { getAccount } from "@/actions/crm/get-account";
 import { getAllCrmData } from "@/actions/crm/get-crm-data";
-import { getContactsByAccountId } from "@/actions/crm/get-contacts-by-accountId";
+import { getPatientsByAccountId } from "@/actions/crm/get-patients-by-accountId";
 import { getLeadsByAccountId } from "@/actions/crm/get-leads-by-accountId";
 import { getAccountProducts } from "@/actions/crm/account-products/get-account-products";
 import { getProductsFull } from "@/actions/crm/products/get-products";
@@ -12,7 +12,7 @@ import { getAccountsTasks } from "@/actions/crm/account/get-tasks";
 import { getTranslations } from "next-intl/server";
 
 import LeadsView from "../../components/LeadsView";
-import ContactsView from "../../components/ContactsView";
+import PatientsView from "../../components/PatientsView";
 
 import {
   crm_Accounts,
@@ -38,7 +38,7 @@ const AccountDetailPage = async (props: AccountDetailPageProps) => {
   const { accountId } = params;
   const account: crm_Accounts | null = await getAccount(accountId);
 
-  const contacts: crm_Contacts[] = await getContactsByAccountId(accountId);
+  const contacts: crm_Contacts[] = await getPatientsByAccountId(accountId);
   const leads: crm_Leads[] = await getLeadsByAccountId(accountId);
   const tasks: crm_Accounts_Tasks[] = await getAccountsTasks(accountId);
   const t = await getTranslations("InvoicesPage");
@@ -69,7 +69,7 @@ const AccountDetailPage = async (props: AccountDetailPageProps) => {
             <BasicView data={account} />
             <ActivitiesSection accountId={account.id} />
             <AccountsTasksView data={tasks} account={account} />
-            <ContactsView data={contacts} crmData={crmData} accountId={accountId} />
+            <PatientsView data={contacts} crmData={crmData} accountId={accountId} />
             <LeadsView data={leads} crmData={crmData} />
             <AccountProductsView
               data={accountProducts}

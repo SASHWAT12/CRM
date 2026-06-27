@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import NewPatientTaskForm from "../../contacts/[contactId]/components/NewPatientTaskForm";
+import NewPatientFollowupForm from "../../patients/[patientId]/components/NewPatientFollowupForm";
 import { CalendarDays, CheckSquare, AlertCircle, Plus, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,7 +41,7 @@ export default function FollowupsDashboardCard({ tasks }: FollowupsDashboardCard
   return (
     <Card 
       className="transition-all duration-300 hover:shadow-md border-primary/10 cursor-pointer"
-      onClick={() => router.push("/crm/tasks")}
+      onClick={() => router.push("/crm/followups")}
     >
       <CardHeader className="pb-2" onClick={(e) => {
         // Prevent click when user interacts with anything else in header if needed, 
@@ -67,7 +67,7 @@ export default function FollowupsDashboardCard({ tasks }: FollowupsDashboardCard
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-6 space-y-4">
-                <NewPatientTaskForm
+                <NewPatientFollowupForm
                   onFinish={() => setCreateOpen(false)}
                 />
               </div>
@@ -98,7 +98,7 @@ export default function FollowupsDashboardCard({ tasks }: FollowupsDashboardCard
 
         <div className="flex justify-end pt-1">
           <Link
-            href="/crm/tasks"
+            href="/crm/followups"
             className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
           >
             <span>View All Followups</span>

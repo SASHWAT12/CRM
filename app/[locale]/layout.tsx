@@ -24,10 +24,11 @@ export async function generateMetadata(props: Props) {
   const { locale } = params;
 
   const t = await getTranslations({ locale, namespace: "RootLayout" });
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || "MmrhCRM";
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
-    title: t("title"),
+    title: appName,
     description: t("description"),
     openGraph: {
       images: [
@@ -35,7 +36,7 @@ export async function generateMetadata(props: Props) {
           url: "/images/opengraph-image.png",
           width: 1200,
           height: 630,
-          alt: t("title"),
+          alt: appName,
         },
       ],
     },
@@ -44,7 +45,7 @@ export async function generateMetadata(props: Props) {
       image: "/images/opengraph-image.png",
       width: 1200,
       height: 630,
-      alt: t("title"),
+      alt: appName,
     },
   };
 }

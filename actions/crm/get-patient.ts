@@ -1,0 +1,76 @@
+import { prismadb } from "@/lib/prisma";
+import {
+  requireAuthenticated,
+  assertCanReadContact,
+  AuthenticationError,
+  AuthorizationError,
+} from "@/lib/authz";
+
+export const getPatient = async (patientId: string) => {
+  let user;
+  try {
+    user = await requireAuthenticated();
+  } catch (e) {
+    if (e instanceof AuthenticationError) return null;
+    throw e;
+  }
+
+  try {
+    await assertCanReadContact(user, patientId);
+  } catch (e) {
+    if (e instanceof AuthorizationError) return null;
+    throw e;
+  }
+
+  const data = await prismadb.crm_Contacts.findFirst({
+    where: {
+      id: patientId,
+      deletedAt: null,
+    },
+    include: {
+      // Include documents through DocumentsToContacts junction table
+      documents: {
+        include: {
+          document: {
+            select: {
+              id: true,
+              document_name: true,
+              document_type: true,
+              document_file_url: true,
+              document_file_mimeType: true,
+              createdAt: true,
+              created_by: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      // Include FK relation name field
+      contact_type: { select: { id: true, name: true } },
+      // Include assigned account
+      assigned_accounts: true,
+      // Include assigned user (uses "assigned_contacts" relation)
+      assigned_to_user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      // Include creator user (uses "created_contacts" relation)
+      crate_by_user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+  return data;
+};
