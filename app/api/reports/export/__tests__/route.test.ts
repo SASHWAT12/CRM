@@ -15,11 +15,7 @@ jest.mock("@/actions/reports/accounts", () => ({
 jest.mock("@/actions/reports/activity", () => ({
   getTasksByAssignee: jest.fn().mockResolvedValue([]),
 }));
-jest.mock("@/actions/reports/campaigns", () => ({
-  getCampaignPerformance: jest
-    .fn()
-    .mockResolvedValue({ sent: 0, opened: 0, clicked: 0 }),
-}));
+
 jest.mock("@/actions/reports/users", () => ({
   getUserGrowth: jest.fn().mockResolvedValue([]),
 }));

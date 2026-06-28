@@ -15,25 +15,17 @@ export {
 } from "./session";
 export {
   tryScopedUpdateContact,
-  tryScopedUpdateTarget,
 } from "./scopes/crm";
 export {
   assertCanReadContact,
   assertCanWriteContact,
-  assertCanReadTarget,
-  assertCanWriteTarget,
 } from "./scopes/crm";
 export {
   filterAuthorizedContactIds,
-  filterAuthorizedTargetIds,
   filterAuthorizedAccountIds,
   filterAuthorizedLeadIds,
-  filterAuthorizedOpportunityIds,
 } from "./scopes/crm";
-export {
-  assertCanCancelContactEnrichment,
-  assertCanCancelTargetEnrichment,
-} from "./scopes/crm";
+
 export { assertCanWriteAccount } from "./scopes/crm";
 export {
   accountUserScopeOR,
@@ -43,37 +35,10 @@ export {
 export {
   leadReadScopeWhere,
   contactReadScopeWhere,
-  opportunityReadScopeWhere,
-  contractReadScopeWhere,
   assertCanReadLead,
-  assertCanReadOpportunity,
-  assertCanReadContract,
-} from "./scopes/crm";
-export {
-  targetReadScopeWhere,
-  targetListReadScopeWhere,
-  assertCanReadTargetList,
 } from "./scopes/crm";
 export { assertCanReadActivityForEntity } from "./scopes/crm";
 export {
-  campaignReadScopeWhere,
-  campaignTemplateReadScopeWhere,
-  assertCanReadCampaign,
-  assertCanWriteCampaign,
-  assertCanReadTemplate,
-  assertCanWriteTemplate,
-} from "./scopes/crm";
-export {
-  documentReadScopeWhere,
-  assertCanReadDocument,
-  assertCanWriteDocument,
-  filterAuthorizedDocumentIds,
-} from "./scopes/crm";
-export {
-  boardReadScopeWhere,
-  boardWriteScopeWhere,
-  assertCanReadBoard,
-  assertCanWriteBoard,
   assertCanReadTask,
   assertCanWriteTask,
 } from "./scopes/crm";

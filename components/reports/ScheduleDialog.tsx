@@ -32,7 +32,7 @@ export function ScheduleDialog({ open, onOpenChange }: ScheduleDialogProps) {
 
   useEffect(() => {
     if (!open) return;
-    const categories: ReportCategory[] = ["sales", "leads", "accounts", "activity", "campaigns", "users"];
+    const categories: ReportCategory[] = ["sales", "leads", "accounts", "activity", "users"];
     Promise.all(categories.map((c) => loadConfigs(c))).then((results) => {
       setConfigs(results.flat() as { id: string; name: string; category: string }[]);
     });

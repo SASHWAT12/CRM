@@ -8,19 +8,19 @@ jest.mock("@/lib/prisma", () => ({
 
 import { prismadb } from "@/lib/prisma";
 import { getSession } from "@/lib/auth-server";
-import { getContact } from "@/actions/crm/get-contact";
+import { getPatient } from "@/actions/crm/get-patient";
 
 const mockUser = (role: "user" | "manager" | "admin", id = "u1") => {
   (getSession as jest.Mock).mockResolvedValue({ user: { id } });
   (prismadb.users.findUnique as jest.Mock).mockResolvedValue({ id, role });
 };
 
-describe("getContact scope", () => {
+describe("getPatient scope", () => {
   beforeEach(() => jest.clearAllMocks());
 
   it("unauthenticated returns null and does not query contact", async () => {
     (getSession as jest.Mock).mockResolvedValue(null);
-    const res = await getContact("c1");
+    const res = await getPatient("c1");
     expect(res).toBeNull();
     expect(prismadb.crm_Contacts.findFirst).not.toHaveBeenCalled();
   });
@@ -28,7 +28,7 @@ describe("getContact scope", () => {
   it("user out-of-scope returns null (assert miss)", async () => {
     mockUser("user", "u1");
     (prismadb.crm_Contacts.findFirst as jest.Mock).mockResolvedValue(null);
-    const res = await getContact("c1");
+    const res = await getPatient("c1");
     expect(res).toBeNull();
     expect(prismadb.crm_Contacts.findFirst).toHaveBeenCalledTimes(1);
   });
@@ -38,7 +38,7 @@ describe("getContact scope", () => {
     (prismadb.crm_Contacts.findFirst as jest.Mock)
       .mockResolvedValueOnce({ id: "c1" })
       .mockResolvedValueOnce({ id: "c1", first_name: "Alice" });
-    const res = await getContact("c1");
+    const res = await getPatient("c1");
     expect(res).toEqual({ id: "c1", first_name: "Alice" });
     expect(prismadb.crm_Contacts.findFirst).toHaveBeenCalledTimes(2);
   });
@@ -48,7 +48,7 @@ describe("getContact scope", () => {
     (prismadb.crm_Contacts.findFirst as jest.Mock)
       .mockResolvedValueOnce({ id: "c1" })
       .mockResolvedValueOnce({ id: "c1", first_name: "Alice" });
-    const res = await getContact("c1");
+    const res = await getPatient("c1");
     expect(res).toEqual({ id: "c1", first_name: "Alice" });
     const assertCall = (prismadb.crm_Contacts.findFirst as jest.Mock).mock.calls[0][0];
     expect(assertCall.where.OR).toBeUndefined();

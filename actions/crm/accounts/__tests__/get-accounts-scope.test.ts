@@ -36,7 +36,6 @@ describe("getAccounts scope", () => {
           OR: [
             { assigned_to: "u1" },
             { createdBy: "u1" },
-            { watchers: { some: { user_id: "u1" } } },
           ],
         }),
         select: { id: true, name: true },

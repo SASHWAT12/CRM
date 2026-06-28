@@ -21,10 +21,6 @@ function contactScopedWhere(user: AuthzUser, contactId: string): ContactWhere {
   };
 }
 
-function targetScopedWhere(user: AuthzUser, targetId: string): TargetWhere {
-  return {};
-}
-
 export async function tryScopedUpdateContact(
   user: AuthzUser,
   contactId: string,
@@ -35,14 +31,6 @@ export async function tryScopedUpdateContact(
     data: { ...data, updatedBy: user.id },
   });
   return result.count > 0;
-}
-
-export async function tryScopedUpdateTarget(
-  user: AuthzUser,
-  targetId: string,
-  data: Record<string, string>,
-): Promise<boolean> {
-  return true;
 }
 
 // Phase B1 write scope helper (kept for assertCanWriteContact).
@@ -66,10 +54,6 @@ async function findContactInScope(user: AuthzUser, contactId: string) {
   });
 }
 
-async function findTargetInScope(user: AuthzUser, targetId: string) {
-  return { id: targetId };
-}
-
 export async function assertCanReadContact(
   user: AuthzUser,
   contactId: string,
@@ -87,20 +71,6 @@ export async function assertCanWriteContact(
 ): Promise<void> {
   const row = await findContactInScope(user, contactId);
   if (!row) throw new AuthorizationError();
-}
-
-export async function assertCanReadTarget(
-  user: AuthzUser,
-  targetId: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanWriteTarget(
-  user: AuthzUser,
-  targetId: string,
-): Promise<void> {
-  return;
 }
 
 export async function filterAuthorizedContactIds(
@@ -139,33 +109,7 @@ export async function filterAuthorizedLeadIds(
   return rows.map((r: { id: string }) => r.id);
 }
 
-export async function filterAuthorizedOpportunityIds(
-  user: AuthzUser,
-  opportunityIds: string[],
-): Promise<string[]> {
-  return opportunityIds;
-}
 
-export async function assertCanCancelContactEnrichment(
-  user: AuthzUser,
-  enrichmentId: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanCancelTargetEnrichment(
-  user: AuthzUser,
-  enrichmentId: string,
-): Promise<void> {
-  return;
-}
-
-export async function filterAuthorizedTargetIds(
-  user: AuthzUser,
-  targetIds: string[],
-): Promise<string[]> {
-  return targetIds;
-}
 
 // Internal: the OR clauses describing user-level account ownership.
 // Exported via accountReadScopeWhere; D2 will reuse for nested linked-account scope.
@@ -254,36 +198,6 @@ export function contactReadScopeWhere(user: AuthzUser) {
   };
 }
 
-// crm_Opportunities → crm_Accounts via `assigned_account` (FK account).
-export function opportunityReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return {
-    deletedAt: null,
-    OR: [
-      { assigned_to: user.id },
-      { createdBy: user.id },
-      { assigned_account: { OR: accountUserScopeOR(user.id) } },
-    ],
-  };
-}
-
-// crm_Contracts → crm_Accounts via `assigned_account` (FK account).
-export function contractReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return {
-    deletedAt: null,
-    OR: [
-      { assigned_to: user.id },
-      { createdBy: user.id },
-      { assigned_account: { OR: accountUserScopeOR(user.id) } },
-    ],
-  };
-}
-
 export async function assertCanReadLead(
   user: AuthzUser,
   leadId: string,
@@ -293,117 +207,6 @@ export async function assertCanReadLead(
     select: { id: true },
   });
   if (!row) throw new AuthorizationError();
-}
-
-export async function assertCanReadOpportunity(
-  user: AuthzUser,
-  opportunityId: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanReadContract(
-  user: AuthzUser,
-  contractId: string,
-): Promise<void> {
-  return;
-}
-
-// ---------------------------------------------------------------------------
-// D3.T1: Target + Target-list read-scope helpers.
-// Both crm_Targets and crm_TargetLists support soft-delete (deletedAt).
-// assertCanReadTarget (B1) is reused as-is for the per-row target check.
-// ---------------------------------------------------------------------------
-
-export function targetReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") return { deletedAt: null };
-  return { deletedAt: null, created_by: user.id };
-}
-
-export function targetListReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") return { deletedAt: null };
-  return { deletedAt: null, created_by: user.id };
-}
-
-export async function assertCanReadTargetList(
-  user: AuthzUser,
-  listId: string,
-): Promise<void> {
-  return;
-}
-
-// ---------------------------------------------------------------------------
-// E3.T1: Document read/write scope helpers (linked-entity aware).
-// Documents have multi-faceted ownership: created_by_user, createdBy (legacy),
-// assigned_user, visibility="public", plus link junctions to
-// accounts/leads/contacts/opportunities. User scope unions all of these;
-// manager/admin get bare deletedAt-only read.
-// ---------------------------------------------------------------------------
-
-export function documentReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return {
-    deletedAt: null,
-    OR: [
-      { created_by_user: user.id },
-      { createdBy: user.id }, // legacy duplicate
-      { assigned_user: user.id },
-      { visibility: "public" },
-      // Linked-entity scope (junction relations)
-      { accounts: { some: { account: { OR: accountUserScopeOR(user.id) } } } },
-      {
-        leads: {
-          some: {
-            lead: { OR: [{ assigned_to: user.id }, { createdBy: user.id }] },
-          },
-        },
-      },
-      {
-        contacts: {
-          some: {
-            contact: {
-              OR: [
-                { assigned_to: user.id },
-                { createdBy: user.id },
-              ],
-            },
-          },
-        },
-      },
-    ],
-  };
-}
-
-export async function assertCanReadDocument(
-  user: AuthzUser,
-  documentId: string,
-): Promise<void> {
-  const row = await prismadb.documents.findFirst({
-    where: { id: documentId, ...documentReadScopeWhere(user) },
-    select: { id: true },
-  });
-  if (!row) throw new AuthorizationError();
-}
-
-export async function assertCanWriteDocument(
-  user: AuthzUser,
-  documentId: string,
-): Promise<void> {
-  return assertCanReadDocument(user, documentId);
-}
-
-export async function filterAuthorizedDocumentIds(
-  user: AuthzUser,
-  documentIds: string[],
-): Promise<string[]> {
-  if (documentIds.length === 0) return [];
-  const rows = await prismadb.documents.findMany({
-    where: { id: { in: documentIds }, ...documentReadScopeWhere(user) },
-    select: { id: true },
-  });
-  return rows.map((r: { id: string }) => r.id);
 }
 
 // ---------------------------------------------------------------------------
@@ -424,15 +227,6 @@ export async function assertCanReadActivityForEntity(
       return assertCanReadLead(user, entityId);
     case "contact":
       return assertCanReadContact(user, entityId);
-    case "opportunity":
-      return assertCanReadOpportunity(user, entityId);
-    case "contract":
-      return assertCanReadContract(user, entityId);
-    case "target":
-      return assertCanReadTarget(user, entityId);
-    case "target_list":
-    case "targetlist":
-      return assertCanReadTargetList(user, entityId);
     default:
       if (user.role === "user") throw new AuthorizationError();
       return;
@@ -440,96 +234,9 @@ export async function assertCanReadActivityForEntity(
 }
 
 // ---------------------------------------------------------------------------
-// E2.T1: Campaign + campaign-template read/write scope helpers.
-// crm_campaigns soft-deletes via `status: "deleted"` (string field).
-// crm_campaign_templates uses `deletedAt: null` like other CRM entities.
-// Write helpers delegate to read for now; can split later if needed.
+// Hospital Internal Tasks scope helpers.
+// Tasks: Owner (`user`) or Creator (`createdBy`) can read/write tasks.
 // ---------------------------------------------------------------------------
-
-export function campaignReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { status: { not: "deleted" } };
-  }
-  return { status: { not: "deleted" }, created_by: user.id };
-}
-
-export function campaignTemplateReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return { deletedAt: null, created_by: user.id };
-}
-
-export async function assertCanReadCampaign(
-  user: AuthzUser,
-  id: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanWriteCampaign(
-  user: AuthzUser,
-  id: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanReadTemplate(
-  user: AuthzUser,
-  id: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanWriteTemplate(
-  user: AuthzUser,
-  id: string,
-): Promise<void> {
-  return;
-}
-
-// ---------------------------------------------------------------------------
-// E4.T1: Board + task scope helpers (Projects module).
-// Boards: owner (`user`) + sharedWith uuid[] + visibility="public" + watchers junction.
-// Tasks:  scope by parent board via assigned_section.board_relation.
-// Write: board owner only (or manager/admin); task assignees get write bypass
-//        for status-only updates (per plan; route enforces field whitelist).
-// ---------------------------------------------------------------------------
-
-export function boardReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return {
-    deletedAt: null,
-    OR: [
-      { user: user.id },
-      { sharedWith: { has: user.id } },
-      { visibility: "public" },
-    ],
-  };
-}
-
-export function boardWriteScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return { deletedAt: null, user: user.id };
-}
-
-export async function assertCanReadBoard(
-  user: AuthzUser,
-  boardId: string,
-): Promise<void> {
-  return;
-}
-
-export async function assertCanWriteBoard(
-  user: AuthzUser,
-  boardId: string,
-): Promise<void> {
-  return;
-}
 
 export async function assertCanReadTask(
   user: AuthzUser,

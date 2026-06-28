@@ -2,7 +2,6 @@ jest.mock("@/lib/prisma", () => ({
   prismadb: {
     crm_Accounts: { findMany: jest.fn() },
     crm_Leads: { findMany: jest.fn() },
-    crm_Opportunities: { findMany: jest.fn() },
   },
 }));
 
@@ -10,12 +9,10 @@ import { prismadb } from "@/lib/prisma";
 import {
   filterAuthorizedAccountIds,
   filterAuthorizedLeadIds,
-  filterAuthorizedOpportunityIds,
 } from "../scopes/crm";
 
 const accountsFindMany = prismadb.crm_Accounts.findMany as jest.Mock;
 const leadsFindMany = prismadb.crm_Leads.findMany as jest.Mock;
-const oppFindMany = prismadb.crm_Opportunities.findMany as jest.Mock;
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -109,51 +106,4 @@ describe("filterAuthorizedLeadIds", () => {
   });
 });
 
-describe("filterAuthorizedOpportunityIds", () => {
-  it("empty input → empty, no DB call", async () => {
-    const out = await filterAuthorizedOpportunityIds(
-      { id: "u", role: "user" },
-      [],
-    );
-    expect(out).toEqual([]);
-    expect(oppFindMany).not.toHaveBeenCalled();
-  });
 
-  it("manager: { id: { in }, deletedAt: null }", async () => {
-    oppFindMany.mockResolvedValue([{ id: "o1" }]);
-    const out = await filterAuthorizedOpportunityIds(
-      { id: "u", role: "manager" },
-      ["o1", "o2"],
-    );
-    expect(out).toEqual(["o1"]);
-    expect(oppFindMany).toHaveBeenCalledWith({
-      where: { id: { in: ["o1", "o2"] }, deletedAt: null },
-      select: { id: true },
-    });
-  });
-
-  it("user: composes opportunityReadScopeWhere with linked-account branch", async () => {
-    oppFindMany.mockResolvedValue([{ id: "o1" }]);
-    await filterAuthorizedOpportunityIds(
-      { id: "u3", role: "user" },
-      ["o1", "o2"],
-    );
-    const arg = oppFindMany.mock.calls[0][0];
-    expect(arg.where).toMatchObject({
-      id: { in: ["o1", "o2"] },
-      deletedAt: null,
-      OR: expect.arrayContaining([
-        { assigned_to: "u3" },
-        { createdBy: "u3" },
-        {
-          assigned_account: {
-            OR: expect.arrayContaining([
-              { assigned_to: "u3" },
-              { createdBy: "u3" },
-            ]),
-          },
-        },
-      ]),
-    });
-  });
-});

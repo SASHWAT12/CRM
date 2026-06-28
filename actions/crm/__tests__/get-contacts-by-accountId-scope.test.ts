@@ -9,19 +9,19 @@ jest.mock("@/lib/prisma", () => ({
 
 import { prismadb } from "@/lib/prisma";
 import { getSession } from "@/lib/auth-server";
-import { getContactsByAccountId } from "@/actions/crm/get-contacts-by-accountId";
+import { getPatientsByAccountId } from "@/actions/crm/get-patients-by-accountId";
 
 const mockUser = (role: "user" | "manager" | "admin", id = "u1") => {
   (getSession as jest.Mock).mockResolvedValue({ user: { id } });
   (prismadb.users.findUnique as jest.Mock).mockResolvedValue({ id, role });
 };
 
-describe("getContactsByAccountId scope", () => {
+describe("getPatientsByAccountId scope", () => {
   beforeEach(() => jest.clearAllMocks());
 
   it("unauthenticated returns [] and does not query", async () => {
     (getSession as jest.Mock).mockResolvedValue(null);
-    const res = await getContactsByAccountId("a1");
+    const res = await getPatientsByAccountId("a1");
     expect(res).toEqual([]);
     expect(prismadb.crm_Accounts.findFirst).not.toHaveBeenCalled();
     expect(prismadb.crm_Contacts.findMany).not.toHaveBeenCalled();
@@ -30,7 +30,7 @@ describe("getContactsByAccountId scope", () => {
   it("returns [] when assertCanReadAccount misses (out-of-scope user)", async () => {
     mockUser("user", "u1");
     (prismadb.crm_Accounts.findFirst as jest.Mock).mockResolvedValue(null);
-    const res = await getContactsByAccountId("a1");
+    const res = await getPatientsByAccountId("a1");
     expect(res).toEqual([]);
     expect(prismadb.crm_Contacts.findMany).not.toHaveBeenCalled();
   });
@@ -39,7 +39,7 @@ describe("getContactsByAccountId scope", () => {
     mockUser("user", "u1");
     (prismadb.crm_Accounts.findFirst as jest.Mock).mockResolvedValue({ id: "a1" });
     (prismadb.crm_Contacts.findMany as jest.Mock).mockResolvedValue([{ id: "c1" }]);
-    const res = await getContactsByAccountId("a1");
+    const res = await getPatientsByAccountId("a1");
     expect(res).toEqual([{ id: "c1" }]);
     const call = (prismadb.crm_Contacts.findMany as jest.Mock).mock.calls[0][0];
     expect(call.where.accountsIDs).toBe("a1");
@@ -52,7 +52,6 @@ describe("getContactsByAccountId scope", () => {
           OR: [
             { assigned_to: "u1" },
             { createdBy: "u1" },
-            { watchers: { some: { user_id: "u1" } } },
           ],
         },
       },
@@ -63,7 +62,7 @@ describe("getContactsByAccountId scope", () => {
     mockUser("manager", "m1");
     (prismadb.crm_Accounts.findFirst as jest.Mock).mockResolvedValue({ id: "a1" });
     (prismadb.crm_Contacts.findMany as jest.Mock).mockResolvedValue([]);
-    await getContactsByAccountId("a1");
+    await getPatientsByAccountId("a1");
     const call = (prismadb.crm_Contacts.findMany as jest.Mock).mock.calls[0][0];
     expect(call.where).toEqual({ accountsIDs: "a1", deletedAt: null });
     expect(call.where.OR).toBeUndefined();

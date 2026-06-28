@@ -57,8 +57,6 @@ export function UpdateLeadForm({ initialData, setOpen, leadSources, leadStatuses
     lead_status_id: z.string().nullable().optional(),
     lead_type_id: z.string().nullable().optional(),
     refered_by: z.string().optional().nullable(),
-    //TODO: add campaing schema from db as data source
-    campaign: z.string().optional().nullable(),
     assigned_to: z.string().optional().nullable(),
     accountsIDs: z.string().optional().nullable(),
   });
@@ -263,23 +261,6 @@ export function UpdateLeadForm({ initialData, setOpen, leadSources, leadStatuses
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="campaign"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("campaign")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={form.formState.isSubmitting}
-                        placeholder="Social networks"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="lead_type_id"

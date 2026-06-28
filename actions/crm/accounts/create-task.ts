@@ -4,7 +4,6 @@ import { prismadb } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import resendHelper from "@/lib/resend";
 import NewTaskFromCRMEmail from "@/emails/NewTaskFromCRM";
-import NewTaskFromCRMToWatchersEmail from "@/emails/NewTaskFromCRMToWatchers";
 
 import { writeAuditLog } from "@/lib/audit-log";
 

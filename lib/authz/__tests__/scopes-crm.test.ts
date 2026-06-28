@@ -1,18 +1,14 @@
 jest.mock("@/lib/prisma", () => ({
   prismadb: {
     crm_Contacts: { updateMany: jest.fn() },
-    crm_Targets: { updateMany: jest.fn() },
   },
 }));
 
 import { prismadb } from "@/lib/prisma";
-import { tryScopedUpdateContact, tryScopedUpdateTarget } from "../scopes/crm";
+import { tryScopedUpdateContact } from "../scopes/crm";
 
 const updateManyContact = prismadb.crm_Contacts.updateMany as jest.MockedFunction<
   typeof prismadb.crm_Contacts.updateMany
->;
-const updateManyTarget = prismadb.crm_Targets.updateMany as jest.MockedFunction<
-  typeof prismadb.crm_Targets.updateMany
 >;
 
 beforeEach(() => jest.clearAllMocks());
@@ -59,36 +55,6 @@ describe("tryScopedUpdateContact", () => {
     const ok = await tryScopedUpdateContact(
       { id: "u3", role: "user" },
       "c1",
-      { website: "x" },
-    );
-    expect(ok).toBe(false);
-  });
-});
-
-describe("tryScopedUpdateTarget", () => {
-  it("admin: bare where", async () => {
-    updateManyTarget.mockResolvedValue({ count: 1 } as any);
-    await tryScopedUpdateTarget({ id: "u1", role: "admin" }, "t1", { website: "x" });
-    expect(updateManyTarget).toHaveBeenCalledWith({
-      where: { id: "t1" },
-      data: { website: "x", updatedBy: "u1" },
-    });
-  });
-
-  it("user: scoped to created_by only (targets have no assigned_to)", async () => {
-    updateManyTarget.mockResolvedValue({ count: 1 } as any);
-    await tryScopedUpdateTarget({ id: "u3", role: "user" }, "t1", { website: "x" });
-    expect(updateManyTarget).toHaveBeenCalledWith({
-      where: { id: "t1", created_by: "u3" },
-      data: { website: "x", updatedBy: "u3" },
-    });
-  });
-
-  it("returns false when count is 0", async () => {
-    updateManyTarget.mockResolvedValue({ count: 0 } as any);
-    const ok = await tryScopedUpdateTarget(
-      { id: "u3", role: "user" },
-      "t1",
       { website: "x" },
     );
     expect(ok).toBe(false);

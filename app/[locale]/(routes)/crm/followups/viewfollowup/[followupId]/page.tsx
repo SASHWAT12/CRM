@@ -1,15 +1,9 @@
 import moment from "moment";
 
-import { getDocuments } from "@/actions/documents/get-documents";
-import { extractDocuments } from "@/lib/junction-helpers";
-
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 import { TeamConversations } from "./components/team-conversation";
-import { TaskDataTable } from "./components/data-table";
-import { columns } from "./components/columns";
-import { columnsTask } from "./components/columns-task";
 import { getCrMTask } from "@/actions/crm/account/get-task";
 
 type TaskPageProps = {
@@ -25,8 +19,6 @@ const CRMTaskPage = async (props: TaskPageProps) => {
   // on crm_Accounts_Tasks — do not call the Projects-module getTaskComments
   // from here, that's a cross-module boundary violation.
   const task: any = await getCrMTask(followupId);
-  const taskDocuments = extractDocuments(task?.documents ?? []);
-  const documents: any = await getDocuments();
   const comments = task?.comments ?? [];
 
   return (
@@ -102,18 +94,6 @@ const CRMTaskPage = async (props: TaskPageProps) => {
             </tbody>
           </table>
         </div>
-        {/*         <pre>
-          <code>{JSON.stringify(taskDocuments, null, 2)}</code>
-        </pre> */}
-        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight py-5">
-          Followup documents ({taskDocuments.length})
-        </h4>
-        <TaskDataTable data={taskDocuments} columns={columnsTask} />
-        <Separator />
-        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight py-5">
-          Available documents ({documents.length})
-        </h4>
-        <TaskDataTable data={documents} columns={columns} />
       </div>
 
       <div className="w-full md:w-1/3">

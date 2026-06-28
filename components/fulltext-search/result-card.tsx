@@ -5,8 +5,6 @@ import type { SearchResult } from "@/actions/fulltext/unified-search";
 
 const matchTypeLabel: Record<SearchResult["matchType"], string> = {
   keyword: "Keyword",
-  semantic: "Semantic",
-  both: "Best Match",
 };
 
 const matchTypeVariant: Record<
@@ -14,8 +12,6 @@ const matchTypeVariant: Record<
   "default" | "secondary" | "outline"
 > = {
   keyword: "outline",
-  semantic: "secondary",
-  both: "default",
 };
 
 export function ResultCard({ result }: { result: SearchResult }) {

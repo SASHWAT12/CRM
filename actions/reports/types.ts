@@ -1,8 +1,8 @@
 export type { ReportScope } from "@/lib/authz/scopes/report-scope";
 
-export type ReportCategory = "sales" | "leads" | "accounts" | "activity" | "campaigns" | "users";
+export type ReportCategory = "sales" | "leads" | "accounts" | "activity" | "users";
 
-export const REPORT_CATEGORIES: ReportCategory[] = ["sales", "leads", "accounts", "activity", "campaigns", "users"];
+export const REPORT_CATEGORIES: ReportCategory[] = ["sales", "leads", "accounts", "activity", "users"];
 
 export type ReportFilters = {
   dateFrom: Date;
@@ -10,7 +10,6 @@ export type ReportFilters = {
   assigneeId?: string;
   accountId?: string;
   salesStage?: string;
-  campaignId?: string;
   industryType?: string;
   userRole?: string;
 };
@@ -55,7 +54,6 @@ export function parseSearchParamsToFilters(params: URLSearchParams): ReportFilte
     assigneeId: params.get("assigneeId") ?? undefined,
     accountId: params.get("accountId") ?? undefined,
     salesStage: params.get("salesStage") ?? undefined,
-    campaignId: params.get("campaignId") ?? undefined,
     industryType: params.get("industryType") ?? undefined,
     userRole: params.get("userRole") ?? undefined,
   };
@@ -77,7 +75,6 @@ export function filtersToSearchParams(filters: ReportFilters): string {
   if (filters.assigneeId) params.set("assigneeId", filters.assigneeId);
   if (filters.accountId) params.set("accountId", filters.accountId);
   if (filters.salesStage) params.set("salesStage", filters.salesStage);
-  if (filters.campaignId) params.set("campaignId", filters.campaignId);
   if (filters.industryType) params.set("industryType", filters.industryType);
   if (filters.userRole) params.set("userRole", filters.userRole);
   return params.toString();

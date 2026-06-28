@@ -54,7 +54,6 @@ export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, on
     lead_status_id: z.string().optional(),
     lead_type_id: z.string().optional(),
     refered_by: z.string().optional(),
-    campaign: z.string().optional(),
     assigned_to: z.string().optional(),
     accountIDs: z.string().optional(),
   });
@@ -76,7 +75,6 @@ export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, on
       lead_status_id: "",
       lead_type_id: "",
       refered_by: "",
-      campaign: "",
       assigned_to: "",
       accountIDs: "",
     },
@@ -301,23 +299,6 @@ export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, on
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="campaign"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("campaign")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={form.formState.isSubmitting}
-                        placeholder="Social networks"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="assigned_to"

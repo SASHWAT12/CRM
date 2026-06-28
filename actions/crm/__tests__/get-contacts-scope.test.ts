@@ -11,20 +11,20 @@ jest.mock("@/lib/prisma", () => ({
 }));
 
 import { prismadb } from "@/lib/prisma";
+import { getPatients } from "@/actions/crm/get-patients";
 import { getSession } from "@/lib/auth-server";
-import { getContacts } from "@/actions/crm/get-contacts";
 
 const mockUser = (role: "user" | "manager" | "admin", id = "u1") => {
   (getSession as jest.Mock).mockResolvedValue({ user: { id } });
   (prismadb.users.findUnique as jest.Mock).mockResolvedValue({ id, role });
 };
 
-describe("getContacts scope", () => {
+describe("getPatients scope", () => {
   beforeEach(() => jest.clearAllMocks());
 
   it("unauthenticated returns [] and does not query", async () => {
     (getSession as jest.Mock).mockResolvedValue(null);
-    const res = await getContacts();
+    const res = await getPatients();
     expect(res).toEqual([]);
     expect(prismadb.crm_Contacts.findMany).not.toHaveBeenCalled();
   });
@@ -32,7 +32,7 @@ describe("getContacts scope", () => {
   it("user role: where includes deletedAt:null and OR with assigned/created/legacy/linked-account", async () => {
     mockUser("user", "u1");
     (prismadb.crm_Contacts.findMany as jest.Mock).mockResolvedValue([]);
-    await getContacts();
+    await getPatients();
     const call = (prismadb.crm_Contacts.findMany as jest.Mock).mock.calls[0][0];
     expect(call.where.deletedAt).toBeNull();
     expect(call.where.OR).toEqual([
@@ -43,7 +43,6 @@ describe("getContacts scope", () => {
           OR: [
             { assigned_to: "u1" },
             { createdBy: "u1" },
-            { watchers: { some: { user_id: "u1" } } },
           ],
         },
       },
@@ -54,14 +53,14 @@ describe("getContacts scope", () => {
     mockUser("user", "u1");
     const rows = [{ id: "c1" }];
     (prismadb.crm_Contacts.findMany as jest.Mock).mockResolvedValue(rows);
-    const res = await getContacts();
+    const res = await getPatients();
     expect(res).toEqual(rows);
   });
 
   it("manager: where = { deletedAt: null } (no OR)", async () => {
     mockUser("manager", "m1");
     (prismadb.crm_Contacts.findMany as jest.Mock).mockResolvedValue([]);
-    await getContacts();
+    await getPatients();
     const call = (prismadb.crm_Contacts.findMany as jest.Mock).mock.calls[0][0];
     expect(call.where).toEqual({ deletedAt: null });
     expect(call.where.OR).toBeUndefined();
