@@ -38,7 +38,7 @@ interface ContactCurrentData {
   mobile_phone?: string | null;
 }
 
-interface EnrichContactDrawerProps {
+interface EnrichPatientDrawerProps {
   contactId: string;
   contactEmail: string | null;
   contactCurrentData: ContactCurrentData;
@@ -47,14 +47,14 @@ interface EnrichContactDrawerProps {
   onApplied: () => void;
 }
 
-export function EnrichContactDrawer({
+export function EnrichPatientDrawer({
   contactId,
   contactEmail,
   contactCurrentData,
   open,
   onOpenChange,
   onApplied,
-}: EnrichContactDrawerProps) {
+}: EnrichPatientDrawerProps) {
   const [step, setStep] = useState<Step>("select");
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [result, setResult] = useState<StoredEnrichmentResult | null>(null);

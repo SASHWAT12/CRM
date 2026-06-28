@@ -283,7 +283,7 @@ export async function unifiedSearch(
         id: r.id,
         title: `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(),
         subtitle: r.email ?? "",
-        url: `/${locale}/crm/contacts/${r.id}`,
+        url: `/${locale}/crm/patients/${r.id}`,
       }))
     );
 

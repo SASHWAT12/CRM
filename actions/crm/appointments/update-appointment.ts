@@ -87,7 +87,7 @@ export const updateAppointment = async (rawData: z.infer<typeof updateSchema>) =
     }
 
     revalidatePath("/[locale]/(routes)/crm/appointments", "page");
-    revalidatePath(`/[locale]/(routes)/crm/contacts/${existing.patientId}`, "page");
+    revalidatePath(`/[locale]/(routes)/crm/patients/${existing.patientId}`, "page");
 
     return { data: updated };
   } catch (error: any) {

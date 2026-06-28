@@ -8,8 +8,9 @@ import {
 } from "@/lib/authz";
 
 export const deleteUser = async (userId: string) => {
+  let actor;
   try {
-    await requireRole(["admin"]);
+    actor = await requireRole(["root", "admin"]);
   } catch (e) {
     if (e instanceof AuthenticationError) return { error: "Unauthorized" };
     if (e instanceof AuthorizationError) return { error: "Forbidden" };
@@ -17,6 +18,32 @@ export const deleteUser = async (userId: string) => {
   }
 
   if (!userId) return { error: "userId is required" };
+
+  if (actor.id === userId) {
+    return { error: "Self-destruction is not permitted." };
+  }
+
+  const targetUser = await prismadb.users.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true },
+  });
+
+  if (!targetUser) {
+    return { error: "User not found." };
+  }
+
+  if (targetUser.role === "root" && actor.role !== "root") {
+    return { error: "Only Root accounts can manage other Root accounts." };
+  }
+
+  if (targetUser.role === "root") {
+    const rootCount = await prismadb.users.count({
+      where: { role: "root" },
+    });
+    if (rootCount <= 1) {
+      return { error: "Cannot delete the last Root account." };
+    }
+  }
 
   try {
     const user = await prismadb.users.delete({
@@ -29,7 +56,6 @@ export const deleteUser = async (userId: string) => {
         account_name: true,
         avatar: true,
         role: true,
-        userLanguage: true,
         userStatus: true,
         lastLoginAt: true,
       },

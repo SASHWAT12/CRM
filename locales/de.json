@@ -164,7 +164,7 @@
     "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
     "websiteInvalid": "Webseite muss eine gültige URL sein"
   },
-  "CrmContactForm": {
+  "CrmPatientForm": {
     "firstName": "Vorname",
     "lastName": "Nachname",
     "mobilePhone": "Mobiltelefon",

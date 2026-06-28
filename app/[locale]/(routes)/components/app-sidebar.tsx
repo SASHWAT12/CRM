@@ -95,7 +95,7 @@ export function AppSidebar({
       icon: LayoutDashboard,
     },
     {
-      title: dict?.crm?.contacts || "Patients",
+      title: dict?.crm?.patients || "Patients",
       url: "/crm/patients",
       icon: Users,
     },
@@ -122,12 +122,10 @@ export function AppSidebar({
     getReportsMenuItem({ title: dict?.reports || "Reports" }),
   ];
 
-  // Administration: admin users only
-  if (session?.user?.role === "admin") {
-    navItems.push(
-      getAdministrationMenuItem({ title: dict?.settings || "Administration" }),
-    );
-  }
+  // Administration: visible to all users at this stage
+  navItems.push(
+    getAdministrationMenuItem({ title: dict?.settings || "Administration" }),
+  );
 
   // Prepare user data for NavUser component
   const userData = {

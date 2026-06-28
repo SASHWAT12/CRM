@@ -1,6 +1,6 @@
 "use client";
 
-import { Row } from "@tanstack/react-table";
+import { Row, Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,20 +25,40 @@ import { Copy, Edit, MoreHorizontal, Shield, Trash, UserCheck, UserX } from "luc
 import { deleteUser } from "@/actions/admin/users/delete-user";
 import { activateUser } from "@/actions/admin/users/activate-user";
 import { deactivateUser } from "@/actions/admin/users/deactivate-user";
-import { setUserRole } from "@/actions/admin/users/set-role";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
+  table: Table<TData>;
 }
 
 export function DataTableRowActions<TData>({
   row,
+  table,
 }: DataTableRowActionsProps<TData>) {
   const router = useRouter();
   const data = adminUserSchema.parse(row.original);
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  const meta = table.options.meta as { actorRole?: string; actorId?: string } | undefined;
+  const actorRole = meta?.actorRole;
+  const actorId = meta?.actorId;
+
+  const isSelf = actorId === data.id;
+  const isTargetRoot = data.role === "root";
+  const isTargetAdmin = data.role === "admin";
+  const isActorRoot = actorRole === "root";
+  const isActorAdmin = actorRole === "admin";
+
+  const canManage = isActorRoot 
+    ? (!isTargetRoot || isSelf) 
+    : isActorAdmin 
+      ? !isTargetRoot 
+      : (!isTargetRoot && !isTargetAdmin);
+
+  const canDeactivateOrDelete = canManage && !isSelf && (!isTargetRoot || isActorRoot);
+  const canActivate = canManage && (!isTargetRoot || isActorRoot);
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
@@ -97,23 +117,6 @@ export function DataTableRowActions<TData>({
     }
   };
 
-  const onSetRole = async (role: "admin" | "manager" | "user") => {
-    try {
-      setLoading(true);
-      const result = await setUserRole(data.id, role);
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
-      router.refresh();
-      toast.success(`User role changed to ${role}.`);
-    } catch (error) {
-      toast.error("Something went wrong while changing role. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
       <AlertModal
@@ -135,38 +138,33 @@ export function DataTableRowActions<TData>({
             <Copy className="mr-2 w-4 h-4" />
             Copy ID
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onActivate()}>
-            <UserCheck className="mr-2 w-4 h-4" />
-            Activate
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onDeactivate()}>
-            <UserX className="mr-2 w-4 h-4" />
-            Deactivate
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <Shield className="mr-2 w-4 h-4" />
-              Set Role
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => onSetRole("admin")}>
-                Admin
+          {canActivate && data.userStatus !== "ACTIVE" && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onActivate()}>
+                <UserCheck className="mr-2 w-4 h-4" />
+                Activate
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSetRole("manager")}>
-                Manager
+            </>
+          )}
+          {canDeactivateOrDelete && data.userStatus === "ACTIVE" && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onDeactivate()}>
+                <UserX className="mr-2 w-4 h-4" />
+                Deactivate
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSetRole("user")}>
-                User
+            </>
+          )}
+          {canDeactivateOrDelete && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setOpen(true)}>
+                <Trash className="mr-2 w-4 h-4" />
+                Delete
               </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Trash className="mr-2 w-4 h-4" />
-            Delete
-          </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

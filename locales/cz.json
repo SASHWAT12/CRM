@@ -167,7 +167,7 @@
     "emailInvalid": "Zadejte platnou e-mailovou adresu",
     "websiteInvalid": "Webová stránka musí být platná URL"
   },
-  "CrmContactForm": {
+  "CrmPatientForm": {
     "firstName": "Jméno",
     "lastName": "Příjmení",
     "mobilePhone": "Mobilní telefon",

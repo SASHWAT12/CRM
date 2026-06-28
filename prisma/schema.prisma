@@ -437,6 +437,9 @@ model Users {
   banned               Boolean               @default(false)
   banReason            String?
   banExpires           DateTime?
+  created_by_id        String?               @db.Uuid
+  created_by           Users?                @relation("UserCreator", fields: [created_by_id], references: [id])
+  created_users        Users[]               @relation("UserCreator")
   assigned_documents   Documents[]           @relation("assigned_to_user")
   created_by_documents Documents[]           @relation("created_by_user")
   emails               Email[]
@@ -944,9 +947,13 @@ enum ActiveStatus {
 }
 
 enum AppRole {
+  root
+  admin
+  doctor
+  receptionist
+  counsellor
   user
   manager
-  admin
 }
 
 enum Language {

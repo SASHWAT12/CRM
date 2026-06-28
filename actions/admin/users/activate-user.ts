@@ -9,8 +9,9 @@ import {
 } from "@/lib/authz";
 
 export const activateUser = async (userId: string) => {
+  let actor;
   try {
-    await requireRole(["admin"]);
+    actor = await requireRole(["root", "admin"]);
   } catch (e) {
     if (e instanceof AuthenticationError) return { error: "Unauthorized" };
     if (e instanceof AuthorizationError) return { error: "Forbidden" };
@@ -18,6 +19,19 @@ export const activateUser = async (userId: string) => {
   }
 
   if (!userId) return { error: "userId is required" };
+
+  const targetUser = await prismadb.users.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, email: true, userLanguage: true },
+  });
+
+  if (!targetUser) {
+    return { error: "User not found." };
+  }
+
+  if (targetUser.role === "root" && actor.role !== "root") {
+    return { error: "Only Root accounts can manage other Root accounts." };
+  }
 
   try {
     const user = await prismadb.users.update({

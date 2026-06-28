@@ -173,7 +173,6 @@ export function accountUserScopeOR(userId: string) {
   return [
     { assigned_to: userId },
     { createdBy: userId },
-    { watchers: { some: { user_id: userId } } },
   ];
 }
 
@@ -507,7 +506,6 @@ export function boardReadScopeWhere(user: AuthzUser) {
       { user: user.id },
       { sharedWith: { has: user.id } },
       { visibility: "public" },
-      { watchers: { some: { user_id: user.id } } },
     ],
   };
 }

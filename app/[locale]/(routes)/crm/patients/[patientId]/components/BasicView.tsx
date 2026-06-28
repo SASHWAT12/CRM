@@ -23,7 +23,7 @@ import Link from "next/link";
 import { EnvelopeClosedIcon } from "@radix-ui/react-icons";
 import { Badge } from "@/components/ui/badge";
 import { EnrichButton } from "./EnrichButton";
-import { ContactDetailActions } from "./ContactDetailActions";
+import { PatientDetailActions } from "./PatientDetailActions";
 import { getAllCrmData } from "@/actions/crm/get-crm-data";
 
 interface OppsViewProps {
@@ -64,7 +64,7 @@ export async function BasicView({ data }: OppsViewProps) {
                   mobile_phone:     data.mobile_phone ?? null,
                 }}
               />
-              <ContactDetailActions contact={data} contactTypes={contactTypes} />
+              <PatientDetailActions contact={data} contactTypes={contactTypes} />
             </div>
           </div>
         </CardHeader>
@@ -182,7 +182,7 @@ export async function BasicView({ data }: OppsViewProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>Contact Details</CardTitle>
+            <CardTitle>Patient Details</CardTitle>
           </CardHeader>
           <CardContent className="gap-1">
             <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">

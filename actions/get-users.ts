@@ -6,6 +6,13 @@ export const getUsers = async () => {
     orderBy: {
       created_on: "desc",
     },
+    include: {
+      created_by: {
+        select: {
+          name: true,
+        },
+      },
+    },
   });
   return data;
 };

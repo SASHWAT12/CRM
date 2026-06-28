@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { EnrichContactDrawer } from "./EnrichContactDrawer";
+import { EnrichPatientDrawer } from "./EnrichPatientDrawer";
 
 interface EnrichButtonProps {
   contactId: string;
@@ -36,7 +36,7 @@ export function EnrichButton({ contactId, contactEmail, contactCurrentData }: En
         <Sparkles className="h-4 w-4 mr-1 text-orange-500" />
         Enrich with AI
       </Button>
-      <EnrichContactDrawer
+      <EnrichPatientDrawer
         contactId={contactId}
         contactEmail={contactEmail}
         contactCurrentData={contactCurrentData}

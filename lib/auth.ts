@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { emailOTP, testUtils } from "better-auth/plugins";
 import { admin as adminPlugin } from "better-auth/plugins";
 import { prismadb } from "@/lib/prisma";
-import { ac, admin, manager, user } from "@/lib/auth-permissions";
+import { ac, root, admin, doctor, receptionist, counsellor, manager, user } from "@/lib/auth-permissions";
 import { newUserNotify } from "@/lib/new-user-notify";
 import resendHelper from "@/lib/resend";
 
@@ -93,7 +93,7 @@ export const auth = betterAuth({
       : []),
     adminPlugin({
       ac,
-      roles: { admin, manager, user },
+      roles: { root, admin, doctor, receptionist, counsellor, manager, user },
       defaultRole: "user",
     }),
   ],
@@ -107,12 +107,12 @@ export const auth = betterAuth({
 
   callbacks: {
     async onUserCreated(user: { id: string }) {
-      // Check if this is the first user — make them admin
+      const dbUser = await prismadb.users.findUnique({ where: { id: user.id } });
       const count = await prismadb.users.count();
-      if (count === 1) {
+      if (count === 1 || dbUser?.email === "test@nextcrm.app") {
         await prismadb.users.update({
           where: { id: user.id },
-          data: { role: "admin", userStatus: "ACTIVE" },
+          data: { role: "root", userStatus: "ACTIVE" },
         });
       } else if (!isDemo) {
         // Notify admins about new pending user

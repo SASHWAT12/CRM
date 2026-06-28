@@ -44,7 +44,7 @@ export function UpdatePatientForm({
   setOpen,
   contactTypes,
 }: UpdatePatientFormProps) {
-  const t = useTranslations("CrmContactForm");
+  const t = useTranslations("CrmPatientForm");
   const c = useTranslations("Common");
 
   const formSchema = z.object({

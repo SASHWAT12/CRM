@@ -72,7 +72,7 @@ const DashboardPage = async () => {
     <Container
       title={dict("containerTitle")}
       description={
-        "Welcome to NextCRM cockpit, here you can see your company overview"
+        `Welcome to ${process.env.NEXT_PUBLIC_APP_NAME || "NextCRM"} cockpit, here you can see your company overview`
       }
     >
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

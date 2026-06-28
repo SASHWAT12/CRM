@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import moment from "moment";
 import { User, CheckSquare, AlertCircle, CalendarDays, Activity } from "lucide-react";
 
-const ContactViewPage = async (props: any) => {
+const PatientViewPage = async (props: any) => {
   const params = await props.params;
   const { patientId } = params;
   const contact: any = await getPatient(patientId);
@@ -162,4 +162,4 @@ const ContactViewPage = async (props: any) => {
   );
 };
 
-export default ContactViewPage;
+export default PatientViewPage;

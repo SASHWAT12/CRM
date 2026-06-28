@@ -118,7 +118,7 @@ test.describe.serial("Sales Flow", () => {
     // Use a unique last name to avoid pagination issues from previous test runs
     const contactLastName = `PW${Date.now()}`;
 
-    // Exact label strings from locales/en.json (CrmContactForm + Common namespaces)
+    // Exact label strings from locales/en.json (CrmPatientForm + Common namespaces)
     await page.getByLabel("Last name").fill(contactLastName);
     await page.getByLabel("Email").first().fill("playwright.contact@testinc.com");
 

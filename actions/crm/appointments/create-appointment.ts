@@ -59,7 +59,7 @@ export const createAppointment = async (rawData: z.infer<typeof createSchema>) =
     });
 
     revalidatePath("/[locale]/(routes)/crm/appointments", "page");
-    revalidatePath(`/[locale]/(routes)/crm/contacts/${patientId}`, "page");
+    revalidatePath(`/[locale]/(routes)/crm/patients/${patientId}`, "page");
 
     return { data: appointment };
   } catch (error) {

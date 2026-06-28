@@ -96,7 +96,7 @@ export const createTask = async (data: {
     }
 
     revalidatePath("/[locale]/(routes)/crm/accounts", "page");
-    revalidatePath("/[locale]/(routes)/crm/contacts", "page");
+    revalidatePath("/[locale]/(routes)/crm/patients", "page");
     return { data: task };
   } catch (error) {
     console.log("[CREATE_TASK]", error);

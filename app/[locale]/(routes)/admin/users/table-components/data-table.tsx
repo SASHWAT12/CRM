@@ -27,15 +27,20 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { Separator } from "@/components/ui/separator";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  actorRole?: string;
+  actorId?: string;
 }
 
 export function AdminUserDataTable<TData, TValue>({
   columns,
   data,
+  actorRole,
+  actorId,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -54,6 +59,10 @@ export function AdminUserDataTable<TData, TValue>({
       rowSelection,
       columnFilters,
     },
+    meta: {
+      actorRole,
+      actorId,
+    },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -68,8 +77,9 @@ export function AdminUserDataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-5 pt-5">
+    <div className="space-y-6">
       <DataTableToolbar table={table} />
+      <Separator />
       <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>

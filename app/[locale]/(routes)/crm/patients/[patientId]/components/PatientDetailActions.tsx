@@ -22,15 +22,15 @@ import { Plus } from "lucide-react";
 
 type ConfigItem = { id: string; name: string };
 
-interface ContactDetailActionsProps {
+interface PatientDetailActionsProps {
   contact: any;
   contactTypes: ConfigItem[];
 }
 
-export function ContactDetailActions({
+export function PatientDetailActions({
   contact,
   contactTypes,
-}: ContactDetailActionsProps) {
+}: PatientDetailActionsProps) {
   const [updateOpen, setUpdateOpen] = useState(false);
   const [followupOpen, setFollowupOpen] = useState(false);
 
@@ -87,7 +87,7 @@ export function ContactDetailActions({
             <Button
               variant="ghost"
               className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-              data-testid="contact-detail-actions-btn"
+              data-testid="patient-detail-actions-btn"
             >
               <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
               <span className="sr-only">Open menu</span>

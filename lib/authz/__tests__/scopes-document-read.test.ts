@@ -27,7 +27,6 @@ const linkedAccountOR = (uid: string) => ({
   OR: expect.arrayContaining([
     { assigned_to: uid },
     { createdBy: uid },
-    { watchers: { some: { user_id: uid } } },
   ]),
 });
 

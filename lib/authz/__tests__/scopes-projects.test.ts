@@ -48,10 +48,9 @@ describe("boardReadScopeWhere", () => {
         { user: "u1" },
         { sharedWith: { has: "u1" } },
         { visibility: "public" },
-        { watchers: { some: { user_id: "u1" } } },
       ]),
     );
-    expect(w.OR).toHaveLength(4);
+    expect(w.OR).toHaveLength(3);
   });
 });
 

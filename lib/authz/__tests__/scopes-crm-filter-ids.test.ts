@@ -55,7 +55,6 @@ describe("filterAuthorizedAccountIds", () => {
       OR: expect.arrayContaining([
         { assigned_to: "u3" },
         { createdBy: "u3" },
-        { watchers: { some: { user_id: "u3" } } },
       ]),
     });
   });
@@ -102,7 +101,6 @@ describe("filterAuthorizedLeadIds", () => {
             OR: expect.arrayContaining([
               { assigned_to: "u3" },
               { createdBy: "u3" },
-              { watchers: { some: { user_id: "u3" } } },
             ]),
           },
         },
@@ -152,7 +150,6 @@ describe("filterAuthorizedOpportunityIds", () => {
             OR: expect.arrayContaining([
               { assigned_to: "u3" },
               { createdBy: "u3" },
-              { watchers: { some: { user_id: "u3" } } },
             ]),
           },
         },

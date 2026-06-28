@@ -8,7 +8,7 @@ import { getPatients } from "@/actions/crm/get-patients";
 import { getAllCrmData } from "@/actions/crm/get-crm-data";
 import { getTranslations } from "next-intl/server";
 
-const AccountsPage = async () => {
+const PatientsPage = async () => {
   const t = await getTranslations("CrmPage");
   const crmData = await getAllCrmData();
   const contacts = await getPatients();
@@ -24,4 +24,4 @@ const AccountsPage = async () => {
   );
 };
 
-export default AccountsPage;
+export default PatientsPage;

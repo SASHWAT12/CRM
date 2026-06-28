@@ -43,7 +43,6 @@ describe("assertCanWriteAccount", () => {
       OR: expect.arrayContaining([
         { assigned_to: "u3" },
         { createdBy: "u3" },
-        { watchers: { some: { user_id: "u3" } } },
       ]),
     });
   });

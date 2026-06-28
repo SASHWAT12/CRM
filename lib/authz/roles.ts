@@ -1,6 +1,6 @@
-export type AppRole = "user" | "manager" | "admin";
+export type AppRole = "root" | "admin" | "doctor" | "receptionist" | "counsellor" | "user" | "manager";
 
-export const APP_ROLES: readonly AppRole[] = ["user", "manager", "admin"] as const;
+export const APP_ROLES: readonly AppRole[] = ["root", "admin", "doctor", "receptionist", "counsellor", "user", "manager"] as const;
 
 const APP_ROLE_SET = new Set<string>(APP_ROLES);
 
@@ -10,7 +10,11 @@ export function parseRole(value: unknown): AppRole | null {
 }
 
 const LEGACY_MAP: Record<string, AppRole> = {
+  root: "root",
   admin: "admin",
+  doctor: "doctor",
+  receptionist: "receptionist",
+  counsellor: "counsellor",
   member: "manager",
   viewer: "user",
   user: "user",

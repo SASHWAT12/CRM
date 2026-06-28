@@ -163,7 +163,7 @@
     "emailInvalid": "Введіть дійсну адресу електронної пошти",
     "websiteInvalid": "Веб-сайт повинен бути дійсною URL-адресою"
   },
-  "CrmContactForm": {
+  "CrmPatientForm": {
     "firstName": "Ім'я",
     "lastName": "Прізвище",
     "mobilePhone": "Мобільний телефон",

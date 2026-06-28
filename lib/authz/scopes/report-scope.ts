@@ -31,7 +31,6 @@ export function getReportScope(user: AuthzUser): ReportScope {
       OR: [
         { assigned_to: user.id },
         { createdBy: user.id },
-        { watchers: { some: { user_id: user.id } } },
       ],
     },
     contact: {

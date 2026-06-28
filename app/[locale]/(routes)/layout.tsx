@@ -91,7 +91,7 @@ export default async function AppLayout({
       title: dict("crm.title"),
       accounts: dict("crm.accounts"),
       opportunities: dict("crm.opportunities"),
-      contacts: dict("crm.patients"),
+      patients: dict("crm.patients"),
       leads: dict("crm.leads"),
       contracts: dict("crm.contracts"),
       products: dict("crm.products"),

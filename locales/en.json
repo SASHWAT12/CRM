@@ -1,7 +1,7 @@
 {
   "RootLayout": {
-    "title": "NextCRM",
-    "description": "NextCRM is an open source CRM build on top of NextJS."
+    "title": "MmrhCRM",
+    "description": "MmrhCRM is a lean Hospital CRM built on top of Next.js."
   },
   "ModuleMenu": {
     "dashboard": "Dashboard",
@@ -28,7 +28,7 @@
   "DashboardPage": {
     "containerTitle": "Dashboard",
     "totalRevenue": "Total revenue",
-    "containerDescription": "Welcome to NextCRM, here you can see all important information about your business.",
+    "containerDescription": "Welcome to MmrhCRM, here you can see all important information about your hospital.",
     "expectedRevenue": "Expected revenue",
     "activeUsers": "Active users",
     "accounts": "Companies",
@@ -113,7 +113,7 @@
       "viewTitle": "Opportunities",
       "addNew": "Add new opportunity",
       "sheetTitle": "Create new opportunity",
-      "sheetDescription": "Create a new sales opportunity with account, contact, and deal information",
+      "sheetDescription": "Create a new sales opportunity with account, patient, and deal information",
       "empty": "No assigned opportunities found"
     },
     "leads": {
@@ -165,7 +165,7 @@
     "emailInvalid": "Please enter a valid email address",
     "websiteInvalid": "Website must be a valid URL"
   },
-  "CrmContactForm": {
+  "CrmPatientForm": {
     "firstName": "First name",
     "lastName": "Last name",
     "mobilePhone": "Mobile phone",

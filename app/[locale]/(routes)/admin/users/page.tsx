@@ -1,7 +1,7 @@
 import { getUsers } from "@/actions/get-users";
 import React from "react";
 import Container from "../../components/ui/Container";
-import { InviteForm } from "./components/IviteForm";
+import { UserForm } from "./components/UserForm";
 import { Separator } from "@/components/ui/separator";
 
 import { getSession } from "@/lib/auth-server";
@@ -9,7 +9,6 @@ import { AdminUserDataTable } from "./table-components/data-table";
 import { columns } from "./table-components/columns";
 import { Users } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import SendMailToAll from "./components/send-mail-to-all";
 import { getTranslations } from "next-intl/server";
 
 const AdminUsersPage = async () => {
@@ -18,37 +17,20 @@ const AdminUsersPage = async () => {
 
   const session = await getSession();
 
-  if (session?.user?.role !== "admin") {
-    return (
-      <Container
-        title={t("title")}
-        description={t("accessNotAllowed")}
-      >
-        <div className="flex w-full h-full items-center justify-center">
-          {t("accessNotAllowed")}
-        </div>
-      </Container>
-    );
-  }
-
   return (
     <Container
-      title={t("users.title")}
-      description={t("users.description")}
+      title="User Administration"
+      description="Create and manage your hospital system users and roles."
     >
-      <div className="flex-col1">
-        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-          {t("users.inviteHeading")}
-        </h4>
-        <InviteForm />
+      <div className="space-y-8 mt-2">
+        <UserForm actorRole={session.user.role} />
+        <AdminUserDataTable
+          columns={columns}
+          data={users}
+          actorRole={session.user.role}
+          actorId={session.user.id}
+        />
       </div>
-      <Separator />
-      <div>
-        <SendMailToAll />
-      </div>
-      <Separator />
-
-      <AdminUserDataTable columns={columns} data={users} />
     </Container>
   );
 };

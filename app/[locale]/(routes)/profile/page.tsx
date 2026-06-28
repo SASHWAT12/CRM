@@ -28,9 +28,6 @@ const ProfilePage = async () => {
         <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
           <ProfileTabs
             profileContent={<ProfileTabContent data={data} />}
-            securityContent={<SecurityTabContent userId={data.id} />}
-            preferencesContent={<PreferencesTabContent userId={data.id} />}
-            // developerContent={<DeveloperTabContent userId={data.id} />}
             emailsContent={<EmailAccountsTabContent />}
           />
         </Suspense>

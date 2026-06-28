@@ -77,13 +77,13 @@ async function main() {
     where: { email: testUserEmail },
     update: {
       userStatus: "ACTIVE",
-      role: "admin",
+      role: "root",
     },
     create: {
       email: testUserEmail,
       name: "Test User",
       userStatus: "ACTIVE",
-      role: "admin",
+      role: "root",
     },
   });
   console.log(`Test user seeded: ${testUserEmail}`);

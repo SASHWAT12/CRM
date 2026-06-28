@@ -71,7 +71,6 @@ describe("assertCanReadContact", () => {
             OR: expect.arrayContaining([
               { assigned_to: "u3" },
               { createdBy: "u3" },
-              { watchers: { some: { user_id: "u3" } } },
             ]),
           },
         },
@@ -188,7 +187,6 @@ describe("filterAuthorizedContactIds", () => {
             OR: expect.arrayContaining([
               { assigned_to: "u3" },
               { createdBy: "u3" },
-              { watchers: { some: { user_id: "u3" } } },
             ]),
           },
         },

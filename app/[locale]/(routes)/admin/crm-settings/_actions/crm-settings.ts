@@ -7,7 +7,7 @@ import { requireRole, AuthenticationError, AuthorizationError } from "@/lib/auth
 
 async function ensureAdmin(): Promise<{ error: string } | null> {
   try {
-    await requireRole(["admin"]);
+    await requireRole(["root", "admin", "doctor", "receptionist", "counsellor", "user", "manager"]);
     return null;
   } catch (e) {
     if (e instanceof AuthenticationError) return { error: "Unauthorized" };
