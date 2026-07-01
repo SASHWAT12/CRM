@@ -18,21 +18,25 @@ import {
 } from "@/components/ui/sheet";
 import { UpdatePatientForm } from "../../components/UpdatePatientForm";
 import NewPatientFollowupForm from "./NewPatientFollowupForm";
-import { Plus } from "lucide-react";
+import { LogCallForm } from "./LogCallForm";
+import { Plus, Phone } from "lucide-react";
 
 type ConfigItem = { id: string; name: string };
 
 interface PatientDetailActionsProps {
   contact: any;
   contactTypes: ConfigItem[];
+  leadSources: ConfigItem[];
 }
 
 export function PatientDetailActions({
   contact,
   contactTypes,
+  leadSources,
 }: PatientDetailActionsProps) {
   const [updateOpen, setUpdateOpen] = useState(false);
   const [followupOpen, setFollowupOpen] = useState(false);
+  const [callOpen, setCallOpen] = useState(false);
 
   return (
     <>
@@ -49,6 +53,7 @@ export function PatientDetailActions({
               initialData={contact}
               setOpen={setUpdateOpen}
               contactTypes={contactTypes}
+              leadSources={leadSources}
             />
           </div>
         </SheetContent>
@@ -71,7 +76,33 @@ export function PatientDetailActions({
         </SheetContent>
       </Sheet>
 
+      <Sheet open={callOpen} onOpenChange={setCallOpen}>
+        <SheetContent className="w-full md:max-w-[771px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Log Call</SheetTitle>
+            <SheetDescription>
+              Log patient call detail notes and schedule followups
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            <LogCallForm
+              patientId={contact.id}
+              onFinish={() => setCallOpen(false)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
       <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1 cursor-pointer"
+          onClick={() => setCallOpen(true)}
+        >
+          <Phone className="h-4 w-4" />
+          <span>Log Call</span>
+        </Button>
         <Button
           variant="outline"
           size="sm"

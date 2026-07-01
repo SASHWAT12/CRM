@@ -29,6 +29,7 @@ export const updatePatient = async (data: {
   social_youtube?: string | null;
   social_tiktok?: string | null;
   contact_type_id?: string;
+  lead_source_id?: string | null;
 }) => {
   const session = await getSession();
   if (!session) return { error: "Unauthorized" };
@@ -42,6 +43,7 @@ export const updatePatient = async (data: {
     birthday_month,
     birthday_year,
     contact_type_id,
+    lead_source_id,
     ...rest
   } = data;
 
@@ -55,6 +57,7 @@ export const updatePatient = async (data: {
   const cleanAssignedTo = sanitizeUuid(assigned_to);
   const cleanAssignedAccount = sanitizeUuid(assigned_account);
   const cleanContactTypeId = sanitizeUuid(contact_type_id);
+  const cleanLeadSourceId = sanitizeUuid(lead_source_id);
 
   try {
     const before = await prismadb.crm_Contacts.findFirst({ where: { id, deletedAt: null } });
@@ -66,6 +69,7 @@ export const updatePatient = async (data: {
         accountsIDs: cleanAssignedAccount,
         assigned_to: cleanAssignedTo,
         contact_type_id: cleanContactTypeId,
+        lead_source_id: cleanLeadSourceId,
         birthday:
           birthday_day && birthday_month && birthday_year
             ? birthday_day + "/" + birthday_month + "/" + birthday_year

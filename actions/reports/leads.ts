@@ -75,6 +75,57 @@ export async function getConversionRate(
   filters: ReportFilters,
   scope: ReportScope = DEFAULT_SCOPE,
 ): Promise<{ rate: number; converted: number; leads: number }> {
-  return { rate: 0, converted: 0, leads: 0 };
+  const contacts = await prismadb.crm_Contacts.findMany({
+    where: {
+      created_on: { gte: filters.dateFrom, lte: filters.dateTo },
+      deletedAt: null,
+      ...scope.contact,
+    },
+    select: {
+      pipelineStage: true,
+    },
+  });
+
+  const leads = contacts.length;
+  const converted = contacts.filter((c) => c.pipelineStage === "CONVERTED").length;
+  const rate = leads > 0 ? parseFloat(((converted / leads) * 100).toFixed(2)) : 0;
+
+  return { rate, converted, leads };
+}
+
+export async function getPipelineStages(
+  filters: ReportFilters,
+  scope: ReportScope = DEFAULT_SCOPE,
+): Promise<ChartDataPoint[]> {
+  const contacts = await prismadb.crm_Contacts.groupBy({
+    by: ['pipelineStage'],
+    where: {
+      created_on: { gte: filters.dateFrom, lte: filters.dateTo },
+      deletedAt: null,
+      ...scope.contact,
+    },
+    _count: {
+      id: true,
+    },
+  });
+
+  const stagesOrder = ["NEW", "CONTACTED", "INTERESTED", "CONSULTATION_BOOKED", "VISITED", "TREATMENT_STARTED", "CONVERTED", "CLOSED_LOST"];
+  const stagesLabels: Record<string, string> = {
+    NEW: "New Inquiry",
+    CONTACTED: "Contacted",
+    INTERESTED: "Interested",
+    CONSULTATION_BOOKED: "Consultation Booked",
+    VISITED: "Visited",
+    TREATMENT_STARTED: "Treatment Started",
+    CONVERTED: "Converted",
+    CLOSED_LOST: "Closed Lost",
+  };
+
+  const counts = new Map(contacts.map(c => [c.pipelineStage ?? "NEW", c._count.id]));
+
+  return stagesOrder.map(stage => ({
+    name: stagesLabels[stage],
+    Number: counts.get(stage) ?? 0,
+  }));
 }
 

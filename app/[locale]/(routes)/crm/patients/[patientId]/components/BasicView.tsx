@@ -24,6 +24,7 @@ import { EnvelopeClosedIcon } from "@radix-ui/react-icons";
 import { Badge } from "@/components/ui/badge";
 import { PatientDetailActions } from "./PatientDetailActions";
 import { getAllCrmData } from "@/actions/crm/get-crm-data";
+import { PatientPipelineTracker } from "./PatientPipelineTracker";
 
 interface OppsViewProps {
   data: any;
@@ -35,8 +36,33 @@ export async function BasicView({ data }: OppsViewProps) {
   const crmData = await getAllCrmData();
   const contactTypes = crmData.contactTypes;
   if (!data) return <div>Opportunity not found</div>;
+
+  // Query next followup and lead source
+  const contactWithSource = await prismadb.crm_Contacts.findUnique({
+    where: { id: data.id },
+    include: {
+      lead_source: true,
+    },
+  });
+  const leadSourceName = contactWithSource?.lead_source?.name ?? "None";
+
+  const openTasks = await prismadb.crm_Accounts_Tasks.findMany({
+    where: { contact: data.id, taskStatus: { not: "COMPLETE" } },
+    orderBy: { dueDateAt: "asc" },
+    take: 1,
+  });
+  const nextTask = openTasks[0];
+  const nextFollowupStr = nextTask && nextTask.dueDateAt
+    ? moment(nextTask.dueDateAt).format("MMM DD YYYY")
+    : "None Scheduled";
+  const nextActionName = nextTask ? nextTask.title : "None";
   return (
     <div className="pb-3 space-y-5">
+      <PatientPipelineTracker
+        patientId={data.id}
+        currentStage={data.pipelineStage || "NEW"}
+        lossReason={data.lossReason}
+      />
       {/*      <pre>{JSON.stringify(data, null, 2)}</pre> */}
       <Card>
         <CardHeader className="pb-3">
@@ -48,7 +74,7 @@ export async function BasicView({ data }: OppsViewProps) {
               <CardDescription>ID:{data.id}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <PatientDetailActions contact={data} contactTypes={contactTypes} />
+              <PatientDetailActions contact={data} contactTypes={contactTypes} leadSources={crmData.leadSources} />
             </div>
           </div>
         </CardHeader>
@@ -147,6 +173,27 @@ export async function BasicView({ data }: OppsViewProps) {
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Type</p>
                   <p className="text-sm text-muted-foreground">{data.contact_type?.name ?? "—"}</p>
+                </div>
+              </div>
+              <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
+                <CoinsIcon className="mt-px h-5 w-5" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">Lead Source</p>
+                  <p className="text-sm text-muted-foreground">{leadSourceName}</p>
+                </div>
+              </div>
+              <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
+                <CoinsIcon className="mt-px h-5 w-5" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">Next Followup</p>
+                  <p className="text-sm text-muted-foreground">{nextFollowupStr}</p>
+                </div>
+              </div>
+              <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
+                <CoinsIcon className="mt-px h-5 w-5" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">Next Action</p>
+                  <p className="text-sm text-muted-foreground">{nextActionName}</p>
                 </div>
               </div>
             </div>

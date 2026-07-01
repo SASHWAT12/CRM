@@ -4,6 +4,7 @@ import { prismadb } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { writeAuditLog } from "@/lib/audit-log";
 import { z } from "zod";
+import { transitionPatientStage } from "@/lib/crm/pipeline-service";
 
 const updateSchema = z.object({
   id: z.string().uuid(),
@@ -88,6 +89,26 @@ export const updateAppointment = async (rawData: z.infer<typeof updateSchema>) =
 
     revalidatePath("/[locale]/(routes)/crm/appointments", "page");
     revalidatePath(`/[locale]/(routes)/crm/patients/${existing.patientId}`, "page");
+
+    // Auto-advance stage to VISITED if appointment is completed
+    if (status === "COMPLETED") {
+      try {
+        const patient = await prismadb.crm_Contacts.findUnique({
+          where: { id: existing.patientId },
+          select: { pipelineStage: true },
+        });
+        const currentStage = patient?.pipelineStage || "NEW";
+        if (currentStage === "CONSULTATION_BOOKED") {
+          await transitionPatientStage({
+            patientId: existing.patientId,
+            nextStage: "VISITED",
+            userId: session.user.id,
+          });
+        }
+      } catch (triggerErr) {
+        console.error("[AUTO_STAGE_TRIGGER_ERROR] updateAppointment:", triggerErr);
+      }
+    }
 
     return { data: updated };
   } catch (error: any) {

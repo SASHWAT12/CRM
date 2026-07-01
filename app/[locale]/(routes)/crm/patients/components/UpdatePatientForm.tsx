@@ -37,12 +37,14 @@ type UpdatePatientFormProps = {
   initialData: any;
   setOpen: (value: boolean) => void;
   contactTypes: ConfigItem[];
+  leadSources: ConfigItem[];
 };
 
 export function UpdatePatientForm({
   initialData,
   setOpen,
   contactTypes,
+  leadSources,
 }: UpdatePatientFormProps) {
   const t = useTranslations("CrmPatientForm");
   const c = useTranslations("Common");
@@ -71,6 +73,7 @@ export function UpdatePatientForm({
     social_skype: z.string().nullable().optional(),
     social_youtube: z.string().nullable().optional(),
     social_tiktok: z.string().nullable().optional(),
+    lead_source_id: z.string().optional().nullable(),
   });
 
   type NewAccountFormValues = z.infer<typeof formSchema>;
@@ -98,6 +101,7 @@ export function UpdatePatientForm({
     social_skype: initialData.social_skype ?? "",
     social_youtube: initialData.social_youtube ?? "",
     social_tiktok: initialData.social_tiktok ?? "",
+    lead_source_id: initialData.lead_source_id ?? "",
     birthday_year: initialData.birthday ? (initialData.birthday.includes("/") ? initialData.birthday.split("/")[2] : (!isNaN(Date.parse(initialData.birthday)) ? new Date(initialData.birthday).getFullYear().toString() : "")) : "",
     birthday_month: initialData.birthday ? (initialData.birthday.includes("/") ? initialData.birthday.split("/")[1] : (!isNaN(Date.parse(initialData.birthday)) ? (new Date(initialData.birthday).getMonth() + 1).toString() : "")) : "",
     birthday_day: initialData.birthday ? (initialData.birthday.includes("/") ? initialData.birthday.split("/")[0] : (!isNaN(Date.parse(initialData.birthday)) ? new Date(initialData.birthday).getDate().toString() : "")) : "",
@@ -391,6 +395,33 @@ export function UpdatePatientForm({
                         {contactTypes.map((type) => (
                           <SelectItem key={type.id} value={type.id}>
                             {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lead_source_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("leadSource")}</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("leadSourcePlaceholder")} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="flex overflow-y-auto h-56">
+                        {(leadSources || []).map((source) => (
+                          <SelectItem key={source.id} value={source.id}>
+                            {source.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -36,12 +36,14 @@ type AccountOption = {
 type NewPatientFormProps = {
   accounts: AccountOption[];
   contactTypes: { id: string; name: string }[];
+  leadSources: { id: string; name: string }[];
   onFinish: () => void;
 };
 
 export function NewPatientForm({
   accounts,
   contactTypes,
+  leadSources,
   onFinish,
 }: NewPatientFormProps) {
   const t = useTranslations("CrmPatientForm");
@@ -70,6 +72,7 @@ export function NewPatientForm({
     social_skype: z.string().optional(),
     social_youtube: z.string().optional(),
     social_tiktok: z.string().optional(),
+    lead_source_id: z.string().optional(),
   });
 
   type NewAccountFormValues = z.infer<typeof formSchema>;
@@ -100,6 +103,7 @@ export function NewPatientForm({
       birthday_year: undefined,
       birthday_month: undefined,
       birthday_day: undefined,
+      lead_source_id: "",
     },
   });
 
@@ -377,6 +381,33 @@ export function NewPatientForm({
                         {contactTypes.map((type) => (
                           <SelectItem key={type.id} value={type.id}>
                             {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lead_source_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("leadSource")}</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("leadSourcePlaceholder")} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="flex overflow-y-auto h-56">
+                        {(leadSources || []).map((source) => (
+                          <SelectItem key={source.id} value={source.id}>
+                            {source.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

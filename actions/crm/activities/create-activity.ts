@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 const ENTITY_SLUGS: Record<string, string> = {
   account: "accounts",
-  contact: "contacts",
+  contact: "patients",
   lead: "leads",
   opportunity: "opportunities",
   contract: "contracts",

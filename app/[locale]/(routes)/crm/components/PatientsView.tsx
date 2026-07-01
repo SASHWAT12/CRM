@@ -39,7 +39,7 @@ const PatientsView = ({ data, crmData }: PatientsViewProps) => {
   const [open, setOpen] = useState(false);
   const t = useTranslations("CrmPage");
 
-  const { accounts, contactTypes } = crmData;
+  const { accounts, contactTypes, leadSources } = crmData;
 
   return (
     <Card>
@@ -68,6 +68,7 @@ const PatientsView = ({ data, crmData }: PatientsViewProps) => {
                   <NewPatientForm
                     accounts={accounts}
                     contactTypes={contactTypes}
+                    leadSources={leadSources}
                     onFinish={() => setOpen(false)}
                   />
                 </div>
@@ -84,7 +85,7 @@ const PatientsView = ({ data, crmData }: PatientsViewProps) => {
         ) : (
           <PatientsDataTable
             data={data}
-            columns={createColumns(contactTypes)}
+            columns={createColumns(contactTypes, leadSources)}
           />
         )}
       </CardContent>

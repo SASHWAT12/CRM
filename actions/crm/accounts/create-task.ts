@@ -25,12 +25,6 @@ export const createTask = async (data: {
     return { error: "Missing one of the task data" };
   }
 
-  let resend;
-  try {
-    resend = await resendHelper();
-  } catch (error: any) {
-    return { error: error?.message || "Resend API key is not configured" };
-  }
 
   try {
     const task = await prismadb.crm_Accounts_Tasks.create({
@@ -52,31 +46,34 @@ export const createTask = async (data: {
     // Notification to user who is not a task creator
     if (user !== session.user.id) {
       try {
+        const resend = await resendHelper();
         const notifyRecipient = await prismadb.users.findUnique({
           where: { id: user },
         });
 
-        await resend.emails.send({
-          from:
-            process.env.NEXT_PUBLIC_APP_NAME +
-            " <" +
-            process.env.EMAIL_FROM +
-            ">",
-          to: notifyRecipient?.email!,
-          subject:
-            session.user.userLanguage === "en"
-              ? `New task - ${title}.`
-              : `Nový úkol - ${title}.`,
-          text: "",
-          react: NewTaskFromCRMEmail({
-            taskFromUser: session.user.name!,
-            username: notifyRecipient?.name!,
-            userLanguage: notifyRecipient?.userLanguage!,
-            taskData: task,
-          }),
-        });
+        if (notifyRecipient?.email) {
+          await resend.emails.send({
+            from:
+              (process.env.NEXT_PUBLIC_APP_NAME || "MmrhCRM") +
+              " <" +
+              (process.env.EMAIL_FROM || "info@softbase.cz") +
+              ">",
+            to: notifyRecipient.email,
+            subject:
+              session.user.userLanguage === "en"
+                ? `New task - ${title}.`
+                : `Nový úkol - ${title}.`,
+            text: "",
+            react: NewTaskFromCRMEmail({
+              taskFromUser: session.user.name!,
+              username: notifyRecipient.name!,
+              userLanguage: notifyRecipient.userLanguage!,
+              taskData: task,
+            }),
+          });
+        }
       } catch (error) {
-        console.log(error);
+        console.log("Resend notification failed (ignored in development):", error);
       }
     }
 

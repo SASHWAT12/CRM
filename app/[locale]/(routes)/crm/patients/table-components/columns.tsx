@@ -13,7 +13,7 @@ import moment from "moment";
 
 type ConfigItem = { id: string; name: string };
 
-export const createColumns = (contactTypes: ConfigItem[] = []): ColumnDef<Opportunity>[] => [
+export const createColumns = (contactTypes: ConfigItem[] = [], leadSources: ConfigItem[] = []): ColumnDef<Opportunity>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -128,7 +128,7 @@ export const createColumns = (contactTypes: ConfigItem[] = []): ColumnDef<Opport
   {
     id: "actions",
     cell: ({ row }) => (
-      <DataTableRowActions row={row} contactTypes={contactTypes} />
+      <DataTableRowActions row={row} contactTypes={contactTypes} leadSources={leadSources} />
     ),
   },
 ];

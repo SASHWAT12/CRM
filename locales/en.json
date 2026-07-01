@@ -199,6 +199,8 @@
     "isActive": "Is patient active?",
     "contactType": "Patient type",
     "contactTypePlaceholder": "Choose patient type",
+    "leadSource": "Lead source",
+    "leadSourcePlaceholder": "Select lead source",
     "customer": "Customer",
     "partner": "Partner",
     "vendor": "Vendor",
