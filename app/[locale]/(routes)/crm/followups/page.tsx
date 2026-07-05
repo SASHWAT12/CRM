@@ -1,125 +1,164 @@
 import Container from "@/app/[locale]/(routes)/components/ui/Container";
 import { getFollowups } from "@/actions/crm/followups/get-followups";
-import { TasksDataTable } from "../accounts/[accountId]/tasks-data-table/components/data-table";
-import { columns } from "./components/columns";
-import { FollowupFilters } from "./components/FollowupFilters";
-import { CreateFollowupButton } from "./components/CreateFollowupButton";
+import { FollowupsWorkbenchClient } from "./components/FollowupsWorkbenchClient";
 import { Suspense } from "react";
 import CrmTableSkeleton from "@/components/skeletons/crm-table-skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckSquare, AlertCircle, CalendarDays } from "lucide-react";
+import { getSession } from "@/lib/auth-server";
+import { redirect } from "next/navigation";
+import { requireAuthenticated } from "@/lib/authz";
+import { prismadb } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface PageProps {
   searchParams: Promise<{
-    status?: string;
-    contactId?: string;
+    queue?: string;
+    search?: string;
+    userId?: string;
+    priority?: string;
     skip?: string;
     take?: string;
   }>;
 }
 
 const FollowupsPage = async (props: PageProps) => {
+  const session = await getSession();
+  if (!session) {
+    redirect("/sign-in");
+  }
+
   const searchParams = await props.searchParams;
-  const status = searchParams.status || "ALL";
-  const contactId = searchParams.contactId || undefined;
+  const queue = searchParams.queue || "DUE_TODAY";
+  const search = searchParams.search || undefined;
+  const userId = searchParams.userId || undefined;
+  const priority = searchParams.priority || undefined;
   const skip = searchParams.skip ? Number(searchParams.skip) : 0;
   const take = searchParams.take ? Number(searchParams.take) : 50;
 
-  // 1. Fetch filtered tasks for the table
-  const { tasks, total } = await getFollowups({ status, contactId, skip, take });
+  const userAuthz = await requireAuthenticated();
+  const isManager = ["root", "admin", "manager"].includes(session.user.role || "");
 
-  // 2. Fetch all tasks for the selected contact (or all contacts if undefined) to calculate metrics
-  const { tasks: allTasks } = await getFollowups({ status: "ALL", contactId, take: 1000 });
+  // Scoped User query filters for counts
+  const userScopeFilter = isManager ? {} : { user: session.user.id };
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-  const pendingCount = allTasks.filter((t: any) => t.taskStatus !== "COMPLETE").length;
-  const overdueCount = allTasks.filter((t: any) => {
-    if (t.taskStatus === "COMPLETE") return false;
-    if (!t.dueDateAt) return false;
-    return new Date(t.dueDateAt) < todayStart;
-  }).length;
-  const dueTodayCount = allTasks.filter((t: any) => {
-    if (t.taskStatus === "COMPLETE") return false;
-    if (!t.dueDateAt) return false;
-    const d = new Date(t.dueDateAt);
-    return (
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate()
-    );
-  }).length;
+  // Fetch counts, staff lists, and tasks in parallel on the server
+  const [
+    followupsResult,
+    staffList,
+    pendingCount,
+    overdueCount,
+    dueTodayCount,
+    completedTodayCount,
+    totalCount,
+    recentCompleted,
+    recentRescheduled
+  ] = await Promise.all([
+    getFollowups({ queue, status: "ALL", skip, take, userId, priority }),
+    prismadb.users.findMany({
+      where: {
+        role: { in: ["admin", "manager", "counsellor", "receptionist"] },
+        userStatus: "ACTIVE",
+      },
+      select: { id: true, name: true },
+    }),
+    // Count active pending tasks
+    prismadb.crm_Accounts_Tasks.count({
+      where: {
+        ...userScopeFilter,
+        taskStatus: "ACTIVE",
+      },
+    }),
+    // Count overdue tasks
+    prismadb.crm_Accounts_Tasks.count({
+      where: {
+        ...userScopeFilter,
+        taskStatus: "ACTIVE",
+        dueDateAt: { lt: todayStart },
+      },
+    }),
+    // Count due today tasks
+    prismadb.crm_Accounts_Tasks.count({
+      where: {
+        ...userScopeFilter,
+        taskStatus: "ACTIVE",
+        dueDateAt: { gte: todayStart, lte: todayEnd },
+      },
+    }),
+    // Count completed today tasks
+    prismadb.crm_Accounts_Tasks.count({
+      where: {
+        ...userScopeFilter,
+        taskStatus: "COMPLETE",
+        updatedAt: { gte: todayStart, lte: todayEnd },
+      },
+    }),
+    // Count total tasks
+    prismadb.crm_Accounts_Tasks.count({
+      where: {
+        ...userScopeFilter,
+      },
+    }),
+    // Recent completed tasks today for activity panel
+    prismadb.crm_Accounts_Tasks.findMany({
+      where: {
+        ...userScopeFilter,
+        taskStatus: "COMPLETE",
+        updatedAt: { gte: todayStart, lte: todayEnd },
+      },
+      take: 3,
+      orderBy: {
+        updatedAt: "desc",
+      },
+      include: {
+        crm_contact: {
+          select: {
+            first_name: true,
+            last_name: true,
+          },
+        },
+      },
+    }),
+    // Recent active tasks that were updated today (rescheduled) for activity panel
+    prismadb.crm_Accounts_Tasks.findMany({
+      where: {
+        ...userScopeFilter,
+        taskStatus: "ACTIVE",
+        updatedAt: { gte: todayStart, lte: todayEnd },
+      },
+      take: 3,
+      orderBy: {
+        updatedAt: "desc",
+      },
+    }),
+  ]);
+
+  const counts = {
+    pending: pendingCount,
+    overdue: overdueCount,
+    dueToday: dueTodayCount,
+    completedToday: completedTodayCount,
+    total: totalCount,
+  };
 
   return (
     <Container
-      title="Patient Followups"
+      title="Callback Inbox"
       description="Track and manage followup tasks, due dates, and practitioner assignments"
     >
-      <div className="space-y-6">
-        {/* Summary cards at the top */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="transition-all duration-300 hover:shadow-md border-primary/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Pending Followups
-              </CardTitle>
-              <CheckSquare className="h-4 w-4 text-emerald-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">{pendingCount}</div>
-              <p className="text-[10px] text-muted-foreground">Tasks awaiting action</p>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all duration-300 hover:shadow-md border-primary/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Overdue Followups
-              </CardTitle>
-              <AlertCircle className={`h-4 w-4 ${overdueCount > 0 ? "text-destructive animate-pulse" : "text-muted-foreground"}`} />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${overdueCount > 0 ? "text-destructive" : ""}`}>{overdueCount}</div>
-              <p className="text-[10px] text-muted-foreground">Past due date</p>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all duration-300 hover:shadow-md border-primary/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Due Today
-              </CardTitle>
-              <CalendarDays className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{dueTodayCount}</div>
-              <p className="text-[10px] text-muted-foreground">Scheduled for today</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Action Controls & Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg bg-muted/10">
-          <Suspense fallback={<div>Loading filters...</div>}>
-            <FollowupFilters />
-          </Suspense>
-          <div className="flex shrink-0">
-            <CreateFollowupButton />
-          </div>
-        </div>
-
-        {/* List of Followups */}
-        <Suspense fallback={<CrmTableSkeleton />}>
-          {tasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 border rounded-lg bg-background text-muted-foreground">
-              <span>No followups found.</span>
-            </div>
-          ) : (
-            <TasksDataTable columns={columns} data={tasks as any} />
-          )}
-        </Suspense>
-      </div>
+      <Suspense fallback={<CrmTableSkeleton />}>
+        <FollowupsWorkbenchClient
+          data={followupsResult.tasks as any}
+          users={staffList}
+          counts={counts}
+          recentCompleted={recentCompleted}
+          recentRescheduled={recentRescheduled}
+        />
+      </Suspense>
     </Container>
   );
 };
