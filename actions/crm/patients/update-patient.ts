@@ -30,6 +30,8 @@ export const updatePatient = async (data: {
   social_tiktok?: string | null;
   contact_type_id?: string;
   lead_source_id?: string | null;
+  lossReason?: string | null;
+  pipelineStage?: string | null;
 }) => {
   const session = await getSession();
   if (!session) return { error: "Unauthorized" };
@@ -44,6 +46,8 @@ export const updatePatient = async (data: {
     birthday_year,
     contact_type_id,
     lead_source_id,
+    lossReason,
+    pipelineStage,
     ...rest
   } = data;
 
@@ -70,6 +74,8 @@ export const updatePatient = async (data: {
         assigned_to: cleanAssignedTo,
         contact_type_id: cleanContactTypeId,
         lead_source_id: cleanLeadSourceId,
+        lossReason: lossReason !== undefined ? lossReason : undefined,
+        pipelineStage: pipelineStage !== undefined ? pipelineStage : undefined,
         birthday:
           birthday_day && birthday_month && birthday_year
             ? birthday_day + "/" + birthday_month + "/" + birthday_year

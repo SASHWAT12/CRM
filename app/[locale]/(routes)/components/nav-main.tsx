@@ -68,8 +68,9 @@ export function NavMain({ items, dict }: NavMainProps) {
     if (url === "/" || url === "") {
       return pathname === "/" || pathname === ""
     }
-    if (exact) {
-      return pathname === url || pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "") === url
+    if (url === "/crm/dashboard" || exact) {
+      const normalizedPath = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "");
+      return normalizedPath === url;
     }
     return pathname.startsWith(url)
   }

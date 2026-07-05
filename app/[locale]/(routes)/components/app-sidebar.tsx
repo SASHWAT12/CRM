@@ -10,6 +10,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import getReportsMenuItem from "./menu-items/Reports";
@@ -85,14 +86,14 @@ export function AppSidebar({
 
   const navItems = [
     {
-      title: dict?.dashboard || "Dashboard",
-      url: "/",
-      icon: Home,
+      title: "CRM Dashboard",
+      url: "/crm/dashboard",
+      icon: LayoutDashboard,
     },
     {
       title: "My Dashboard",
       url: "/crm/dashboard/user",
-      icon: LayoutDashboard,
+      icon: Eye,
     },
     {
       title: dict?.crm?.patients || "Patients",
@@ -139,9 +140,10 @@ export function AppSidebar({
     <Sidebar collapsible="icon" {...props}>
       {/* Header with Logo and Branding */}
       <SidebarHeader>
-        <div
+        <Link
+          href="/"
           className={cn(
-            "flex items-center py-1",
+            "flex items-center py-1 outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
             isExpanded ? "gap-x-4" : "justify-center",
           )}
         >
@@ -164,7 +166,7 @@ export function AppSidebar({
           >
             {process.env.NEXT_PUBLIC_APP_NAME || "NextCRM"}
           </h1>
-        </div>
+        </Link>
       </SidebarHeader>
 
       {/* Main Content - Navigation */}
