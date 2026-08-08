@@ -31,11 +31,6 @@ const cases: Array<[string, ModelKey]> = [
   ["account", "crm_Accounts"],
   ["lead", "crm_Leads"],
   ["contact", "crm_Contacts"],
-  ["opportunity", "crm_Opportunities"],
-  ["contract", "crm_Contracts"],
-  ["target", "crm_Targets"],
-  ["target_list", "crm_TargetLists"],
-  ["targetlist", "crm_TargetLists"],
 ];
 
 describe("assertCanReadActivityForEntity", () => {

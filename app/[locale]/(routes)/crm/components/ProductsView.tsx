@@ -20,17 +20,16 @@ import type { crm_ProductCategories } from "@prisma/client";
 interface ProductsViewProps {
   data: any[];
   categories: crm_ProductCategories[];
-  currencies: { code: string; name: string; symbol: string }[];
 }
 
-const ProductsView = ({ data, categories, currencies }: ProductsViewProps) => {
+const ProductsView = ({ data, categories }: ProductsViewProps) => {
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex justify-between">
           <CardTitle>
             <Link href="/crm/products" className="hover:underline">
-              Product Catalog
+              Treatment Catalog
             </Link>
           </CardTitle>
 
@@ -38,7 +37,6 @@ const ProductsView = ({ data, categories, currencies }: ProductsViewProps) => {
             <ImportProductsDialog />
             <CreateProductForm
               categories={categories}
-              currencies={currencies}
             />
           </div>
         </div>
@@ -46,7 +44,7 @@ const ProductsView = ({ data, categories, currencies }: ProductsViewProps) => {
       </CardHeader>
       <CardContent>
         {!data || data.length === 0 ? (
-          "No products found. Create your first product to get started."
+          "No treatments found. Create your first treatment to get started."
         ) : (
           <ProductsDataTable data={data} columns={columns} />
         )}

@@ -6,8 +6,8 @@ import { revalidatePath } from "next/cache";
 export const updateProfile = async (data: {
   userId: string;
   name: string;
-  username: string;
-  account_name: string;
+  username?: string;
+  account_name?: string;
 }) => {
   const session = await getSession();
   if (!session) return { error: "Unauthorized" };
@@ -17,13 +17,17 @@ export const updateProfile = async (data: {
   if (!userId) return { error: "userId is required" };
 
   // Ensure user can only update their own profile unless admin
-  if (session.user.id !== userId && session.user.role !== "admin") {
+  if (session.user.id !== userId && session.user.role !== "admin" && session.user.role !== "root") {
     return { error: "Forbidden" };
   }
 
   try {
     const user = await prismadb.users.update({
-      data: { name, username, account_name },
+      data: {
+        name,
+        username: username || null,
+        account_name: account_name || null,
+      },
       where: { id: userId },
     });
     revalidatePath("/[locale]/(routes)/profile", "page");

@@ -34,7 +34,6 @@ describe("getReportScope", () => {
       OR: expect.arrayContaining([
         { assigned_to: "u1" },
         { createdBy: "u1" },
-        { watchers: { some: { user_id: "u1" } } },
       ]),
     });
     expect(s.contact).toMatchObject({

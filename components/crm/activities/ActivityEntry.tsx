@@ -118,7 +118,7 @@ export function ActivityEntry({ activity, onDeleted, onUpdated, entityType, enti
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete activity?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete &ldquo;{activity.title}&rdquo;. This action cannot
+                    This will permanently delete this timeline event. This action cannot
                     be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>

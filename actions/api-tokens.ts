@@ -1,50 +1,13 @@
 "use server";
-import { getSession } from "@/lib/auth-server";
-import {
-  generateApiToken,
-  listApiTokens,
-  revokeApiToken,
-} from "@/lib/api-tokens";
-
-export async function createApiToken(data: {
-  name: string;
-  expiresAt?: Date;
-}) {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-
-  try {
-    const result = await generateApiToken(
-      session.user.id,
-      data.name,
-      data.expiresAt
-    );
-    return { data: result };
-  } catch (error: any) {
-    return { error: error.message ?? "Failed to create token" };
-  }
-}
 
 export async function getApiTokens() {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-
-  try {
-    const tokens = await listApiTokens(session.user.id);
-    return { data: tokens };
-  } catch {
-    return { error: "Failed to fetch tokens" };
-  }
+  return { data: [] };
 }
 
-export async function deleteApiToken(tokenId: string) {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
+export async function createApiToken(data: { name: string; expiresAt?: Date }): Promise<{ error?: string; data?: { rawToken: string } | null }> {
+  return { error: "API tokens are no longer supported", data: null };
+}
 
-  try {
-    await revokeApiToken(tokenId, session.user.id);
-    return { data: "ok" };
-  } catch {
-    return { error: "Not found or unauthorized" };
-  }
+export async function deleteApiToken(id: string) {
+  return { error: "API tokens are no longer supported" };
 }

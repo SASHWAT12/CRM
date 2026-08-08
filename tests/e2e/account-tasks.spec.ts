@@ -162,12 +162,12 @@ test.describe.serial("CRM Account Tasks", () => {
     await page.getByRole("menuitem", { name: "View" }).click();
 
     // Playwright sees the locale-prefixed URL after middleware runs
-    await page.waitForURL(/\/crm\/tasks\/viewtask\/.+/, { timeout: 10000 });
+    await page.waitForURL(/\/crm\/followups\/viewfollowup\/.+/, { timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Capture the taskId from the URL for use in the next test
     const url = page.url();
-    testData.taskId = url.split("/crm/tasks/viewtask/")[1].split("?")[0];
+    testData.taskId = url.split("/crm/followups/viewfollowup/")[1].split("?")[0];
     expect(testData.taskId).toBeTruthy();
 
     // The team-conversation form is the first form on the page. Its

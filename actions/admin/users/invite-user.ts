@@ -1,9 +1,7 @@
 "use server";
 import { prismadb } from "@/lib/prisma";
-import InviteUserEmail from "@/emails/InviteUser";
-import resendHelper from "@/lib/resend";
 import { revalidatePath } from "next/cache";
-import { Language } from "@prisma/client";
+import { AppRole } from "@prisma/client";
 import {
   requireRole,
   AuthenticationError,
@@ -13,33 +11,34 @@ import {
 export const inviteUser = async (data: {
   name: string;
   email: string;
-  language: string;
+  role: string;
 }) => {
   let actor;
   try {
-    actor = await requireRole(["admin"]);
+    actor = await requireRole(["root", "admin"]);
   } catch (e) {
     if (e instanceof AuthenticationError) return { error: "Unauthorized" };
     if (e instanceof AuthorizationError) return { error: "Forbidden" };
     throw e;
   }
 
-  const inviter = await prismadb.users.findUnique({
-    where: { id: actor.id },
-    select: { name: true },
-  });
+  const { name, email, role } = data;
 
-  const { name, email, language } = data;
-
-  if (!name || !email || !language) {
-    return { error: "Name, Email, and Language is required!" };
+  if (!name || !email || !role) {
+    return { error: "Name, Email, and Role are required!" };
   }
 
-  let resend;
-  try {
-    resend = await resendHelper();
-  } catch (error: any) {
-    return { error: error?.message || "Resend API key is not configured" };
+  // Enforce creation hierarchy permissions:
+  // - Root can create: admin, doctor, receptionist, counsellor
+  // - Admin can create: doctor, receptionist, counsellor (cannot create root or admin)
+  if (actor.role === "admin" && (role === "root" || role === "admin")) {
+    return { error: "Administrators cannot create Root or Admin accounts." };
+  }
+  if (role === "root") {
+    return { error: "Root accounts cannot be created." };
+  }
+  if (!["admin", "doctor", "receptionist", "counsellor"].includes(role)) {
+    return { error: "Invalid role selected." };
   }
 
   const checkexisting = await prismadb.users.findFirst({
@@ -56,8 +55,8 @@ export const inviteUser = async (data: {
         name,
         email,
         userStatus: "ACTIVE",
-        userLanguage: language as Language,
-        role: "user",
+        role: role as AppRole,
+        created_by_id: actor.id,
       },
       select: {
         id: true,
@@ -65,7 +64,6 @@ export const inviteUser = async (data: {
         email: true,
         avatar: true,
         role: true,
-        userLanguage: true,
         userStatus: true,
         lastLoginAt: true,
       },
@@ -75,21 +73,10 @@ export const inviteUser = async (data: {
       return { error: "User not created" };
     }
 
-    await resend.emails.send({
-      from: `${process.env.NEXT_PUBLIC_APP_NAME} <${process.env.EMAIL_FROM}>`,
-      to: user.email,
-      subject: `You have been invited to ${process.env.NEXT_PUBLIC_APP_NAME}`,
-      react: InviteUserEmail({
-        invitedByUsername: inviter?.name || "admin",
-        username: user.name!,
-        userLanguage: language,
-      }),
-    });
-
     revalidatePath("/[locale]/(routes)/admin", "page");
     return { data: user };
   } catch (error) {
-    console.log("[INVITE_USER]", error);
-    return { error: "Failed to invite user" };
+    console.log("[CREATE_USER]", error);
+    return { error: "Failed to create user" };
   }
 };

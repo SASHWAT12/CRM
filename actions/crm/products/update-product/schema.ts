@@ -9,7 +9,6 @@ export const UpdateProduct = z.object({
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).optional(),
   unit_price: z.string().optional(),
   unit_cost: z.string().optional(),
-  currency: z.string().length(3).optional(),
   tax_rate: z.string().optional(),
   unit: z.string().max(50).optional(),
   is_recurring: z.boolean().optional(),

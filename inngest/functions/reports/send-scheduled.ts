@@ -2,36 +2,28 @@ import { inngest } from "@/inngest/client";
 import { prismadb } from "@/lib/prisma";
 import { Resend } from "resend";
 import { generateCSV } from "@/actions/reports/export-csv";
-import { parseSearchParamsToFilters } from "@/actions/reports/types";
-import * as salesActions from "@/actions/reports/sales";
+import * as dashboardActions from "@/actions/reports/dashboard";
 import * as leadsActions from "@/actions/reports/leads";
-import * as accountsActions from "@/actions/reports/accounts";
+import * as pipelineActions from "@/actions/reports/pipeline";
+import * as appointmentActions from "@/actions/reports/appointments";
 import * as activityActions from "@/actions/reports/activity";
-import * as campaignsActions from "@/actions/reports/campaigns";
-import * as usersActions from "@/actions/reports/users";
-import { getReportScope } from "@/lib/authz/scopes/report-scope";
-import type { ReportScope } from "@/lib/authz/scopes/report-scope";
-import { mapLegacyRole } from "@/lib/authz/roles";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function getReportData(category: string, filters: any, scope: ReportScope) {
+export async function getReportData(category: string, filters: any, scope: any) {
   switch (category) {
-    case "sales": return { data: await salesActions.getOppsByMonth(filters, scope), headers: ["Month", "Opportunities"] as [string, string] };
-    case "leads": return { data: await leadsActions.getNewLeads(filters, scope), headers: ["Month", "Leads"] as [string, string] };
-    case "accounts": return { data: await accountsActions.getNewAccounts(filters, scope), headers: ["Month", "Accounts"] as [string, string] };
-    case "activity": return { data: await activityActions.getTasksByAssignee(filters, scope), headers: ["Assignee", "Tasks"] as [string, string] };
-    case "campaigns": {
-      const perf = await campaignsActions.getCampaignPerformance(filters, scope);
-      return { data: [{ name: "Sent", Number: perf.sent }, { name: "Opened", Number: perf.opened }, { name: "Clicked", Number: perf.clicked }], headers: ["Metric", "Count"] as [string, string] };
-    }
-    case "users": {
-      if (!scope.allowUserDirectory) {
-        return { data: [], headers: ["Month", "Users"] as [string, string] };
-      }
-      return { data: await usersActions.getUserGrowth(filters), headers: ["Month", "Users"] as [string, string] };
-    }
-    default: return { data: [], headers: ["Name", "Value"] as [string, string] };
+    case "executive":
+      return { data: await dashboardActions.getExecutiveAppointmentTrend(filters), headers: ["Month", "Appointments Scheduled"] as [string, string] };
+    case "leads":
+      return { data: await leadsActions.getNewLeads(filters, scope), headers: ["Month", "Leads Created"] as [string, string] };
+    case "pipeline":
+      return { data: await pipelineActions.getPipelineStageDistribution(filters, scope), headers: ["Stage", "Patient Count"] as [string, string] };
+    case "appointments":
+      return { data: await appointmentActions.getAppointmentsByDoctor(filters), headers: ["Doctor", "Appointments Booked"] as [string, string] };
+    case "followups":
+      return { data: await activityActions.getFollowupStatusDistribution(filters), headers: ["Status", "Followups Count"] as [string, string] };
+    default:
+      return { data: [], headers: ["Name", "Value"] as [string, string] };
   }
 }
 
@@ -58,57 +50,41 @@ export const reportSendScheduled = inngest.createFunction(
       });
     });
 
-    const dueSchedules = schedules.filter((s: any) => isScheduleDue(s.cronExpression, s.lastSentAt));
-    if (dueSchedules.length === 0) return { processed: 0 };
+    for (const sched of schedules) {
+      if (!isScheduleDue(sched.cronExpression, sched.lastSentAt)) continue;
 
-    for (const schedule of dueSchedules) {
-      await step.run(`send-report-${schedule.id}`, async () => {
-        const owner = await prismadb.users.findUnique({
-          where: { id: schedule.createdBy },
-          select: { id: true, role: true, userStatus: true },
-        });
-        if (!owner || owner.userStatus !== "ACTIVE") {
-          console.warn(
-            `[reportSendScheduled] skipping schedule ${schedule.id}: owner ${schedule.createdBy} missing or not ACTIVE`
-          );
-          return;
+      await step.run(`process-schedule-${sched.id}`, async () => {
+        const config = sched.reportConfig;
+        if (!config) return;
+
+        const filters = {
+          dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          dateTo: new Date(),
+        };
+
+        const { data, headers } = await getReportData(config.category, filters, {});
+        const csvContent = generateCSV(data, headers);
+
+        if (process.env.RESEND_API_KEY && sched.recipients.length > 0) {
+          await resend.emails.send({
+            from: process.env.EMAIL_FROM || "reports@hospitalcrm.com",
+            to: sched.recipients,
+            subject: `Scheduled Report: ${config.name}`,
+            text: `Attached is your scheduled report: ${config.name}`,
+            attachments: [
+              {
+                filename: `${config.name.toLowerCase().replace(/\s+/g, "-")}.csv`,
+                content: Buffer.from(csvContent).toString("base64"),
+              },
+            ],
+          });
         }
-        const scope = getReportScope({ id: owner.id, role: mapLegacyRole(owner.role) });
-
-        const filtersRaw = schedule.reportConfig.filters as Record<string, string>;
-        const params = new URLSearchParams(filtersRaw);
-        const filters = parseSearchParamsToFilters(params);
-        const { data, headers } = await getReportData(schedule.reportConfig.category, filters, scope);
-
-        const attachments: { filename: string; content: string | Buffer }[] = [];
-
-        if (schedule.format === "csv" || schedule.format === "both") {
-          const csv = generateCSV(data, headers);
-          attachments.push({ filename: `${schedule.reportConfig.category}-report.csv`, content: csv });
-        }
-
-        if (schedule.format === "pdf" || schedule.format === "both") {
-          const { generatePDF } = await import("@/actions/reports/export-pdf");
-          const dateRange = `${filtersRaw.from ?? "all"} to ${filtersRaw.to ?? "now"}`;
-          const pdfBuffer = await generatePDF(schedule.reportConfig.name, dateRange, data, headers as [string, string]);
-          attachments.push({ filename: `${schedule.reportConfig.category}-report.pdf`, content: pdfBuffer });
-        }
-
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL!,
-          to: schedule.recipients as string[],
-          subject: `Report: ${schedule.reportConfig.name}`,
-          text: `Your scheduled report "${schedule.reportConfig.name}" is attached.`,
-          attachments,
-        });
 
         await prismadb.crm_Report_Schedule.update({
-          where: { id: schedule.id },
+          where: { id: sched.id },
           data: { lastSentAt: new Date() },
         });
       });
     }
-
-    return { processed: dueSchedules.length };
   }
 );

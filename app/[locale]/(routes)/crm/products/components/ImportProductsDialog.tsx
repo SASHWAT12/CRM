@@ -139,9 +139,9 @@ export function ImportProductsDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Import Products from CSV</DialogTitle>
+          <DialogTitle>Import Treatments from CSV</DialogTitle>
           <DialogDescription>
-            Upload a CSV file to bulk import products. Download the template to
+            Upload a CSV file to bulk import treatments. Download the template to
             see the expected format.
           </DialogDescription>
         </DialogHeader>
@@ -209,7 +209,7 @@ export function ImportProductsDialog() {
                 <div className="flex items-center gap-2 text-green-600">
                   <CheckCircle className="h-5 w-5" />
                   <span className="text-sm font-medium">
-                    {result.imported} product(s) imported successfully
+                    {result.imported} treatment(s) imported successfully
                   </span>
                 </div>
               )}

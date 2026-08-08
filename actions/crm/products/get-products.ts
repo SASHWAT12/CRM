@@ -14,7 +14,6 @@ export const getProductsFull = cache(async () => {
     include: {
       category: true,
       created_by_user: { select: { id: true, name: true } },
-      _count: { select: { accountProducts: true } },
     },
     orderBy: { createdAt: "desc" },
   });

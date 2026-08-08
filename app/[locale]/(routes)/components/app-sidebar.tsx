@@ -10,17 +10,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import getDashboardMenuItem from "./menu-items/Dashboard";
-import getCrmMenuItem from "./menu-items/Crm";
-import getProjectsMenuItem from "./menu-items/Projects";
-import getEmailsMenuItem from "./menu-items/Emails";
 import getReportsMenuItem from "./menu-items/Reports";
-import getDocumentsMenuItem from "./menu-items/Documents";
-import getInvoicesMenuItem from "./menu-items/Invoices";
 import getAdministrationMenuItem from "./menu-items/Administration";
-import getCampaignsMenuItem from "./menu-items/Campaigns";
+import { Home, LayoutDashboard, Eye, Users, CheckSquare, CalendarDays, Coins } from "lucide-react";
 
 /**
  * AppSidebar Component - Task Groups 1.2, 2.2-2.7, 3.1, 5.3, 5.4
@@ -90,30 +85,43 @@ export function AppSidebar({
   const isExpanded = state === "expanded";
 
   const navItems = [
-    getDashboardMenuItem({ title: dict?.dashboard || "Dashboard" }),
-    getCrmMenuItem({ localizations: dict.crm }),
-    getCampaignsMenuItem({
-      localizations: {
-        title: "Campaigns",
-        campaigns: "All Campaigns",
-        templates: "Templates",
-        targets: "Targets",
-        targetLists: "Target Lists",
-      },
-    }),
-    getProjectsMenuItem({ title: dict?.projects || "Projects" }),
-    getEmailsMenuItem({ title: dict?.emails || "Emails" }),
+    {
+      title: "CRM Dashboard",
+      url: "/crm/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "My Dashboard",
+      url: "/crm/dashboard/user",
+      icon: Eye,
+    },
+    {
+      title: dict?.crm?.patients || "Patients",
+      url: "/crm/patients",
+      icon: Users,
+    },
+    {
+      title: "Followups",
+      url: "/crm/followups",
+      icon: CheckSquare,
+    },
+    {
+      title: "Appointments",
+      url: "/crm/appointments",
+      icon: CalendarDays,
+    },
+    {
+      title: dict?.crm?.leads || "Leads",
+      url: "/crm/leads",
+      icon: Coins,
+    },
     getReportsMenuItem({ title: dict?.reports || "Reports" }),
-    getDocumentsMenuItem({ title: dict?.documents || "Documents" }),
-    getInvoicesMenuItem({ title: dict?.invoices || "Invoices" }),
   ];
 
-  // Administration: admin users only
-  if (session?.user?.role === "admin") {
-    navItems.push(
-      getAdministrationMenuItem({ title: dict?.settings || "Administration" }),
-    );
-  }
+  // Administration: visible to all users at this stage
+  navItems.push(
+    getAdministrationMenuItem({ title: dict?.settings || "Administration" }),
+  );
 
   // Prepare user data for NavUser component
   const userData = {
@@ -127,9 +135,10 @@ export function AppSidebar({
     <Sidebar collapsible="icon" {...props}>
       {/* Header with Logo and Branding */}
       <SidebarHeader>
-        <div
+        <Link
+          href="/"
           className={cn(
-            "flex items-center py-1",
+            "flex items-center py-1 outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
             isExpanded ? "gap-x-4" : "justify-center",
           )}
         >
@@ -152,7 +161,7 @@ export function AppSidebar({
           >
             {process.env.NEXT_PUBLIC_APP_NAME || "NextCRM"}
           </h1>
-        </div>
+        </Link>
       </SidebarHeader>
 
       {/* Main Content - Navigation */}

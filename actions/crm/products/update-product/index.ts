@@ -49,7 +49,6 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         ...(updateData.status !== undefined && { status: updateData.status }),
         ...(updateData.unit_price !== undefined && { unit_price: parseFloat(updateData.unit_price) }),
         ...(updateData.unit_cost !== undefined && { unit_cost: updateData.unit_cost ? parseFloat(updateData.unit_cost) : null }),
-        ...(updateData.currency !== undefined && { currency: updateData.currency }),
         ...(updateData.tax_rate !== undefined && { tax_rate: updateData.tax_rate ? parseFloat(updateData.tax_rate) : null }),
         ...(updateData.unit !== undefined && { unit: updateData.unit || null }),
         ...(updateData.is_recurring !== undefined && { is_recurring: updateData.is_recurring }),

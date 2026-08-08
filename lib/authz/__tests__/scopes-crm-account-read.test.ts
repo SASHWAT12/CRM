@@ -17,11 +17,10 @@ const find = prismadb.crm_Accounts.findFirst as jest.MockedFunction<
 beforeEach(() => jest.clearAllMocks());
 
 describe("accountUserScopeOR", () => {
-  it("returns three OR clauses for the user id", () => {
+  it("returns two OR clauses for the user id", () => {
     expect(accountUserScopeOR("u1")).toEqual([
       { assigned_to: "u1" },
       { createdBy: "u1" },
-      { watchers: { some: { user_id: "u1" } } },
     ]);
   });
 });
@@ -37,7 +36,6 @@ describe("accountReadScopeWhere", () => {
       OR: expect.arrayContaining([
         { assigned_to: "u1" },
         { createdBy: "u1" },
-        { watchers: { some: { user_id: "u1" } } },
       ]),
     });
   });

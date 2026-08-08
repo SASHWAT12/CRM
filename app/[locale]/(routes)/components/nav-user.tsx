@@ -7,8 +7,6 @@ import {
   LogOut,
   Settings,
   User,
-  LayoutDashboard,
-  BadgeDollarSign,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -118,17 +116,6 @@ export function NavUser({ user }: NavUserProps) {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/projects/dashboard")}>
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              Todo Dashboard
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push(`/crm/dashboard/${user.id}`)}
-            >
-              <BadgeDollarSign className="mr-2 h-4 w-4" />
-              Sales Dashboard
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/profile")}>
               <Settings className="mr-2 h-4 w-4" />

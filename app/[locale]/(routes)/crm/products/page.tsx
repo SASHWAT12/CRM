@@ -8,28 +8,22 @@ import ProductsView from "../components/ProductsView";
 import { serializeDecimalsList } from "@/lib/serialize-decimals";
 
 const ProductsPage = async () => {
-  const [products, categories, crmData] = await Promise.all([
+  const [products, categories] = await Promise.all([
     getProductsFull(),
     getProductCategories(),
-    getAllCrmData(),
   ]);
 
   const serializedProducts = serializeDecimalsList(products);
 
   return (
     <Container
-      title="Products"
-      description="Manage your product and service catalog"
+      title="Treatments"
+      description="Manage your treatment and service catalog"
     >
       <Suspense fallback={<CrmTableSkeleton />}>
         <ProductsView
           data={serializedProducts}
           categories={categories}
-          currencies={crmData.currencies.map((c: { code: string; name: string; symbol: string }) => ({
-            code: c.code,
-            name: c.name,
-            symbol: c.symbol,
-          }))}
         />
       </Suspense>
     </Container>

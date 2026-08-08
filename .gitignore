@@ -76,3 +76,7 @@ v8-compile-cache-*/
 
 #superpowers plugin
 .superpowers/
+
+# skills lock
+skills-lock.json
+

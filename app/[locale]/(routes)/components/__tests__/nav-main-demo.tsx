@@ -24,9 +24,8 @@ export function NavMainDemo() {
       items: [
         { title: "Dashboard", url: "/crm/dashboard" },
         { title: "My Dashboard", url: "/crm/dashboard/user" },
-        { title: "Overview", url: "/crm" },
         { title: "Accounts", url: "/crm/accounts" },
-        { title: "Contacts", url: "/crm/contacts" },
+        { title: "Patients", url: "/crm/patients" },
         { title: "Leads", url: "/crm/leads" },
         { title: "Opportunities", url: "/crm/opportunities" },
         { title: "Contracts", url: "/crm/contracts" },

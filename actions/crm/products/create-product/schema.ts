@@ -8,7 +8,6 @@ export const CreateProduct = z.object({
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).default("DRAFT"),
   unit_price: z.string(),
   unit_cost: z.string().optional(),
-  currency: z.string().length(3),
   tax_rate: z.string().optional(),
   unit: z.string().max(50).optional(),
   is_recurring: z.boolean().default(false),

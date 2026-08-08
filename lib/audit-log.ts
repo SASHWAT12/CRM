@@ -1,5 +1,6 @@
 // lib/audit-log.ts
 import { prismadb } from "@/lib/prisma";
+import moment from "moment";
 
 export type AuditEntityType =
   | "account"
@@ -63,6 +64,24 @@ interface WriteAuditLogParams {
   userId: string | null;
 }
 
+/**
+ * Automatically purges audit log entries older than 90 days.
+ */
+export async function cleanOldAuditLogs(): Promise<number> {
+  try {
+    const ninetyDaysAgo = moment().subtract(90, "days").toDate();
+    const result = await (prismadb as any).crm_AuditLog.deleteMany({
+      where: {
+        createdAt: { lt: ninetyDaysAgo },
+      },
+    });
+    return result.count;
+  } catch (err) {
+    console.error("[AUDIT_LOG_CLEANUP_FAILED]", err);
+    return 0;
+  }
+}
+
 export async function writeAuditLog(params: WriteAuditLogParams): Promise<void> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,6 +94,9 @@ export async function writeAuditLog(params: WriteAuditLogParams): Promise<void> 
         userId: params.userId ?? undefined,
       },
     });
+
+    // Lightweight automatic 90-day retention cleanup
+    void cleanOldAuditLogs();
   } catch (err) {
     console.error("[AUDIT_LOG_WRITE_FAILED]", err);
     // Never rethrow — audit failures must not block CRM mutations

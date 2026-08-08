@@ -1,6 +1,4 @@
-// app/[locale]/(routes)/profile/components/ProfileHero.tsx
 import { Users } from "@prisma/client";
-import { getTranslations } from "next-intl/server";
 import { ProfileHeroAvatar } from "./ProfileHeroAvatar";
 
 type Props = {
@@ -8,18 +6,16 @@ type Props = {
 };
 
 export async function ProfileHero({ data }: Props) {
-  const t = await getTranslations("ProfilePage");
-
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-violet-600 px-7 py-6 flex items-center gap-4">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-7 py-6 flex items-center gap-4 text-white">
       <ProfileHeroAvatar avatar={data.avatar} name={data.name} />
       <div>
-        <div className="text-white text-lg font-bold leading-tight">
-          {data.name}
+        <div className="text-xl font-bold leading-tight">
+          {data.name || "System User"}
         </div>
-        <div className="text-white/75 text-sm">{data.email}</div>
-        <span className="mt-1.5 inline-block rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white">
-          {t("hero.role")}
+        <div className="text-white/80 text-sm">{data.email}</div>
+        <span className="mt-2 inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider">
+          {data.role}
         </span>
       </div>
     </div>

@@ -78,9 +78,19 @@ export const columns: ColumnDef<AdminUser>[] = [
       <DataTableColumnHeader column={column} title="Role" />
     ),
 
-    cell: ({ row }) => (
-      <div className="">{row.original.role ?? "user"}</div>
-    ),
+    cell: ({ row }) => {
+      const role = row.original.role;
+      const roleMap: Record<string, string> = {
+        root: "Root (System)",
+        admin: "Administrator",
+        doctor: "Doctor",
+        receptionist: "Receptionist",
+        counsellor: "Counsellor",
+        user: "Legacy User",
+        manager: "Legacy Manager",
+      };
+      return <div className="">{role ? (roleMap[role] ?? role) : "Legacy User"}</div>;
+    },
     enableSorting: true,
     enableHiding: true,
     filterFn: (row, id, value) => {
@@ -116,17 +126,19 @@ export const columns: ColumnDef<AdminUser>[] = [
     },
   },
   {
-    accessorKey: "userLanguage",
+    accessorKey: "created_by",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Language" />
+      <DataTableColumnHeader column={column} title="Created by" />
     ),
-
-    cell: ({ row }) => <div className="">{row.getValue("userLanguage")}</div>,
-    enableSorting: true,
+    cell: ({ row }) => {
+      const creator = (row.original as any).created_by;
+      return <div className="">{creator?.name || "System"}</div>;
+    },
+    enableSorting: false,
     enableHiding: true,
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row, table }) => <DataTableRowActions row={row} table={table} />,
   },
 ];

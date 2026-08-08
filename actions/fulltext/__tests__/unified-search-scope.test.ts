@@ -1,8 +1,5 @@
 jest.mock("@/lib/auth-server", () => ({ getSession: jest.fn() }));
-jest.mock("@/inngest/lib/embedding-utils", () => ({
-  generateEmbedding: jest.fn().mockRejectedValue(new Error("no embedding")),
-  toVectorLiteral: jest.fn(),
-}));
+
 jest.mock("@/lib/prisma", () => ({
   prismadb: {
     users: {

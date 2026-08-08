@@ -1,8 +1,8 @@
 import { APP_ROLES, parseRole, mapLegacyRole } from "../roles";
 
 describe("APP_ROLES", () => {
-  it("contains exactly user, manager, admin", () => {
-    expect([...APP_ROLES].sort()).toEqual(["admin", "manager", "user"]);
+  it("contains exactly canonical roles", () => {
+    expect([...APP_ROLES].sort()).toEqual(["admin", "counsellor", "doctor", "manager", "receptionist", "root", "user"]);
   });
 });
 
@@ -11,6 +11,10 @@ describe("parseRole", () => {
     expect(parseRole("user")).toBe("user");
     expect(parseRole("manager")).toBe("manager");
     expect(parseRole("admin")).toBe("admin");
+    expect(parseRole("root")).toBe("root");
+    expect(parseRole("doctor")).toBe("doctor");
+    expect(parseRole("receptionist")).toBe("receptionist");
+    expect(parseRole("counsellor")).toBe("counsellor");
   });
 
   it("returns null for unknown values", () => {

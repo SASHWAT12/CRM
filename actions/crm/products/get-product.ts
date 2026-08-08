@@ -14,10 +14,6 @@ export const getProduct = cache(async (id: string) => {
     include: {
       category: true,
       created_by_user: { select: { id: true, name: true } },
-      accountProducts: {
-        include: { account: { select: { id: true, name: true } } },
-        orderBy: { createdAt: "desc" },
-      },
     },
   });
   return product;

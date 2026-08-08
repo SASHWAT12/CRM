@@ -1,9 +1,9 @@
 import { prismadb } from "@/lib/prisma";
-import type { ReportFilters, KPIData } from "./types";
-import { getExchangeRates, convertAmount } from "@/lib/currency";
-import { Decimal } from "@prisma/client/runtime/client";
+import type { ReportFilters, KPIData, ChartDataPoint } from "./types";
+import { groupedToChartData } from "./types";
 import type { ReportScope } from "@/lib/authz/scopes/report-scope";
 import { getReportScope } from "@/lib/authz/scopes/report-scope";
+import moment from "moment";
 
 const DEFAULT_SCOPE: ReportScope = getReportScope({ id: "", role: "manager" });
 
@@ -22,222 +22,145 @@ function prevPeriod(filters: ReportFilters): { dateFrom: Date; dateTo: Date } {
 
 export async function getDashboardKPIs(
   filters: ReportFilters,
-  displayCurrency: string = "EUR",
+  displayCurrency: string = "INR",
   scope: ReportScope = DEFAULT_SCOPE,
 ): Promise<KPIData[]> {
   const prev = prevPeriod(filters);
-  const rates = await getExchangeRates();
+  const startOfToday = moment().startOf("day").toDate();
+  const endOfToday = moment().endOf("day").toDate();
 
   const [
-    revOppsCurr,
-    revOppsPrev,
-    pipeOppsCurr,
-    pipeOppsPrev,
     leadsCurr,
     leadsPrev,
-    convCurr,
-    convPrev,
     contactsCurr,
     contactsPrev,
-    usersCurr,
-    usersPrev,
-    tasksCurr,
-    tasksPrev,
-    tasksOpenCurr,
-    tasksOpenPrev,
-    campaignsCurr,
-    campaignsPrev,
-    accountsCurr,
-    accountsPrev,
-    contractsCurr,
-    contractsPrev,
+    convertedContactsCurr,
+    appointmentsToday,
+    appointmentsPrev,
+    pendingFollowups,
+    overdueFollowups,
   ] = await Promise.all([
-    // totalRevenue
-    prismadb.crm_Opportunities.findMany({
-      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, status: "CLOSED", ...scope.opportunity },
-      select: { budget: true, currency: true },
-    }),
-    prismadb.crm_Opportunities.findMany({
-      where: { created_on: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null, status: "CLOSED", ...scope.opportunity },
-      select: { budget: true, currency: true },
-    }),
-    // pipelineValue
-    prismadb.crm_Opportunities.findMany({
-      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, status: "ACTIVE", ...scope.opportunity },
-      select: { budget: true, currency: true },
-    }),
-    prismadb.crm_Opportunities.findMany({
-      where: { created_on: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null, status: "ACTIVE", ...scope.opportunity },
-      select: { budget: true, currency: true },
-    }),
-    // newLeads
+    // New Leads
     prismadb.crm_Leads.count({
       where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.lead },
     }),
     prismadb.crm_Leads.count({
       where: { createdAt: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null, ...scope.lead },
     }),
-    // conversionRate: closed opps count
-    prismadb.crm_Opportunities.count({
-      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, status: "CLOSED", ...scope.opportunity },
-    }),
-    prismadb.crm_Opportunities.count({
-      where: { created_on: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null, status: "CLOSED", ...scope.opportunity },
-    }),
-    // newContacts (crm_Contacts has created_on, no deletedAt)
+    // New Patients (Contacts)
     prismadb.crm_Contacts.count({
-      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, ...scope.contact },
+      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.contact },
     }),
     prismadb.crm_Contacts.count({
-      where: { created_on: { gte: prev.dateFrom, lte: prev.dateTo }, ...scope.contact },
+      where: { created_on: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null, ...scope.contact },
     }),
-    // activeUsers (status = ACTIVE, not date-filtered) - global; manager/admin only typically read this KPI
-    prismadb.users.count({
-      where: { userStatus: "ACTIVE" },
+    // Converted Patients
+    prismadb.crm_Contacts.count({
+      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, pipelineStage: "CONVERTED", deletedAt: null, ...scope.contact },
     }),
-    prismadb.users.count({
-      where: { userStatus: "ACTIVE", created_on: { lte: prev.dateTo } },
+    // Appointments Today
+    prismadb.crm_Appointments.count({
+      where: { scheduledAt: { gte: startOfToday, lte: endOfToday }, status: { not: "CANCELLED" } },
     }),
-    // tasks total
-    prismadb.tasks.count({
-      where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, ...scope.task },
+    prismadb.crm_Appointments.count({
+      where: { scheduledAt: { gte: prev.dateFrom, lte: prev.dateTo }, status: { not: "CANCELLED" } },
     }),
-    prismadb.tasks.count({
-      where: { createdAt: { gte: prev.dateFrom, lte: prev.dateTo }, ...scope.task },
+    // Pending Patient Followups
+    prismadb.crm_Accounts_Tasks.count({
+      where: { taskStatus: { not: "COMPLETE" } },
     }),
-    // open tasks (ACTIVE = not completed)
-    prismadb.tasks.count({
-      where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, taskStatus: "ACTIVE", ...scope.task },
-    }),
-    prismadb.tasks.count({
-      where: { createdAt: { gte: prev.dateFrom, lte: prev.dateTo }, taskStatus: "ACTIVE", ...scope.task },
-    }),
-    // campaignsSent (sends have no direct scope; manager/admin = no-op)
-    prismadb.crm_campaign_sends.count({
-      where: { sent_at: { gte: filters.dateFrom, lte: filters.dateTo } },
-    }),
-    prismadb.crm_campaign_sends.count({
-      where: { sent_at: { gte: prev.dateFrom, lte: prev.dateTo } },
-    }),
-    // newAccounts
-    prismadb.crm_Accounts.count({
-      where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.account },
-    }),
-    prismadb.crm_Accounts.count({
-      where: { createdAt: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null, ...scope.account },
-    }),
-    // contractsExpiring (no direct scope; manager/admin = no-op)
-    prismadb.crm_Contracts.count({
-      where: { endDate: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null },
-    }),
-    prismadb.crm_Contracts.count({
-      where: { endDate: { gte: prev.dateFrom, lte: prev.dateTo }, deletedAt: null },
+    // Overdue Patient Followups
+    prismadb.crm_Accounts_Tasks.count({
+      where: { taskStatus: { not: "COMPLETE" }, dueDateAt: { lt: startOfToday } },
     }),
   ]);
 
-  function sumConverted(opps: { budget: unknown; currency: string | null }[]): number {
-    let total = new Decimal(0);
-    for (const opp of opps) {
-      const budget = new Decimal(opp.budget?.toString() ?? "0");
-      const from = opp.currency || displayCurrency;
-      const converted = convertAmount(budget, from, displayCurrency, rates);
-      total = total.add(converted ?? budget);
-    }
-    return total.toNumber();
-  }
-
-  const totalRevenueCurr = sumConverted(revOppsCurr);
-  const totalRevenuePrev = sumConverted(revOppsPrev);
-  const pipelineCurr = sumConverted(pipeOppsCurr);
-  const pipelinePrev = sumConverted(pipeOppsPrev);
-
-  // suppress unused vars
-  void tasksCurr;
-  void tasksPrev;
+  const conversionRate = contactsCurr > 0 ? parseFloat(((convertedContactsCurr / contactsCurr) * 100).toFixed(1)) : 0;
 
   return [
     {
-      label: "totalRevenue",
-      value: totalRevenueCurr,
-      previousValue: totalRevenuePrev,
-      changePercent: calcChange(totalRevenueCurr, totalRevenuePrev),
-      sparkline: [],
-      href: "/reports/sales",
-    },
-    {
-      label: "pipelineValue",
-      value: pipelineCurr,
-      previousValue: pipelinePrev,
-      changePercent: calcChange(pipelineCurr, pipelinePrev),
-      sparkline: [],
-      href: "/reports/sales",
-    },
-    {
-      label: "newLeads",
+      label: "New Leads",
       value: leadsCurr,
       previousValue: leadsPrev,
       changePercent: calcChange(leadsCurr, leadsPrev),
       sparkline: [],
-      href: "/reports/leads",
+      href: "/crm/leads/registry",
     },
     {
-      label: "conversionRate",
-      value: leadsCurr > 0 ? Math.round((convCurr / leadsCurr) * 100) : 0,
-      previousValue: leadsPrev > 0 ? Math.round((convPrev / leadsPrev) * 100) : 0,
-      changePercent: calcChange(
-        leadsCurr > 0 ? Math.round((convCurr / leadsCurr) * 100) : 0,
-        leadsPrev > 0 ? Math.round((convPrev / leadsPrev) * 100) : 0
-      ),
-      sparkline: [],
-      href: "/reports/sales",
-    },
-    {
-      label: "newContacts",
+      label: "New Patients",
       value: contactsCurr,
       previousValue: contactsPrev,
       changePercent: calcChange(contactsCurr, contactsPrev),
       sparkline: [],
-      href: "/reports/leads",
+      href: "/crm/patients/registry",
     },
     {
-      label: "activeUsers",
-      value: usersCurr,
-      previousValue: usersPrev,
-      changePercent: calcChange(usersCurr, usersPrev),
+      label: "Conversion Rate (%)",
+      value: conversionRate,
+      previousValue: 0,
+      changePercent: 0,
       sparkline: [],
-      href: "/reports/users",
+      href: "/crm/patients/registry",
     },
     {
-      label: "openTasks",
-      value: tasksOpenCurr,
-      previousValue: tasksOpenPrev,
-      changePercent: calcChange(tasksOpenCurr, tasksOpenPrev),
+      label: "Appointments Today",
+      value: appointmentsToday,
+      previousValue: appointmentsPrev,
+      changePercent: calcChange(appointmentsToday, appointmentsPrev),
       sparkline: [],
-      href: "/reports/activity",
+      href: "/crm/appointments/registry",
     },
     {
-      label: "campaignsSent",
-      value: campaignsCurr,
-      previousValue: campaignsPrev,
-      changePercent: calcChange(campaignsCurr, campaignsPrev),
+      label: "Pending Followups",
+      value: pendingFollowups,
+      previousValue: 0,
+      changePercent: 0,
       sparkline: [],
-      href: "/reports/campaigns",
+      href: "/crm/followups/registry",
     },
     {
-      label: "newAccounts",
-      value: accountsCurr,
-      previousValue: accountsPrev,
-      changePercent: calcChange(accountsCurr, accountsPrev),
+      label: "Overdue Followups",
+      value: overdueFollowups,
+      previousValue: 0,
+      changePercent: 0,
       sparkline: [],
-      href: "/reports/accounts",
-    },
-    {
-      label: "contractsExpiring",
-      value: contractsCurr,
-      previousValue: contractsPrev,
-      changePercent: calcChange(contractsCurr, contractsPrev),
-      sparkline: [],
-      href: "/reports/accounts",
+      href: "/crm/followups/registry",
     },
   ];
+}
+
+export async function getExecutiveAppointmentTrend(
+  filters: ReportFilters
+): Promise<ChartDataPoint[]> {
+  const appointments = await prismadb.crm_Appointments.findMany({
+    where: { scheduledAt: { gte: filters.dateFrom, lte: filters.dateTo } },
+    select: { scheduledAt: true },
+  });
+
+  const grouped: Record<string, number> = {};
+  for (const appt of appointments) {
+    if (!appt.scheduledAt) continue;
+    const d = new Date(appt.scheduledAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    grouped[key] = (grouped[key] || 0) + 1;
+  }
+  return groupedToChartData(grouped, true);
+}
+
+export async function getExecutiveFollowupDistribution(): Promise<ChartDataPoint[]> {
+  const counts = await prismadb.crm_Accounts_Tasks.groupBy({
+    by: ["taskStatus"],
+    _count: { id: true },
+  });
+
+  const map: Record<string, string> = {
+    ACTIVE: "Pending",
+    COMPLETE: "Completed",
+    DEFERRED: "Deferred",
+  };
+
+  return counts.map((item) => ({
+    name: map[item.taskStatus || "ACTIVE"] || item.taskStatus || "Pending",
+    Number: item._count.id,
+  }));
 }

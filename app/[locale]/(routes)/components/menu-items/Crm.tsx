@@ -14,12 +14,8 @@ import { NavItem } from "../nav-main";
 type Props = {
   localizations: {
     title: string;
-    accounts: string;
     contacts: string;
     leads: string;
-    opportunities: string;
-    contracts: string;
-    products: string;
   };
 };
 
@@ -41,29 +37,21 @@ export const getCrmMenuItem = ({ localizations }: Props): NavItem => {
         url: "/crm",
       },
       {
-        title: localizations.accounts,
-        url: "/crm/accounts",
+        title: localizations.contacts,
+        url: "/crm/patients",
       },
       {
-        title: localizations.contacts,
-        url: "/crm/contacts",
+        title: "Followups",
+        url: "/crm/followups",
+      },
+      {
+        title: "Appointments",
+        url: "/crm/appointments",
       },
       {
         title: localizations.leads,
         url: "/crm/leads",
-      },
-      {
-        title: localizations.opportunities,
-        url: "/crm/opportunities",
-      },
-      {
-        title: localizations.contracts,
-        url: "/crm/contracts",
-      },
-      {
-        title: localizations.products,
-        url: "/crm/products",
-      },
+      }
     ],
   };
 };

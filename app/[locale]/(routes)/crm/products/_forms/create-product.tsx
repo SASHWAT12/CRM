@@ -21,10 +21,8 @@ import { Label } from "@/components/ui/label";
 
 const CreateProductForm = ({
   categories,
-  currencies = [],
 }: {
   categories: crm_ProductCategories[];
-  currencies?: { code: string; name: string; symbol: string }[];
 }) => {
   const router = useRouter();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -32,7 +30,7 @@ const CreateProductForm = ({
 
   const { execute, fieldErrors, isLoading } = useAction(createProduct, {
     onSuccess: () => {
-      toast.success("Product created successfully");
+      toast.success("Treatment created successfully");
       closeRef.current?.click();
       router.refresh();
     },
@@ -48,7 +46,6 @@ const CreateProductForm = ({
     const status = formData.get("status") as "DRAFT" | "ACTIVE" | "ARCHIVED";
     const unit_price = formData.get("unit_price") as string;
     const unit_cost = (formData.get("unit_cost") as string) || undefined;
-    const currency = formData.get("currency") as string;
     const tax_rate = (formData.get("tax_rate") as string) || undefined;
     const unit = (formData.get("unit") as string) || undefined;
     const categoryId = (formData.get("categoryId") as string) || undefined;
@@ -69,7 +66,6 @@ const CreateProductForm = ({
       status,
       unit_price,
       unit_cost,
-      currency,
       tax_rate,
       unit,
       is_recurring: isRecurring,
@@ -82,8 +78,8 @@ const CreateProductForm = ({
   return (
     <FormSheet
       trigger={"+"}
-      title="Create Product"
-      description="Add a new product or service to your catalog"
+      title="Create Treatment"
+      description="Add a new treatment or service to your catalog"
       onClose={closeRef}
     >
       <form action={onAction} className="space-y-4">
@@ -104,7 +100,7 @@ const CreateProductForm = ({
           label="Type"
           type="hidden"
           data={[
-            { id: "PRODUCT", name: "Product" },
+            { id: "PRODUCT", name: "Treatment" },
             { id: "SERVICE", name: "Service" },
           ]}
           errors={fieldErrors}
@@ -135,16 +131,6 @@ const CreateProductForm = ({
             errors={fieldErrors}
           />
         </div>
-        <FormSelect
-          id="currency"
-          label="Currency"
-          type="hidden"
-          data={currencies.map((c) => ({
-            id: c.code,
-            name: `${c.symbol} ${c.code} — ${c.name}`,
-          }))}
-          errors={fieldErrors}
-        />
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             id="tax_rate"

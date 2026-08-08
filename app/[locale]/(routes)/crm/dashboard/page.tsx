@@ -1,33 +1,51 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import React from "react";
 import Container from "../../components/ui/Container";
-import { getSaleStages } from "@/actions/crm/get-sales-stage";
-import CRMKanban from "./_components/CRMKanban";
-import { getOpportunities } from "@/actions/crm/get-opportunities";
-import { getAllCrmData } from "@/actions/crm/get-crm-data";
-import { serializeDecimalsList } from "@/lib/serialize-decimals";
+import { getSession } from "@/lib/auth-server";
+import { redirect } from "next/navigation";
+import { getOperationalDashboardData } from "@/actions/crm/dashboard/orchestrator";
+import { CrmDashboardClient } from "./_components/CrmDashboardClient";
+import { prismadb } from "@/lib/prisma";
 
 const CrmDashboardPage = async () => {
-  const salesStages = await getSaleStages();
-  const opportunities = serializeDecimalsList(await getOpportunities());
-  const crmData = await getAllCrmData();
+  const session = await getSession();
+  if (!session) {
+    redirect("/sign-in");
+  }
+
+  const [dashboardData, staffList, doctorList] = await Promise.all([
+    getOperationalDashboardData(session.user.id, session.user.role),
+    prismadb.users.findMany({
+      where: {
+        role: { in: ["admin", "manager", "counsellor", "receptionist"] },
+        userStatus: "ACTIVE",
+      },
+      select: { id: true, name: true, role: true },
+    }),
+    prismadb.users.findMany({
+      where: {
+        role: "doctor",
+        userStatus: "ACTIVE",
+      },
+      select: { id: true, name: true },
+    }),
+  ]);
 
   return (
     <Container
-      title="CRM Dashboard"
-      description="In development. After this compoment is finished, there will be a optimistic update of the data."
+      title="Hospital CRM Dashboard"
+      description="Patient overview, followups status, and clinical pipeline analytics"
     >
-      <div className="w-full h-full  overflow-hidden">
-        <CRMKanban
-          salesStages={salesStages}
-          opportunities={opportunities}
-          crmData={crmData}
+      <div className="p-6">
+        <CrmDashboardClient 
+          data={dashboardData} 
+          staffList={staffList} 
+          doctorList={doctorList} 
+          currentUserId={session.user.id}
         />
       </div>
-
-      {/*     <CRMKanbanServer
-        salesStages={salesStages}
-        opportunities={opportunities}
-      /> */}
     </Container>
   );
 };

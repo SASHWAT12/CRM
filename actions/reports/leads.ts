@@ -1,5 +1,5 @@
 import { prismadb } from "@/lib/prisma";
-import type { ReportFilters, ChartDataPoint } from "./types";
+import type { ReportFilters, ChartDataPoint, KPIData } from "./types";
 import { groupedToChartData } from "./types";
 import type { ReportScope } from "@/lib/authz/scopes/report-scope";
 import { getReportScope } from "@/lib/authz/scopes/report-scope";
@@ -17,9 +17,63 @@ function groupByMonth(items: { createdAt?: Date | null }[]): ChartDataPoint[] {
   return groupedToChartData(grouped, true);
 }
 
+export async function getLeadKPIs(
+  filters: ReportFilters,
+  scope: ReportScope = DEFAULT_SCOPE
+): Promise<KPIData[]> {
+  const [created, converted, lost] = await Promise.all([
+    prismadb.crm_Leads.count({
+      where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.lead },
+    }),
+    prismadb.crm_Contacts.count({
+      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, pipelineStage: "CONVERTED", deletedAt: null, ...scope.contact },
+    }),
+    prismadb.crm_Contacts.count({
+      where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, pipelineStage: "CLOSED_LOST", deletedAt: null, ...scope.contact },
+    }),
+  ]);
+
+  const qualified = Math.max(0, created - lost);
+
+  return [
+    {
+      label: "Leads Created",
+      value: created,
+      previousValue: 0,
+      changePercent: 0,
+      sparkline: [],
+      href: "/crm/leads/registry",
+    },
+    {
+      label: "Qualified Leads",
+      value: qualified,
+      previousValue: 0,
+      changePercent: 0,
+      sparkline: [],
+      href: "/crm/leads/registry",
+    },
+    {
+      label: "Converted Leads",
+      value: converted,
+      previousValue: 0,
+      changePercent: 0,
+      sparkline: [],
+      href: "/crm/patients/registry",
+    },
+    {
+      label: "Lost / Closed Leads",
+      value: lost,
+      previousValue: 0,
+      changePercent: 0,
+      sparkline: [],
+      href: "/crm/leads/registry",
+    },
+  ];
+}
+
 export async function getNewLeads(
   filters: ReportFilters,
-  scope: ReportScope = DEFAULT_SCOPE,
+  scope: ReportScope = DEFAULT_SCOPE
 ): Promise<ChartDataPoint[]> {
   const leads = await prismadb.crm_Leads.findMany({
     where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.lead },
@@ -30,7 +84,7 @@ export async function getNewLeads(
 
 export async function getLeadSources(
   filters: ReportFilters,
-  scope: ReportScope = DEFAULT_SCOPE,
+  scope: ReportScope = DEFAULT_SCOPE
 ): Promise<ChartDataPoint[]> {
   const leads = await prismadb.crm_Leads.findMany({
     where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.lead },
@@ -38,48 +92,24 @@ export async function getLeadSources(
   });
   const grouped: Record<string, number> = {};
   for (const lead of leads) {
-    const source = lead.lead_source?.name ?? "Unknown";
+    const source = lead.lead_source?.name ?? "Direct / Walk-in";
     grouped[source] = (grouped[source] || 0) + 1;
   }
   return groupedToChartData(grouped);
 }
 
-export async function getConversionRate(
+export async function getLeadStatuses(
   filters: ReportFilters,
-  scope: ReportScope = DEFAULT_SCOPE,
-): Promise<{ leads: number; converted: number; rate: number }> {
-  const leads = await prismadb.crm_Leads.count({
+  scope: ReportScope = DEFAULT_SCOPE
+): Promise<ChartDataPoint[]> {
+  const leads = await prismadb.crm_Leads.findMany({
     where: { createdAt: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.lead },
-  });
-  const converted = await prismadb.crm_Opportunities.count({
-    where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, deletedAt: null, ...scope.opportunity },
-  });
-  return { leads, converted, rate: leads > 0 ? Math.round((converted / leads) * 100) : 0 };
-}
-
-export async function getNewContacts(
-  filters: ReportFilters,
-  scope: ReportScope = DEFAULT_SCOPE,
-): Promise<ChartDataPoint[]> {
-  const contacts = await prismadb.crm_Contacts.findMany({
-    where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, ...scope.contact },
-    select: { created_on: true },
-  });
-  return groupByMonth(contacts.map((c: { created_on: Date | null }) => ({ createdAt: c.created_on })));
-}
-
-export async function getContactsByAccount(
-  filters: ReportFilters,
-  scope: ReportScope = DEFAULT_SCOPE,
-): Promise<ChartDataPoint[]> {
-  const contacts = await prismadb.crm_Contacts.findMany({
-    where: { created_on: { gte: filters.dateFrom, lte: filters.dateTo }, ...scope.contact },
-    select: { assigned_accounts: { select: { name: true } } },
+    select: { lead_status: { select: { name: true } } },
   });
   const grouped: Record<string, number> = {};
-  for (const c of contacts) {
-    const name = c.assigned_accounts?.name ?? "Unassigned";
-    grouped[name] = (grouped[name] || 0) + 1;
+  for (const lead of leads) {
+    const status = lead.lead_status?.name ?? "New Inquiry";
+    grouped[status] = (grouped[status] || 0) + 1;
   }
   return groupedToChartData(grouped);
 }

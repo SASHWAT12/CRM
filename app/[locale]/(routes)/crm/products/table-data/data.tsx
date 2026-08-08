@@ -13,7 +13,7 @@ import {
 export const productTypes = [
   {
     value: "PRODUCT",
-    label: "Product",
+    label: "Treatment",
     icon: BoxIcon,
   },
   {

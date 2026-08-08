@@ -1,13 +1,13 @@
-import Feedback from "./Feedback";
+// import Feedback from "./Feedback";
 import FulltextSearch from "./FulltextSearch";
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { SetLanguage } from "@/components/SetLanguage";
+// import { SetLanguage } from "@/components/SetLanguage";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { CommandComponent } from "@/components/CommandComponent";
-import SupportComponent from "@/components/support";
-import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+// import { CommandComponent } from "@/components/CommandComponent";
+// import SupportComponent from "@/components/support";
+// import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 
 type Props = {
   id: string;
@@ -42,12 +42,12 @@ const Header = ({ id, lang }: Props) => {
           <FulltextSearch />
         </div>
         <div className="flex items-center gap-2">
-          <CommandComponent />
-          <SetLanguage userId={id} />
-          <Feedback />
-          <CurrencySwitcher />
+          {/* <CommandComponent />
+          <SetLanguage userId={id} /> */}
+          {/* <Feedback /> */}
+          {/* <CurrencySwitcher /> */}
           <ThemeToggle />
-          <SupportComponent />
+          {/* <SupportComponent /> */}
         </div>
       </div>
       <Separator />

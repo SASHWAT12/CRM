@@ -16,7 +16,6 @@ interface EditProductButtonProps {
     status: string;
     unit_price: number;
     unit_cost: number | null;
-    currency: string;
     tax_rate: number | null;
     unit: string | null;
     is_recurring: boolean;
@@ -24,13 +23,11 @@ interface EditProductButtonProps {
     category: { id: string; name: string } | null;
   };
   categories: crm_ProductCategories[];
-  currencies: { code: string; name: string; symbol: string }[];
 }
 
 export function EditProductButton({
   product,
   categories,
-  currencies,
 }: EditProductButtonProps) {
   const [open, setOpen] = useState(false);
 
@@ -45,7 +42,6 @@ export function EditProductButton({
         setOpen={setOpen}
         product={product}
         categories={categories}
-        currencies={currencies}
       />
     </>
   );

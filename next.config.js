@@ -27,6 +27,26 @@ const nextConfig = {
         destination: "/:locale/campaigns/target-lists/:path*",
         permanent: true,
       },
+      {
+        source: "/:locale/crm/contacts",
+        destination: "/:locale/crm/patients",
+        permanent: true,
+      },
+      {
+        source: "/:locale/crm/contacts/:path*",
+        destination: "/:locale/crm/patients/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:locale/crm/tasks",
+        destination: "/:locale/crm/followups",
+        permanent: true,
+      },
+      {
+        source: "/:locale/crm/tasks/:path*",
+        destination: "/:locale/crm/followups/:path*",
+        permanent: true,
+      },
     ];
   },
 };
