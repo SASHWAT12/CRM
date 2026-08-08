@@ -1,3 +1,0 @@
-[template]
-dockerfile = "e2b.Dockerfile"
-name = "nextcrm-enrichment"
