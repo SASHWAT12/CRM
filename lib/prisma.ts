@@ -8,8 +8,31 @@ declare global {
 
 // Prisma Client configuration with connection pooling and lifecycle management
 const prismaClientSingleton = () => {
-  const connectionString = `${process.env.DATABASE_URL}`;
-  const pool = new Pool({ connectionString });
+  const connectionString = process.env.DATABASE_URL || "";
+  const isRemote =
+    connectionString.length > 0 &&
+    !connectionString.includes("localhost") &&
+    !connectionString.includes("127.0.0.1");
+
+  let poolConfig: any;
+  try {
+    const dbUrl = new URL(connectionString);
+    poolConfig = {
+      user: dbUrl.username ? decodeURIComponent(dbUrl.username) : undefined,
+      password: dbUrl.password ? decodeURIComponent(dbUrl.password) : undefined,
+      host: dbUrl.hostname,
+      port: dbUrl.port ? parseInt(dbUrl.port, 10) : 5432,
+      database: dbUrl.pathname ? dbUrl.pathname.replace(/^\//, "") : "postgres",
+      ssl: isRemote ? { rejectUnauthorized: false } : undefined,
+    };
+  } catch {
+    poolConfig = {
+      connectionString,
+      ssl: isRemote ? { rejectUnauthorized: false } : undefined,
+    };
+  }
+
+  const pool = new Pool(poolConfig);
   const adapter = new PrismaPg(pool);
 
   const client = new PrismaClient({
@@ -17,9 +40,7 @@ const prismaClientSingleton = () => {
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-  // Ensure graceful shutdown on hot reload in development
   if (process.env.NODE_ENV !== "production") {
-    // Clean up on process termination
     const cleanup = async () => {
       await client.$disconnect();
     };
@@ -32,15 +53,20 @@ const prismaClientSingleton = () => {
   return client;
 };
 
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === "production") {
-  prisma = prismaClientSingleton();
-} else {
+const getPrisma = () => {
+  if (process.env.NODE_ENV === "production") {
+    return prismaClientSingleton();
+  }
   if (!global.cachedPrisma) {
     global.cachedPrisma = prismaClientSingleton();
   }
-  prisma = global.cachedPrisma;
-}
+  return global.cachedPrisma;
+};
 
-export const prismadb = prisma;
+export const prismadb = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const instance = getPrisma();
+    const value = (instance as any)[prop];
+    return typeof value === "function" ? value.bind(instance) : value;
+  },
+});

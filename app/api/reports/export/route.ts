@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   requireAuthenticated,
   unauthorizedResponse,
-  forbiddenResponse,
   AuthenticationError,
   getReportScope,
   type ReportScope,
@@ -13,11 +12,11 @@ import {
   type ReportCategory,
 } from "@/actions/reports/types";
 import { generateCSV } from "@/actions/reports/export-csv";
-import * as salesActions from "@/actions/reports/sales";
+import * as dashboardActions from "@/actions/reports/dashboard";
 import * as leadsActions from "@/actions/reports/leads";
-import * as accountsActions from "@/actions/reports/accounts";
+import * as pipelineActions from "@/actions/reports/pipeline";
+import * as appointmentActions from "@/actions/reports/appointments";
 import * as activityActions from "@/actions/reports/activity";
-import * as usersActions from "@/actions/reports/users";
 
 async function getReportData(
   category: string,
@@ -25,30 +24,30 @@ async function getReportData(
   scope: ReportScope,
 ) {
   switch (category) {
-    case "sales":
+    case "executive":
       return {
-        data: await salesActions.getOppsByMonth(filters, scope),
-        headers: ["Month", "Opportunities"],
+        data: await dashboardActions.getExecutiveAppointmentTrend(filters),
+        headers: ["Month", "Appointments Scheduled"],
       };
     case "leads":
       return {
         data: await leadsActions.getNewLeads(filters, scope),
-        headers: ["Month", "Leads"],
+        headers: ["Month", "Leads Created"],
       };
-    case "accounts":
+    case "pipeline":
       return {
-        data: await accountsActions.getNewAccounts(filters, scope),
-        headers: ["Month", "Accounts"],
+        data: await pipelineActions.getPipelineStageDistribution(filters, scope),
+        headers: ["Stage", "Patient Count"],
       };
-    case "activity":
+    case "appointments":
       return {
-        data: await activityActions.getTasksByAssignee(filters, scope),
-        headers: ["Assignee", "Tasks"],
+        data: await appointmentActions.getAppointmentsByDoctor(filters),
+        headers: ["Doctor", "Appointments Booked"],
       };
-    case "users":
+    case "followups":
       return {
-        data: await usersActions.getUserGrowth(filters),
-        headers: ["Month", "Users"],
+        data: await activityActions.getFollowupStatusDistribution(filters),
+        headers: ["Status", "Followups Count"],
       };
     default:
       return { data: [], headers: ["Name", "Value"] };
@@ -65,15 +64,11 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = request.nextUrl;
-  const category = searchParams.get("category") ?? "sales";
+  const category = searchParams.get("category") ?? "executive";
   const format = searchParams.get("format") ?? "csv";
 
   if (!REPORT_CATEGORIES.includes(category as ReportCategory)) {
     return NextResponse.json({ error: "Invalid category" }, { status: 400 });
-  }
-
-  if (category === "users" && user.role === "user") {
-    return forbiddenResponse();
   }
 
   const filters = parseSearchParamsToFilters(searchParams);
@@ -108,5 +103,5 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ error: "Unknown format" }, { status: 400 });
+  return NextResponse.json({ error: "Invalid format" }, { status: 400 });
 }

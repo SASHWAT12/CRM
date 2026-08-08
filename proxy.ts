@@ -1,6 +1,5 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
-import { getSessionCookie } from "better-auth/cookies";
 import { NextRequest, NextResponse } from "next/server";
 
 const intlMiddleware = createMiddleware(routing);
@@ -15,26 +14,39 @@ const ADMIN_ONLY_PATHS = [
   "/api/admin",
 ];
 
+function hasValidSessionCookie(req: NextRequest): boolean {
+  // Check for local dev bypass
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.DEV_AUTH_BYPASS === "true"
+  ) {
+    return true;
+  }
+
+  // Check for Supabase Auth session cookies (e.g. sb-<project>-auth-token)
+  return req.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+}
+
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const isDevBypass = process.env.AUTH_MODE === "dev-bypass";
 
   // Inngest webhook — pass through, Inngest handles its own auth via signing key
   if (path.startsWith("/api/inngest")) {
     return NextResponse.next();
   }
 
-  // better-auth API routes — pass through to better-auth handler
+  // Auth / public API routes — pass through
   if (path.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
-// const sessionCookie = getSessionCookie(req);
-   const sessionCookie = isDevBypass ? "dev-bypass" : getSessionCookie(req);
+  const hasSession = hasValidSessionCookie(req);
 
   // Admin-only routes — require session cookie (role checked server-side)
   if (ADMIN_ONLY_PATHS.some((p) => path.startsWith(p))) {
-    if (!sessionCookie) {
+    if (!hasSession) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
     return NextResponse.next();
@@ -42,9 +54,15 @@ export async function proxy(req: NextRequest) {
 
   // Non-API routes — redirect to sign-in if no session cookie
   if (!path.startsWith("/api")) {
-    if (!sessionCookie) {
-      // Allow auth pages (sign-in, register, pending, inactive)
-      const authPaths = ["/sign-in", "/register", "/pending", "/inactive"];
+    if (!hasSession) {
+      const authPaths = [
+        "/sign-in",
+        "/register",
+        "/forgot-password",
+        "/reset-password",
+        "/pending",
+        "/inactive",
+      ];
       const isAuthPage = authPaths.some((p) => path.includes(p));
       if (!isAuthPage) {
         return NextResponse.redirect(new URL("/sign-in", req.nextUrl));
@@ -56,6 +74,8 @@ export async function proxy(req: NextRequest) {
   return intlMiddleware(req);
 }
 
+export default proxy;
+
 export const config = {
   matcher: [
     // Admin-only API paths
@@ -65,7 +85,7 @@ export const config = {
     "/api/user/deactivate/:path*",
     "/api/user/inviteuser",
     "/api/admin/:path*",
-    // better-auth API
+    // Auth API paths
     "/api/auth/:path*",
     // All non-API routes (existing intl matcher)
     "/((?!api|trpc|_next|_vercel|.*\\..*).*)",

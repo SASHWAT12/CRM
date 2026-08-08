@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 import { TeamConversations } from "./components/team-conversation";
-import { getCrMTask } from "@/actions/crm/account/get-task";
+import { getCrMTask } from "@/actions/crm/followups/get-followup";
 
 type TaskPageProps = {
   params: Promise<{

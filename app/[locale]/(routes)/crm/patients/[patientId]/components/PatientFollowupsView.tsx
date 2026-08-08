@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-import { columns } from "../../../accounts/[accountId]/tasks-data-table/components/columns";
-import { TasksDataTable } from "../../../accounts/[accountId]/tasks-data-table/components/data-table";
+import { columns } from "../../../followups/components/columns";
+import { TasksDataTable } from "../../../followups/components/tasks-data-table/data-table";
 
 import NewPatientFollowupForm from "./NewPatientFollowupForm";
 import {

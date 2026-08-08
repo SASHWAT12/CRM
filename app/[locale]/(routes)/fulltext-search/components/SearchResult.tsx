@@ -9,7 +9,6 @@ import {
 } from "@/actions/fulltext/unified-search";
 
 const ENTITY_LABELS: Record<keyof UnifiedSearchResults, string> = {
-  accounts: "Accounts",
   contacts: "Patients",
   leads: "Leads",
   tasks: "Followups",
@@ -17,7 +16,6 @@ const ENTITY_LABELS: Record<keyof UnifiedSearchResults, string> = {
 };
 
 const ENTITY_ORDER: (keyof UnifiedSearchResults)[] = [
-  "accounts",
   "contacts",
   "leads",
   "tasks",

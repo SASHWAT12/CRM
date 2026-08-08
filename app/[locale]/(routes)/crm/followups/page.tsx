@@ -58,7 +58,7 @@ const FollowupsPage = async (props: PageProps) => {
     recentCompleted,
     recentRescheduled
   ] = await Promise.all([
-    getFollowups({ queue, status: "ALL", skip, take, userId, priority }),
+    getFollowups({ queue, status: "ALL", skip, take, userId, priority, search }),
     prismadb.users.findMany({
       where: {
         role: { in: ["admin", "manager", "counsellor", "receptionist"] },
@@ -97,10 +97,12 @@ const FollowupsPage = async (props: PageProps) => {
         updatedAt: { gte: todayStart, lte: todayEnd },
       },
     }),
-    // Count total tasks
+    // Count upcoming tasks
     prismadb.crm_Accounts_Tasks.count({
       where: {
         ...userScopeFilter,
+        taskStatus: "ACTIVE",
+        dueDateAt: { gt: todayEnd },
       },
     }),
     // Recent completed tasks today for activity panel

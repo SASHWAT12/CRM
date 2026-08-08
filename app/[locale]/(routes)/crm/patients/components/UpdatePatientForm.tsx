@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { Switch } from "@/components/ui/switch";
 import { UserSearchCombobox } from "@/components/ui/user-search-combobox";
-import { AccountSearchCombobox } from "@/components/ui/account-search-combobox";
+
 import { updatePatient } from "@/actions/crm/patients/update-patient";
 
 //TODO: fix all the types
@@ -66,7 +66,7 @@ export function UpdatePatientForm({
     status: z.boolean(),
     contact_type_id: z.string().optional(),
     assigned_to: z.string(),
-    assigned_account: z.string().nullable().optional(),
+
     social_twitter: z.string().nullable().optional(),
     social_facebook: z.string().nullable().optional(),
     social_linkedin: z.string().nullable().optional(),
@@ -94,7 +94,7 @@ export function UpdatePatientForm({
     mobile_phone: initialData.mobile_phone ?? "",
     website: initialData.website ?? "",
     position: initialData.position ?? "",
-    assigned_account: initialData.accountsIDs ?? "",
+
     social_twitter: initialData.social_twitter ?? "",
     social_facebook: initialData.social_facebook ?? "",
     social_linkedin: initialData.social_linkedin ?? "",
@@ -456,24 +456,7 @@ export function UpdatePatientForm({
                 Additional CRM Fields (Website, Position, Social links, etc.)
               </summary>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="assigned_account"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("assignAccount")}</FormLabel>
-                      <FormControl>
-                        <AccountSearchCombobox
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                          placeholder={t("assignAccountPlaceholder")}
-                          disabled={form.formState.isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
                 <FormField
                   control={form.control}
                   name="position"

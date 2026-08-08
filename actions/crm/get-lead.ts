@@ -39,8 +39,6 @@ export const getLead = async (leadId: string) => {
           name: true,
         },
       },
-      // Include assigned accounts
-      assigned_accounts: true,
       // Include documents through DocumentsToLeads junction table
       documents: {
         include: {

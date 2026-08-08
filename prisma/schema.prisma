@@ -6,58 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model crm_Accounts {
-  id                   String                @id @default(uuid()) @db.Uuid
-  v                    Int                   @map("__v")
-  createdAt            DateTime              @default(now())
-  createdBy            String?               @db.Uuid
-  updatedAt            DateTime?             @updatedAt
-  updatedBy            String?               @db.Uuid
-  annual_revenue       String?
-  assigned_to          String?               @db.Uuid
-  billing_city         String?
-  billing_country      String?
-  billing_postal_code  String?
-  billing_state        String?
-  billing_street       String?
-  company_id           String?
-  description          String?
-  email                String?
-  employees            String?
-  fax                  String?
-  industry             String?               @db.Uuid
-  member_of            String?
-  name                 String
-  office_phone         String?
-  shipping_city        String?
-  shipping_country     String?
-  shipping_postal_code String?
-  shipping_state       String?
-  shipping_street      String?
-  status               String?               @default("Inactive")
-  type                 String?               @default("Customer")
-  vat                  String?
-  website              String?
-  deletedAt            DateTime?
-  deletedBy            String?               @db.Uuid
-  documents            DocumentsToAccounts[]
-  emails               EmailsToAccounts[]
-  accountProducts      crm_AccountProducts[]
-  assigned_to_user     Users?                @relation("AccountAssignedTo", fields: [assigned_to], references: [id])
-  industry_type        crm_Industry_Type?    @relation(fields: [industry], references: [id])
-  crm_accounts_tasks   crm_Accounts_Tasks[]
-  contacts             crm_Contacts[]
-  leads                crm_Leads[]
 
-  @@index([assigned_to])
-  @@index([industry])
-  @@index([createdBy])
-  @@index([updatedBy])
-  @@index([status])
-  @@index([type])
-  @@index([createdAt])
-  @@index([deletedAt])
-}
 
 model crm_Leads {
   id                String             @id @default(uuid()) @db.Uuid
@@ -78,18 +27,15 @@ model crm_Leads {
   lead_type_id      String?            @db.Uuid
   refered_by        String?
   assigned_to       String?            @db.Uuid
-  accountsIDs       String?            @db.Uuid
   deletedAt         DateTime?
   deletedBy         String?            @db.Uuid
   documents         DocumentsToLeads[]
-  assigned_accounts crm_Accounts?      @relation(fields: [accountsIDs], references: [id])
   assigned_to_user  Users?             @relation("LeadAssignedTo", fields: [assigned_to], references: [id])
   lead_source       crm_Lead_Sources?  @relation("lead_source_relation", fields: [lead_source_id], references: [id])
   lead_status       crm_Lead_Statuses? @relation("lead_status_relation", fields: [lead_status_id], references: [id])
   lead_type         crm_Lead_Types?    @relation("lead_type_relation", fields: [lead_type_id], references: [id])
 
   @@index([assigned_to])
-  @@index([accountsIDs])
   @@index([createdBy])
   @@index([updatedBy])
   @@index([lead_source_id])
@@ -169,14 +115,12 @@ model crm_Contacts {
   contact_type_id   String?               @db.Uuid
   tags              String[]
   notes             String[]
-  accountsIDs       String?               @db.Uuid
   deletedAt         DateTime?
   deletedBy         String?               @db.Uuid
   documents         DocumentsToContacts[]
   emails            EmailsToContacts[]
   tasks             crm_Accounts_Tasks[]  @relation("ContactTasks")
   appointments      crm_Appointments[]    @relation("PatientAppointments")
-  assigned_accounts crm_Accounts?         @relation(fields: [accountsIDs], references: [id])
   assigned_to_user  Users?                @relation("assigned_contacts", fields: [assigned_to], references: [id])
   contact_type      crm_Contact_Types?    @relation(fields: [contact_type_id], references: [id])
   crate_by_user     Users?                @relation("created_contacts", fields: [createdBy], references: [id])
@@ -186,7 +130,6 @@ model crm_Contacts {
   lead_source       crm_Lead_Sources?     @relation("contact_source_relation", fields: [lead_source_id], references: [id])
 
   @@index([assigned_to])
-  @@index([accountsIDs])
   @@index([createdBy])
   @@index([updatedBy])
   @@index([status])
@@ -293,7 +236,6 @@ model Documents {
   documents_type         Documents_Types?              @relation(fields: [document_type], references: [id])
   parent_document        Documents?                    @relation("DocumentVersions", fields: [parent_document_id], references: [id])
   child_versions         Documents[]                   @relation("DocumentVersions")
-  accounts               DocumentsToAccounts[]
   contacts               DocumentsToContacts[]
   crm_accounts_tasks     DocumentsToCrmAccountsTasks[]
   leads                  DocumentsToLeads[]
@@ -323,12 +265,7 @@ model Documents_Types {
   assigned_documents Documents[]
 }
 
-model crm_Industry_Type {
-  id       String         @id @default(uuid()) @db.Uuid
-  v        Int            @default(0) @map("__v")
-  name     String
-  accounts crm_Accounts[]
-}
+
 
 model Tasks {
   id            String             @id @default(uuid()) @db.Uuid
@@ -376,16 +313,13 @@ model crm_Accounts_Tasks {
   likes         BigInt?                       @default(0)
   user          String?                       @db.Uuid
   taskStatus    taskStatus?                   @default(ACTIVE)
-  account       String?                       @db.Uuid
   contact       String?                       @db.Uuid
   documents     DocumentsToCrmAccountsTasks[]
-  crm_accounts  crm_Accounts?                 @relation(fields: [account], references: [id])
   crm_contact   crm_Contacts?                 @relation("ContactTasks", fields: [contact], references: [id])
   assigned_user Users?                        @relation(fields: [user], references: [id])
   comments      tasksComments[]
 
   @@index([user])
-  @@index([account])
   @@index([contact])
   @@index([createdBy])
   @@index([updatedBy])
@@ -393,7 +327,6 @@ model crm_Accounts_Tasks {
   @@index([taskStatus])
   @@index([dueDateAt])
   @@index([createdAt])
-  @@index([account, taskStatus])
 }
 
 model tasksComments {
@@ -428,6 +361,7 @@ model Users {
   account_name         String?
   avatar               String?
   email                String                @unique
+  supabase_id          String?               @unique
   emailVerified        Boolean               @default(false)
   image                String?
   role                 AppRole               @default(user)
@@ -451,7 +385,6 @@ model Users {
   emailAccounts        EmailAccount[]
   tasks                Tasks[]
   authAccounts         Account[]
-  accounts             crm_Accounts[]        @relation("AccountAssignedTo")
   crm_accounts_tasks   crm_Accounts_Tasks[]
   activities_created   crm_Activities[]      @relation("activity_created_by")
   activities_updated   crm_Activities[]      @relation("activity_updated_by")
@@ -594,16 +527,7 @@ model DocumentsToLeads {
   @@index([lead_id])
 }
 
-model DocumentsToAccounts {
-  document_id String       @db.Uuid
-  account_id  String       @db.Uuid
-  account     crm_Accounts @relation(fields: [account_id], references: [id], onDelete: Cascade)
-  document    Documents    @relation(fields: [document_id], references: [id], onDelete: Cascade)
 
-  @@id([document_id, account_id])
-  @@index([document_id])
-  @@index([account_id])
-}
 
 model crm_Document_Chunks {
   id          String                @id @default(uuid()) @db.Uuid
@@ -666,7 +590,6 @@ model Email {
   createdAt      DateTime           @default(now())
   account        EmailAccount       @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
   user           Users              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accounts       EmailsToAccounts[]
   contacts       EmailsToContacts[]
 
   @@unique([emailAccountId, rfcMessageId])
@@ -689,16 +612,7 @@ model EmailsToContacts {
   @@index([contactId])
 }
 
-model EmailsToAccounts {
-  emailId   String       @db.Uuid
-  accountId String       @db.Uuid
-  account   crm_Accounts @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  email     Email        @relation(fields: [emailId], references: [id], onDelete: Cascade)
 
-  @@id([emailId, accountId])
-  @@index([emailId])
-  @@index([accountId])
-}
 
 model Session {
   id        String   @id @default(uuid())
@@ -780,7 +694,6 @@ model crm_Products {
   updatedBy            String?                    @db.Uuid
   deletedAt            DateTime?
   deletedBy            String?                    @db.Uuid
-  accountProducts      crm_AccountProducts[]
   opportunityLineItems crm_OpportunityLineItems[]
   category             crm_ProductCategories?     @relation(fields: [categoryId], references: [id])
   created_by_user      Users                      @relation("ProductCreatedBy", fields: [createdBy], references: [id])
@@ -792,31 +705,7 @@ model crm_Products {
   @@index([deletedAt])
 }
 
-model crm_AccountProducts {
-  id            String                    @id @default(uuid()) @db.Uuid
-  accountId     String                    @db.Uuid
-  productId     String                    @db.Uuid
-  quantity      Int                       @default(1)
-  custom_price  Decimal?                  @db.Decimal(18, 2)
-  snapshot_rate Decimal?                  @db.Decimal(18, 8)
-  status        crm_AccountProduct_Status @default(ACTIVE)
-  start_date    DateTime
-  end_date      DateTime?
-  renewal_date  DateTime?
-  notes         String?
-  v             Int                       @default(0) @map("__v")
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  createdBy     String                    @db.Uuid
-  updatedBy     String?                   @db.Uuid
-  account       crm_Accounts              @relation(fields: [accountId], references: [id])
-  product       crm_Products              @relation(fields: [productId], references: [id])
 
-  @@index([accountId])
-  @@index([productId])
-  @@index([status])
-  @@index([accountId, productId])
-}
 
 model crm_OpportunityLineItems {
   id             String            @id @default(uuid()) @db.Uuid
@@ -899,13 +788,6 @@ enum crm_Billing_Period {
   QUARTERLY
   ANNUALLY
   ONE_TIME
-}
-
-enum crm_AccountProduct_Status {
-  ACTIVE
-  EXPIRED
-  CANCELLED
-  PENDING
 }
 
 enum crm_Discount_Type {

@@ -3,9 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { DataTableColumnHeader } from "../../accounts/[accountId]/tasks-data-table/components/data-table-column-header";
-import { DataTableRowActions } from "../../accounts/[accountId]/tasks-data-table/components/data-table-row-actions";
-import { priorities, statuses } from "../../accounts/[accountId]/tasks-data-table/data/data";
+import { DataTableColumnHeader } from "./tasks-data-table/data-table-column-header";
+import { DataTableRowActions } from "./tasks-data-table/data-table-row-actions";
+import { priorities, statuses } from "./tasks-data-table/data";
 import moment from "moment";
 
 export type FollowupTask = {

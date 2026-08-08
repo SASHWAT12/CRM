@@ -5,7 +5,7 @@ import React from "react";
 import Container from "../../components/ui/Container";
 import { getSession } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
-import { getDashboardData } from "@/actions/crm/dashboard/orchestrator";
+import { getOperationalDashboardData } from "@/actions/crm/dashboard/orchestrator";
 import { CrmDashboardClient } from "./_components/CrmDashboardClient";
 import { prismadb } from "@/lib/prisma";
 
@@ -16,7 +16,7 @@ const CrmDashboardPage = async () => {
   }
 
   const [dashboardData, staffList, doctorList] = await Promise.all([
-    getDashboardData(session.user.id, session.user.role),
+    getOperationalDashboardData(session.user.id, session.user.role),
     prismadb.users.findMany({
       where: {
         role: { in: ["admin", "manager", "counsellor", "receptionist"] },

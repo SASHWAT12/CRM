@@ -26,7 +26,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 import { UserSearchCombobox } from "@/components/ui/user-search-combobox";
-import { AccountSearchCombobox } from "@/components/ui/account-search-combobox";
 import { updateLead } from "@/actions/crm/leads/update-lead";
 
 //TODO: fix all the types
@@ -58,7 +57,7 @@ export function UpdateLeadForm({ initialData, setOpen, leadSources, leadStatuses
     lead_type_id: z.string().nullable().optional(),
     refered_by: z.string().optional().nullable(),
     assigned_to: z.string().optional().nullable(),
-    accountsIDs: z.string().optional().nullable(),
+
   });
 
   type NewLeadFormValues = z.infer<typeof formSchema>;
@@ -82,7 +81,6 @@ export function UpdateLeadForm({ initialData, setOpen, leadSources, leadStatuses
       lead_status_id: data.lead_status_id ?? undefined,
       lead_type_id: data.lead_type_id ?? undefined,
       assigned_to: data.assigned_to ?? undefined,
-      accountIDs: data.accountsIDs ?? undefined,
     });
     if (result?.error) {
       form.setError("root.serverError", { message: result.error });
@@ -322,24 +320,7 @@ export function UpdateLeadForm({ initialData, setOpen, leadSources, leadStatuses
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="accountsIDs"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("assignAccount")}</FormLabel>
-                  <FormControl>
-                    <AccountSearchCombobox
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      placeholder={t("assignAccountPlaceholder")}
-                      disabled={form.formState.isSubmitting}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
           </div>
         </div>
         <div className="grid gap-2 py-5">

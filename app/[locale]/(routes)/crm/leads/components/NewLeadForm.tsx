@@ -31,14 +31,13 @@ import { createLead } from "@/actions/crm/leads/create-lead";
 type ConfigItem = { id: string; name: string };
 
 type NewTaskFormProps = {
-  accounts: any[];
   leadSources: ConfigItem[];
   leadStatuses: ConfigItem[];
   leadTypes: ConfigItem[];
   onFinish?: () => void;
 };
 
-export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, onFinish }: NewTaskFormProps) {
+export function NewLeadForm({ leadSources, leadStatuses, leadTypes, onFinish }: NewTaskFormProps) {
   const t = useTranslations("CrmLeadForm");
   const c = useTranslations("Common");
 
@@ -55,7 +54,7 @@ export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, on
     lead_type_id: z.string().optional(),
     refered_by: z.string().optional(),
     assigned_to: z.string().optional(),
-    accountIDs: z.string().optional(),
+
   });
 
   type NewLeadFormValues = z.infer<typeof formSchema>;
@@ -76,7 +75,7 @@ export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, on
       lead_type_id: "",
       refered_by: "",
       assigned_to: "",
-      accountIDs: "",
+
     },
   });
 
@@ -318,33 +317,7 @@ export function NewLeadForm({ accounts, leadSources, leadStatuses, leadTypes, on
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="accountIDs"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("assignAccount")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("assignAccountPlaceholder")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {accounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
           </div>
         </div>
         <div className="grid gap-2 py-5">

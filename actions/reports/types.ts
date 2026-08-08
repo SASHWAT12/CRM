@@ -1,8 +1,14 @@
 export type { ReportScope } from "@/lib/authz/scopes/report-scope";
 
-export type ReportCategory = "sales" | "leads" | "accounts" | "activity" | "users";
+export type ReportCategory = "executive" | "leads" | "pipeline" | "appointments" | "followups";
 
-export const REPORT_CATEGORIES: ReportCategory[] = ["sales", "leads", "accounts", "activity", "users"];
+export const REPORT_CATEGORIES: ReportCategory[] = [
+  "executive",
+  "leads",
+  "pipeline",
+  "appointments",
+  "followups",
+];
 
 export type ReportFilters = {
   dateFrom: Date;

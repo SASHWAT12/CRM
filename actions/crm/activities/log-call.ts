@@ -3,7 +3,7 @@
 import { getSession } from "@/lib/auth-server";
 import { prismadb } from "@/lib/prisma";
 import { createActivity } from "@/actions/crm/activities/create-activity";
-import { createTask } from "@/actions/crm/accounts/create-task";
+import { createFollowup } from "@/actions/crm/followups/create-followup";
 import { transitionPatientStage } from "@/lib/crm/pipeline-service";
 
 export const logCall = async (data: {
@@ -36,7 +36,7 @@ export const logCall = async (data: {
 
     // 2. Schedule callback followup task if checked
     if (data.callbackScheduled && data.callbackDate) {
-      const taskResult = await createTask({
+      const taskResult = await createFollowup({
         title: `Callback: ${data.outcome}`,
         content: `Scheduled callback followup regarding: ${data.notes}`,
         dueDateAt: data.callbackDate,

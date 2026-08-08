@@ -3,7 +3,6 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { AuditAdminTable } from "./AdminTable";
-import { restoreAccount } from "@/actions/crm/accounts/restore-account";
 import { restorePatient } from "@/actions/crm/patients/restore-patient";
 import { restoreLead } from "@/actions/crm/leads/restore-lead";
 // Opportunities and Contracts are no longer supported
@@ -19,9 +18,6 @@ export function AdminAuditLogClient(props: Props) {
     startTransition(async () => {
       let result: { error?: string; success?: boolean };
       switch (entityType) {
-        case "account":
-          result = await restoreAccount(entityId);
-          break;
         case "contact":
           result = await restorePatient(entityId);
           break;

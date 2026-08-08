@@ -28,20 +28,13 @@ import { Switch } from "@/components/ui/switch";
 import { UserSearchCombobox } from "@/components/ui/user-search-combobox";
 import { createPatient } from "@/actions/crm/patients/create-patient";
 
-type AccountOption = {
-  id: string;
-  name: string;
-};
-
 type NewPatientFormProps = {
-  accounts: AccountOption[];
   contactTypes: { id: string; name: string }[];
   leadSources: { id: string; name: string }[];
   onFinish: () => void;
 };
 
 export function NewPatientForm({
-  accounts,
   contactTypes,
   leadSources,
   onFinish,
@@ -65,7 +58,7 @@ export function NewPatientForm({
     status: z.boolean(),
     type: z.string(),
     assigned_to: z.string(),
-    assigned_account: z.string().optional(),
+
     social_twitter: z.string().optional(),
     social_facebook: z.string().optional(),
     social_linkedin: z.string().optional(),
@@ -93,7 +86,7 @@ export function NewPatientForm({
       status: false,
       type: "",
       assigned_to: "",
-      assigned_account: "",
+
       social_twitter: "",
       social_facebook: "",
       social_linkedin: "",
@@ -442,33 +435,7 @@ export function NewPatientForm({
                 Additional CRM Fields (Website, Position, Social links, etc.)
               </summary>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="assigned_account"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("assignAccount")}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("assignAccountPlaceholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="flex overflow-y-auto h-56">
-                          {accounts.map((account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
                 <FormField
                   control={form.control}
                   name="position"

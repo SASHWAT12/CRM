@@ -34,7 +34,7 @@ interface LeadsViewProps {
 }
 
 const LeadsView = ({ data, crmData }: LeadsViewProps) => {
-  const { accounts, leadSources, leadStatuses, leadTypes } = crmData;
+  const { leadSources, leadStatuses, leadTypes } = crmData;
   const [open, setOpen] = useState(false);
   const t = useTranslations("CrmPage");
 
@@ -61,7 +61,6 @@ const LeadsView = ({ data, crmData }: LeadsViewProps) => {
                 </SheetHeader>
                 <div className="mt-6 space-y-4">
                   <NewLeadForm
-                    accounts={accounts}
                     leadSources={leadSources}
                     leadStatuses={leadStatuses}
                     leadTypes={leadTypes}

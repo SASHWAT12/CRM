@@ -59,12 +59,15 @@ const PatientsPage = async (props: PageProps) => {
       },
       select: { id: true, name: true },
     }),
-    // Count active patients
+    // Count recently converted patients
     prismadb.crm_Contacts.count({
       where: {
         ...readScope,
         deletedAt: null,
-        pipelineStage: { in: activeStages },
+        pipelineStage: CRM_POLICY.STAGES.CONVERTED_STAGE,
+        updatedAt: {
+          gte: new Date(Date.now() - CRM_POLICY.THRESHOLDS.RECENT_CONVERSION_MS),
+        },
       },
     }),
     // Count needing attention (overdue followup or no active followup)
@@ -189,7 +192,7 @@ const PatientsPage = async (props: PageProps) => {
   ]);
 
   const counts = {
-    active: activeCount,
+    recentlyConverted: activeCount,
     needsFollowup: needsFollowupCount,
     waitingResponse: waitingResponseCount,
     missedConsult: missedConsultCount,

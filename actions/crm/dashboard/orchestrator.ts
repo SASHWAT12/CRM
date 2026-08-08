@@ -1,84 +1,42 @@
-import * as appointmentsProvider from "./providers/appointments";
-import * as followupsProvider from "./providers/followups";
-import * as pipelineProvider from "./providers/pipeline";
-import * as sourcesProvider from "./providers/sources";
-import * as workloadProvider from "./providers/workload";
-import * as alertsProvider from "./providers/alerts";
-import * as personalProvider from "./providers/personal";
+import {
+  getDoctorDashboardData,
+  getReceptionistDashboardData,
+  getCounselorDashboardData,
+  getAdminDashboardData,
+} from "./providers/role-dashboards";
+import { getOperationalDashboardData as fetchOperationalDashboardData } from "./providers/operational-dashboard";
 
-export type UserCapabilities = {
-  canViewTeamWorkload: boolean;
-  canViewPipelineAnalytics: boolean;
-  canViewSourcesPerformance: boolean;
-  canViewAlertsAndExceptions: boolean;
-  canManageAppointments: boolean;
-  canManageFollowups: boolean;
-};
-
-export type UserContext = {
-  id: string;
-  role: string;
-  capabilities: UserCapabilities;
-};
-
-export function resolveCapabilities(role: string): UserCapabilities {
-  const isManager = ["root", "admin", "manager"].includes(role);
-  const isCounsellor = role === "counsellor";
-  const isReceptionist = role === "receptionist";
-  const isDoctor = role === "doctor";
-
-  return {
-    canViewTeamWorkload: isManager,
-    canViewPipelineAnalytics: isManager || isCounsellor || isReceptionist,
-    canViewSourcesPerformance: isManager,
-    canViewAlertsAndExceptions: isManager || isCounsellor || isReceptionist,
-    canManageAppointments: isManager || isCounsellor || isReceptionist || isDoctor,
-    canManageFollowups: isManager || isCounsellor || isReceptionist || isDoctor,
-  };
+/**
+ * Dedicated Orchestrator Action for Operational CRM Dashboard (/crm/dashboard)
+ * Returns the operational payload directly ({ capabilities, appointments, followups, pipeline, sources, workload, alerts }).
+ */
+export async function getOperationalDashboardData(userId: string, role: string) {
+  return fetchOperationalDashboardData(userId, role);
 }
 
+/**
+ * Dedicated Orchestrator Action for My Dashboard (/crm/dashboard/user)
+ * Returns { role, payload } envelope for personalized view switching.
+ */
 export async function getDashboardData(userId: string, role: string) {
-  const capabilities = resolveCapabilities(role);
-  const data: Record<string, any> = {
-    capabilities,
+  const normalizedRole = (role || "user").toLowerCase();
+
+  let roleData: any = {};
+
+  if (normalizedRole === "doctor") {
+    roleData = await getDoctorDashboardData(userId);
+  } else if (normalizedRole === "receptionist") {
+    roleData = await getReceptionistDashboardData();
+  } else if (normalizedRole === "counsellor" || normalizedRole === "counselor") {
+    roleData = await getCounselorDashboardData(userId);
+  } else if (normalizedRole === "admin" || normalizedRole === "manager" || normalizedRole === "root") {
+    roleData = await getAdminDashboardData();
+  } else {
+    roleData = await getCounselorDashboardData(userId);
+  }
+
+  return {
+    role: normalizedRole,
+    payload: roleData,
   };
-
-  // 1. Surfaced personal actionable context
-  data.personal = await personalProvider.getPersonalWork(userId);
-
-  // 2. Fetch domain data based on permissions/capabilities
-  const queries: Promise<any>[] = [];
-  const keys: string[] = [];
-
-  if (capabilities.canManageAppointments) {
-    queries.push(appointmentsProvider.getAppointmentsData());
-    keys.push("appointments");
-  }
-  if (capabilities.canManageFollowups) {
-    queries.push(followupsProvider.getFollowupsData());
-    keys.push("followups");
-  }
-  if (capabilities.canViewPipelineAnalytics) {
-    queries.push(pipelineProvider.getPipelineData());
-    keys.push("pipeline");
-  }
-  if (capabilities.canViewSourcesPerformance) {
-    queries.push(sourcesProvider.getSourcesData());
-    keys.push("sources");
-  }
-  if (capabilities.canViewTeamWorkload) {
-    queries.push(workloadProvider.getWorkloadData());
-    keys.push("workload");
-  }
-  if (capabilities.canViewAlertsAndExceptions) {
-    queries.push(alertsProvider.getAlertsData());
-    keys.push("alerts");
-  }
-
-  const results = await Promise.all(queries);
-  results.forEach((res, i) => {
-    data[keys[i]] = res;
-  });
-
-  return data;
 }

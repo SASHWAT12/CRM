@@ -23,19 +23,27 @@ export const getPatients = cache(async (params: {
 
   const { queue, search, assignedTo, pipelineStage } = params;
   const where: any = {
-    ...contactReadScopeWhere(user),
-    deletedAt: null,
+    AND: [
+      contactReadScopeWhere(user),
+      { deletedAt: null }
+    ]
   };
 
   const activeStages = CRM_POLICY.STAGES.ACTIVE_PATIENT_PIPELINE;
 
   // Scoped Queues based on CRM_POLICY
-  if (queue === "ACTIVE") {
-    where.pipelineStage = { in: activeStages };
+  const queueFilter: any = {};
+  if (queue === "MISSED") {
+    queueFilter.pipelineStage = { in: activeStages };
+    queueFilter.appointments = {
+      some: {
+        status: { in: ["NO_SHOW", "CANCELLED"] },
+      },
+    };
   } else if (queue === "ATTENTION") {
     // Needs Follow-up: active stages with overdue followups OR no active tasks scheduled
-    where.pipelineStage = { in: activeStages };
-    where.OR = [
+    queueFilter.pipelineStage = { in: activeStages };
+    queueFilter.OR = [
       {
         tasks: {
           some: {
@@ -54,43 +62,45 @@ export const getPatients = cache(async (params: {
     ];
   } else if (queue === "STALE") {
     // No Recent Activity: active stages, no scheduled tasks, no updates in STALE_PATIENT_MS days
-    where.pipelineStage = { in: activeStages };
-    where.tasks = {
+    queueFilter.pipelineStage = { in: activeStages };
+    queueFilter.tasks = {
       none: {
         taskStatus: "ACTIVE",
       },
     };
-    where.updatedAt = {
+    queueFilter.updatedAt = {
       lt: new Date(Date.now() - CRM_POLICY.THRESHOLDS.STALE_PATIENT_MS),
     };
   } else if (queue === "CONVERTED") {
     // Recently Converted: stage is treatment started, created or updated within RECENT_CONVERSION_MS
-    where.pipelineStage = CRM_POLICY.STAGES.CONVERTED_STAGE;
-    where.updatedAt = {
+    queueFilter.pipelineStage = CRM_POLICY.STAGES.CONVERTED_STAGE;
+    queueFilter.updatedAt = {
       gte: new Date(Date.now() - CRM_POLICY.THRESHOLDS.RECENT_CONVERSION_MS),
     };
   } else if (queue === "INACTIVE") {
-    where.pipelineStage = CRM_POLICY.STAGES.CLOSED_LOST_STAGE;
+    queueFilter.pipelineStage = CRM_POLICY.STAGES.CLOSED_LOST_STAGE;
   }
+  where.AND.push(queueFilter);
 
   // Active filters
   if (assignedTo && assignedTo !== "ALL") {
-    where.assigned_to = assignedTo;
+    where.AND.push({ assigned_to: assignedTo });
   }
 
   if (pipelineStage && pipelineStage !== "ALL") {
-    where.pipelineStage = pipelineStage;
+    where.AND.push({ pipelineStage });
   }
 
   if (search && search.trim() !== "") {
     const s = search.trim();
-    where.OR = [
-      ...(where.OR || []),
-      { first_name: { contains: s, mode: "insensitive" } },
-      { last_name: { contains: s, mode: "insensitive" } },
-      { email: { contains: s, mode: "insensitive" } },
-      { mobile_phone: { contains: s, mode: "insensitive" } },
-    ];
+    where.AND.push({
+      OR: [
+        { first_name: { contains: s, mode: "insensitive" } },
+        { last_name: { contains: s, mode: "insensitive" } },
+        { email: { contains: s, mode: "insensitive" } },
+        { mobile_phone: { contains: s, mode: "insensitive" } },
+      ]
+    });
   }
 
   const data = await prismadb.crm_Contacts.findMany({
@@ -106,7 +116,6 @@ export const getPatients = cache(async (params: {
           name: true,
         },
       },
-      assigned_accounts: true,
       documents: {
         include: {
           document: {

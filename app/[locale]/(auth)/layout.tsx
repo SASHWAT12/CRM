@@ -1,52 +1,19 @@
-import Link from "next/link";
-import { getTranslations } from "next-intl/server";
-
+import React from "react";
 import "@/app/[locale]/globals.css";
 import { ThemeToggle } from "@/components/ThemeToggle";
-// import Footer from "@/app/[locale]/(routes)/components/Footer";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
-
-type Props = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata(props: Props) {
-  const params = await props.params;
-  const { locale } = params;
-
-  const t = await getTranslations({ locale, namespace: "RootLayout" });
-
-  return {
-    title: t("title"),
-    description: t("description"),
-  };
-}
 
 const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
-  //Get github stars from github api
-
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen w-full">
-      <div className="flex justify-end items-center space-x-5 w-full p-5">
-        <Link
-          href={process.env.NEXT_PUBLIC_GITHUB_REPO_URL || "#"}
-          className=" border rounded-md p-2"
-        >
-        </Link>
-        <div className="flex items-center border rounded-md p-2 ">
-
-        </div>
-        <div className="flex items-center border rounded-md p-2">
-          <Link href="https://discord.gg/Dd4Aj6S4Dz">
-            <DiscordLogoIcon className="size-5" />
-          </Link>
-        </div>
+    <div className="relative min-h-screen w-full flex flex-col justify-center items-center bg-background text-foreground p-4">
+      {/* Top right floating Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
-      <div className="flex items-center grow h-full overflow-hidden">
+
+      {/* Centered Auth Card Container */}
+      <main className="w-full max-w-md flex flex-col items-center justify-center my-auto">
         {children}
-      </div>
-      {/* <Footer /> */}
+      </main>
     </div>
   );
 };

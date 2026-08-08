@@ -14,7 +14,7 @@ import moment from "moment";
 import { updateFollowup } from "@/actions/crm/followups/update-followup";
 import { updatePatient } from "@/actions/crm/patients/update-patient";
 import { updateAppointment } from "@/actions/crm/appointments/update-appointment";
-import { createTask } from "@/actions/crm/accounts/create-task";
+import { createFollowup } from "@/actions/crm/followups/create-followup";
 
 type StaffItem = { id: string; name: string; role: string };
 
@@ -126,7 +126,7 @@ export function QueueWidget({
     }
     setLoadingId(patientId);
     try {
-      const res = await createTask({
+      const res = await createFollowup({
         title: "Followup callback",
         content: "Scheduled from Stale Patients Queue on Dashboard",
         priority: "medium",

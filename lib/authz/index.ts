@@ -22,15 +22,7 @@ export {
 } from "./scopes/crm";
 export {
   filterAuthorizedContactIds,
-  filterAuthorizedAccountIds,
   filterAuthorizedLeadIds,
-} from "./scopes/crm";
-
-export { assertCanWriteAccount } from "./scopes/crm";
-export {
-  accountUserScopeOR,
-  accountReadScopeWhere,
-  assertCanReadAccount,
 } from "./scopes/crm";
 export {
   leadReadScopeWhere,

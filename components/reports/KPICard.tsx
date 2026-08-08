@@ -2,40 +2,37 @@
 
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Minus, ExternalLink } from "lucide-react";
 import type { KPIData } from "@/actions/reports/types";
-import { useTranslations } from "next-intl";
 
-const currencyLocaleMap: Record<string, string> = {
-  EUR: "fr-FR", USD: "en-US", CZK: "cs-CZ", GBP: "en-GB",
-};
-
-function formatValue(value: number, label: string, currency: string = "USD"): string {
-  if (label === "totalRevenue" || label === "pipelineValue") {
-    const locale = currencyLocaleMap[currency] || "en-US";
-    return new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
+function formatValue(value: number, label: string): string {
+  if (label.includes("(%)") || label.toLowerCase().includes("rate")) {
+    return `${value}%`;
   }
-  if (label === "conversionRate") return `${value}%`;
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-export function KPICard({ kpi, dateParams, displayCurrency = "USD" }: { kpi: KPIData; dateParams: string; displayCurrency?: string }) {
-  const t = useTranslations("ReportsPage.kpi");
+export function KPICard({ kpi, dateParams }: { kpi: KPIData; dateParams: string; displayCurrency?: string }) {
   const isPositive = kpi.changePercent > 0;
   const isZero = kpi.changePercent === 0;
 
   return (
-    <Link href={`${kpi.href}?${dateParams}`}>
-      <Card className="cursor-pointer hover:shadow-md transition-shadow">
+    <Link href={kpi.href ? (dateParams ? `${kpi.href}?${dateParams}` : kpi.href) : "#"}>
+      <Card className="cursor-pointer hover:shadow-md transition-shadow border-border">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t(kpi.label)}</CardTitle>
-          <div className={`flex items-center text-sm ${isPositive ? "text-green-600 dark:text-green-400" : isZero ? "text-gray-500 dark:text-gray-400" : "text-red-600 dark:text-red-400"}`}>
-            {isPositive ? <ArrowUpRight className="h-4 w-4" /> : isZero ? <Minus className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
-            <span>{Math.abs(kpi.changePercent)}%</span>
-          </div>
+          <CardTitle className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+            <span>{kpi.label}</span>
+            <ExternalLink className="h-3 w-3 opacity-50" />
+          </CardTitle>
+          {kpi.changePercent !== 0 && (
+            <div className={`flex items-center text-xs font-bold ${isPositive ? "text-emerald-600" : "text-rose-600"}`}>
+              {isPositive ? <ArrowUpRight className="h-3.5 w-3.5" /> : isZero ? <Minus className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+              <span>{Math.abs(kpi.changePercent)}%</span>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-medium">{formatValue(kpi.value, kpi.label, displayCurrency)}</div>
+          <div className="text-2xl font-bold">{formatValue(kpi.value, kpi.label)}</div>
         </CardContent>
       </Card>
     </Link>

@@ -85,18 +85,6 @@ export async function filterAuthorizedContactIds(
   return rows.map((r: { id: string }) => r.id);
 }
 
-export async function filterAuthorizedAccountIds(
-  user: AuthzUser,
-  accountIds: string[],
-): Promise<string[]> {
-  if (accountIds.length === 0) return [];
-  const rows = await prismadb.crm_Accounts.findMany({
-    where: { id: { in: accountIds }, ...accountReadScopeWhere(user) },
-    select: { id: true },
-  });
-  return rows.map((r: { id: string }) => r.id);
-}
-
 export async function filterAuthorizedLeadIds(
   user: AuthzUser,
   leadIds: string[],
@@ -109,66 +97,10 @@ export async function filterAuthorizedLeadIds(
   return rows.map((r: { id: string }) => r.id);
 }
 
-
-
-// Internal: the OR clauses describing user-level account ownership.
-// Exported via accountReadScopeWhere; D2 will reuse for nested linked-account scope.
-export function accountUserScopeOR(userId: string) {
-  return [
-    { assigned_to: userId },
-    { createdBy: userId },
-  ];
-}
-
-// Build a Prisma where for "this user can read this account".
-// Manager/admin: { deletedAt: null }
-// User:           { deletedAt: null, OR: accountUserScopeOR(user.id) }
-export function accountReadScopeWhere(user: AuthzUser) {
-  if (user.role === "admin" || user.role === "manager") {
-    return { deletedAt: null };
-  }
-  return {
-    deletedAt: null,
-    OR: accountUserScopeOR(user.id),
-  };
-}
-
-// Throws AuthorizationError if user can't read this account.
-export async function assertCanReadAccount(
-  user: AuthzUser,
-  accountId: string,
-): Promise<void> {
-  const row = await prismadb.crm_Accounts.findFirst({
-    where: { id: accountId, ...accountReadScopeWhere(user) },
-    select: { id: true },
-  });
-  if (!row) throw new AuthorizationError();
-}
-
-export async function assertCanWriteAccount(
-  user: AuthzUser,
-  accountId: string,
-): Promise<void> {
-  const where =
-    user.role === "admin" || user.role === "manager"
-      ? { id: accountId }
-      : {
-          id: accountId,
-          OR: accountUserScopeOR(user.id),
-        };
-  const row = await prismadb.crm_Accounts.findFirst({
-    where,
-    select: { id: true },
-  });
-  if (!row) throw new AuthorizationError();
-}
-
 // ---------------------------------------------------------------------------
 // D2: Entity read-scope helpers (Lead / Contact / Opportunity / Contract)
-// All four reuse accountUserScopeOR for the nested linked-account branch.
 // ---------------------------------------------------------------------------
 
-// crm_Leads → crm_Accounts via `assigned_accounts` (FK accountsIDs).
 export function leadReadScopeWhere(user: AuthzUser) {
   if (user.role === "admin" || user.role === "manager") {
     return { deletedAt: null };
@@ -178,12 +110,10 @@ export function leadReadScopeWhere(user: AuthzUser) {
     OR: [
       { assigned_to: user.id },
       { createdBy: user.id },
-      { assigned_accounts: { OR: accountUserScopeOR(user.id) } },
     ],
   };
 }
 
-// crm_Contacts → crm_Accounts via `assigned_accounts` (FK accountsIDs).
 export function contactReadScopeWhere(user: AuthzUser) {
   if (user.role === "admin" || user.role === "manager") {
     return { deletedAt: null };
@@ -193,7 +123,6 @@ export function contactReadScopeWhere(user: AuthzUser) {
     OR: [
       { assigned_to: user.id },
       { createdBy: user.id },
-      { assigned_accounts: { OR: accountUserScopeOR(user.id) } },
     ],
   };
 }
@@ -221,8 +150,6 @@ export async function assertCanReadActivityForEntity(
   entityId: string,
 ): Promise<void> {
   switch (entityType.toLowerCase()) {
-    case "account":
-      return assertCanReadAccount(user, entityId);
     case "lead":
       return assertCanReadLead(user, entityId);
     case "contact":

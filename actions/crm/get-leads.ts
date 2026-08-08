@@ -23,50 +23,60 @@ export const getLeads = cache(async (params: {
 
   const { queue, search, assignedTo, leadSource } = params;
   const where: any = {
-    ...leadReadScopeWhere(user),
-    deletedAt: null,
+    AND: [
+      leadReadScopeWhere(user),
+      { deletedAt: null }
+    ]
   };
 
   // Scoped Queues based on CRM_POLICY
+  const queueFilter: any = {};
   if (queue === "HOT") {
-    where.lead_status = {
+    queueFilter.lead_status = {
       name: { in: CRM_POLICY.STAGES.HOT_LEAD_STATUSES },
     };
   } else if (queue === "NEW") {
     // New Today
-    where.createdAt = {
+    queueFilter.createdAt = {
       gte: new Date(Date.now() - CRM_POLICY.THRESHOLDS.NEW_LEAD_MS),
     };
   } else if (queue === "UNTOUCHED") {
     // Awaiting First Contact: assigned but no update activity in UNTOUCHED_LEAD_MS days
-    where.updatedAt = {
+    queueFilter.updatedAt = {
       lt: new Date(Date.now() - CRM_POLICY.THRESHOLDS.UNTOUCHED_LEAD_MS),
     };
   } else if (queue === "RISK") {
     // At Risk: open leads stagnant for over AT_RISK_LEAD_MS days
-    where.createdAt = {
+    queueFilter.createdAt = {
       lt: new Date(Date.now() - CRM_POLICY.THRESHOLDS.AT_RISK_LEAD_MS),
     };
   }
+  where.AND.push(queueFilter);
 
   // Active filters
   if (assignedTo && assignedTo !== "ALL") {
-    where.assigned_to = assignedTo;
+    where.AND.push({ assigned_to: assignedTo });
   }
 
   if (leadSource && leadSource !== "ALL") {
-    where.lead_source_id = leadSource;
+    where.AND.push({ lead_source_id: leadSource });
   }
 
   if (search && search.trim() !== "") {
     const s = search.trim();
-    where.OR = [
-      ...(where.OR || []),
-      { firstName: { contains: s, mode: "insensitive" } },
-      { lastName: { contains: s, mode: "insensitive" } },
-      { email: { contains: s, mode: "insensitive" } },
-      { phone: { contains: s, mode: "insensitive" } },
-    ];
+    where.AND.push({
+      OR: [
+        { firstName: { contains: s, mode: "insensitive" } },
+        { lastName: { contains: s, mode: "insensitive" } },
+        { email: { contains: s, mode: "insensitive" } },
+        { phone: { contains: s, mode: "insensitive" } },
+        {
+          lead_source: {
+            name: { contains: s, mode: "insensitive" }
+          }
+        }
+      ]
+    });
   }
 
   const data = await prismadb.crm_Leads.findMany({
@@ -77,7 +87,6 @@ export const getLeads = cache(async (params: {
           name: true,
         },
       },
-      assigned_accounts: true,
       documents: {
         include: {
           document: {

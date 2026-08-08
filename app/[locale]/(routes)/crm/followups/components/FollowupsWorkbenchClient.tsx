@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import NewPatientFollowupForm from "../../patients/[patientId]/components/NewPatientFollowupForm";
-import UpdateTaskForm from "../../accounts/[accountId]/components/UpdateTaskForm";
+import UpdateTaskForm from "./UpdateTaskForm";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -162,11 +162,11 @@ export function FollowupsWorkbenchClient({
       variant: "success" as const
     },
     { 
-      id: "ALL", 
-      label: "All Tasks", 
+      id: "UPCOMING", 
+      label: "Upcoming Callbacks", 
       count: counts.total, 
-      icon: <CheckSquare className="h-4 w-4" />, 
-      description: "Complete task count",
+      icon: <Clock className="h-4 w-4" />, 
+      description: "Future scheduled callbacks",
       variant: "default" as const
     },
   ];
@@ -194,18 +194,6 @@ export function FollowupsWorkbenchClient({
     </Sheet>
   );
 
-  const resumeActions = (
-    <Button 
-      size="sm" 
-      variant="outline" 
-      onClick={() => handleQueueSelect("OVERDUE")}
-      className="gap-1 cursor-pointer border-primary/20 text-primary hover:bg-primary/5"
-    >
-      <Play className="h-3.5 w-3.5 fill-current" />
-      <span>Resume Overdue Inbox</span>
-    </Button>
-  );
-
   const browseActions = (
     <Button size="sm" variant="ghost" asChild className="gap-1 cursor-pointer text-muted-foreground hover:text-foreground">
       <Link href="/crm/followups/registry">
@@ -222,7 +210,7 @@ export function FollowupsWorkbenchClient({
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search within callback inbox..."
+            placeholder="Search followups"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pl-8 h-9 text-xs"
@@ -352,7 +340,6 @@ export function FollowupsWorkbenchClient({
         activeQueue={activeQueue}
         onQueueSelect={handleQueueSelect}
         createActions={createActions}
-        resumeActions={resumeActions}
         browseActions={browseActions}
         filters={filters}
         recentActivity={recentActivity}

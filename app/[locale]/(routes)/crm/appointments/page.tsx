@@ -42,13 +42,19 @@ const AppointmentsPage = async (props: PageProps) => {
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
+  const startOfTomorrow = new Date();
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+  startOfTomorrow.setHours(0, 0, 0, 0);
+  const endOfTomorrow = new Date();
+  endOfTomorrow.setDate(endOfTomorrow.getDate() + 1);
+  endOfTomorrow.setHours(23, 59, 59, 999);
+
   // Fetch counts, doctors list, and appointments dataset in parallel
   const [
     appointments,
     doctorsList,
     todayCount,
-    startingSoonCount,
-    awaitingStaffCount,
+    tomorrowCount,
     completedTodayCount,
     cancelledTodayCount,
     recentCompleted,
@@ -69,23 +75,11 @@ const AppointmentsPage = async (props: PageProps) => {
         scheduledAt: { gte: startOfToday, lte: endOfToday },
       },
     }),
-    // Count starting soon (in next 2 hours based on policy)
+    // Count tomorrow's schedule
     prismadb.crm_Appointments.count({
       where: {
         ...userScopeFilter,
-        scheduledAt: {
-          gte: new Date(),
-          lte: new Date(Date.now() + CRM_POLICY.THRESHOLDS.APPOINTMENT_STARTING_SOON_MS),
-        },
-        status: { notIn: ["COMPLETED", "CANCELLED", "NO_SHOW"] },
-      },
-    }),
-    // Count awaiting staff assignment (optional field staffId is null)
-    prismadb.crm_Appointments.count({
-      where: {
-        ...userScopeFilter,
-        staffId: null,
-        status: { notIn: ["COMPLETED", "CANCELLED"] },
+        scheduledAt: { gte: startOfTomorrow, lte: endOfTomorrow },
       },
     }),
     // Count completed today
@@ -153,8 +147,7 @@ const AppointmentsPage = async (props: PageProps) => {
 
   const counts = {
     today: todayCount,
-    startingSoon: startingSoonCount,
-    awaitingStaff: awaitingStaffCount,
+    tomorrow: tomorrowCount,
     completed: completedTodayCount,
     cancelled: cancelledTodayCount,
   };

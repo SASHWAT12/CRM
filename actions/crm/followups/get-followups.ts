@@ -11,31 +11,34 @@ export const getFollowups = async (params: {
   queue?: string;
   userId?: string;
   priority?: string;
+  search?: string;
 } = {}) => {
   const session = await getSession();
   if (!session) return { tasks: [], total: 0 };
 
-  const { status, contactId, skip = 0, take = 50, queue, userId, priority } = params;
+  const { status, contactId, skip = 0, take = 50, queue, userId, priority, search } = params;
 
-  const where: any = {};
+  const where: any = {
+    AND: []
+  };
 
   const isManager = ["root", "admin", "manager"].includes(session.user.role || "");
   if (!isManager) {
-    where.user = session.user.id;
+    where.AND.push({ user: session.user.id });
   } else if (userId && userId !== "ALL") {
-    where.user = userId;
+    where.AND.push({ user: userId });
   }
 
   if (contactId) {
-    where.contact = contactId;
+    where.AND.push({ contact: contactId });
   }
 
   if (status && status !== "ALL") {
-    where.taskStatus = status as taskStatus;
+    where.AND.push({ taskStatus: status as taskStatus });
   }
 
   if (priority && priority !== "ALL") {
-    where.priority = priority;
+    where.AND.push({ priority });
   }
 
   const now = new Date();
@@ -43,23 +46,48 @@ export const getFollowups = async (params: {
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
   // Scoped Queues
+  const queueFilter: any = {};
   if (queue === "OVERDUE") {
-    where.taskStatus = "ACTIVE";
-    where.dueDateAt = { lt: todayStart };
+    queueFilter.taskStatus = "ACTIVE";
+    queueFilter.dueDateAt = { lt: todayStart };
   } else if (queue === "DUE_TODAY") {
-    where.taskStatus = "ACTIVE";
-    where.dueDateAt = { gte: todayStart, lte: todayEnd };
+    queueFilter.taskStatus = "ACTIVE";
+    queueFilter.dueDateAt = { gte: todayStart, lte: todayEnd };
   } else if (queue === "UPCOMING") {
-    where.taskStatus = "ACTIVE";
-    where.dueDateAt = { gt: todayEnd };
+    queueFilter.taskStatus = "ACTIVE";
+    queueFilter.dueDateAt = { gt: todayEnd };
   } else if (queue === "COMPLETED") {
-    where.taskStatus = "COMPLETE";
+    queueFilter.taskStatus = "COMPLETE";
   } else if (queue === "STALLED") {
-    where.taskStatus = "ACTIVE";
-    where.OR = [
+    queueFilter.taskStatus = "ACTIVE";
+    queueFilter.OR = [
       { contact: null },
       { content: "" }
     ];
+  }
+  where.AND.push(queueFilter);
+
+  if (search && search.trim() !== "") {
+    const s = search.trim();
+    where.AND.push({
+      OR: [
+        { title: { contains: s, mode: "insensitive" } },
+        { content: { contains: s, mode: "insensitive" } },
+        {
+          crm_contact: {
+            OR: [
+              { first_name: { contains: s, mode: "insensitive" } },
+              { last_name: { contains: s, mode: "insensitive" } }
+            ]
+          }
+        },
+        {
+          assigned_user: {
+            name: { contains: s, mode: "insensitive" }
+          }
+        }
+      ]
+    });
   }
 
   const [tasks, total] = await prismadb.$transaction([

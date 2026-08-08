@@ -17,7 +17,6 @@ async function ensureAdmin(): Promise<{ error: string } | null> {
 }
 
 export type CrmConfigType =
-  | "industry"
   | "contactType"
   | "leadSource"
   | "leadStatus"
@@ -28,7 +27,6 @@ export type ConfigValue = { id: string; name: string; usageCount: number };
 const nameSchema = z.string().trim().min(1, "Name is required").max(100, "Max 100 characters");
 
 const configMap = {
-  industry:        { model: () => prisma.crm_Industry_Type,               countRelation: "accounts",                              updateMany: null },
   contactType:     { model: () => prisma.crm_Contact_Types,               countRelation: "contacts",                              updateMany: () => prisma.crm_Contacts },
   leadSource:      { model: () => prisma.crm_Lead_Sources,                countRelation: "leads",                                 updateMany: () => prisma.crm_Leads },
   leadStatus:      { model: () => prisma.crm_Lead_Statuses,               countRelation: "leads",                                 updateMany: () => prisma.crm_Leads },
@@ -36,7 +34,6 @@ const configMap = {
 } as const;
 
 const fkField: Record<CrmConfigType, string | null> = {
-  industry:        "industry",
   contactType:     "contact_type_id",
   leadSource:      "lead_source_id",
   leadStatus:      "lead_status_id",

@@ -52,8 +52,6 @@ export const getPatient = async (patientId: string) => {
       },
       // Include FK relation name field
       contact_type: { select: { id: true, name: true } },
-      // Include assigned account
-      assigned_accounts: true,
       // Include assigned user (uses "assigned_contacts" relation)
       assigned_to_user: {
         select: {

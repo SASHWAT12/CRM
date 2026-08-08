@@ -37,28 +37,18 @@ export const emailLinkCrm = inngest.createFunction(
     if (addresses.length === 0) return { linked: 0 };
 
     const linked = await step.run("match-and-link", async () => {
-      const [contacts, accounts] = await Promise.all([
-        prismadb.crm_Contacts.findMany({
-          where: { email: { in: addresses } },
-          select: { id: true },
-        }),
-        prismadb.crm_Accounts.findMany({
-          where: { email: { in: addresses } },
-          select: { id: true },
-        }),
-      ]);
+      const contacts = await prismadb.crm_Contacts.findMany({
+        where: { email: { in: addresses } },
+        select: { id: true },
+      });
 
       const contactLinks = contacts.map((c) => ({ emailId, contactId: c.id }));
-      const accountLinks = accounts.map((a) => ({ emailId, accountId: a.id }));
 
       if (contactLinks.length > 0) {
         await prismadb.emailsToContacts.createMany({ data: contactLinks, skipDuplicates: true });
       }
-      if (accountLinks.length > 0) {
-        await prismadb.emailsToAccounts.createMany({ data: accountLinks, skipDuplicates: true });
-      }
 
-      return contactLinks.length + accountLinks.length;
+      return contactLinks.length;
     });
 
     // Only fetch body + embed for emails that are CRM-relevant

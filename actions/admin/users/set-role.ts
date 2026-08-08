@@ -15,6 +15,16 @@ export const setUserRole = async (userId: string, role: AppRole) => {
   if (!userId) return { error: "userId is required" };
   if (!APP_ROLES.includes(role)) return { error: "Invalid role" };
 
+  const targetUser = await prismadb.users.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true },
+  });
+
+  if (!targetUser) return { error: "User not found." };
+  if (targetUser.role === "root") {
+    return { error: "ROOT user role is immutable and cannot be changed." };
+  }
+
   if (userId === actor.id && role !== "admin") {
     return { error: "Cannot remove your own admin role" };
   }

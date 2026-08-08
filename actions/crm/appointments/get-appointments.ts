@@ -19,88 +19,111 @@ export const getAppointments = async (params: GetAppointmentsParams = {}) => {
 
   const { status, patientId, search, queue, doctorId } = params;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const whereClause: any = {};
+  const whereClause: any = {
+    AND: []
+  };
 
   const isManager = ["root", "admin", "manager"].includes(session.user.role || "");
   if (!isManager) {
-    whereClause.OR = [
-      { doctorId: session.user.id },
-      { staffId: session.user.id }
-    ];
+    whereClause.AND.push({
+      OR: [
+        { doctorId: session.user.id },
+        { staffId: session.user.id }
+      ]
+    });
   }
 
   if (patientId) {
-    whereClause.patientId = patientId;
+    whereClause.AND.push({ patientId });
   }
 
   if (doctorId && doctorId !== "ALL") {
-    whereClause.doctorId = doctorId;
+    whereClause.AND.push({ doctorId });
   }
 
   if (status && status !== "ALL") {
-    whereClause.status = status;
+    whereClause.AND.push({ status });
   }
 
   // Scoped Queues based on CRM_POLICY
+  const queueFilter: any = {};
   if (queue === "TODAY") {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
-    whereClause.scheduledAt = { gte: startOfToday, lte: endOfToday };
-  } else if (queue === "STARTING_SOON") {
-    const now = new Date();
-    const nextLimit = new Date(now.getTime() + CRM_POLICY.THRESHOLDS.APPOINTMENT_STARTING_SOON_MS);
-    whereClause.scheduledAt = { gte: now, lte: nextLimit };
-    whereClause.status = { notIn: ["COMPLETED", "CANCELLED", "NO_SHOW"] };
-  } else if (queue === "AWAITING_PRACTITIONER") {
-    // Audit check: doctorId is required, staffId is optional. Unassigned maps to staffId null.
-    whereClause.staffId = null;
-    whereClause.status = { notIn: ["COMPLETED", "CANCELLED"] };
+    queueFilter.scheduledAt = { gte: startOfToday, lte: endOfToday };
+  } else if (queue === "TOMORROW") {
+    const startOfTomorrow = new Date();
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+    startOfTomorrow.setHours(0, 0, 0, 0);
+    const endOfTomorrow = new Date();
+    endOfTomorrow.setDate(endOfTomorrow.getDate() + 1);
+    endOfTomorrow.setHours(23, 59, 59, 999);
+    queueFilter.scheduledAt = { gte: startOfTomorrow, lte: endOfTomorrow };
   } else if (queue === "COMPLETED") {
-    whereClause.status = "COMPLETED";
+    queueFilter.status = "COMPLETED";
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    queueFilter.updatedAt = { gte: startOfToday, lte: endOfToday };
   } else if (queue === "NOSHOW_CANCELLED") {
-    whereClause.status = { in: ["NO_SHOW", "CANCELLED"] };
+    queueFilter.status = { in: ["NO_SHOW", "CANCELLED"] };
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    queueFilter.updatedAt = { gte: startOfToday, lte: endOfToday };
   }
+  whereClause.AND.push(queueFilter);
 
   if (search && search.trim() !== "") {
     const searchTrimmed = search.trim();
-    whereClause.OR = [
-      ...(whereClause.OR || []),
-      {
-        notes: {
-          contains: searchTrimmed,
-          mode: "insensitive",
-        },
-      },
-      {
-        patient: {
-          OR: [
-            {
-              first_name: {
-                contains: searchTrimmed,
-                mode: "insensitive",
-              },
-            },
-            {
-              last_name: {
-                contains: searchTrimmed,
-                mode: "insensitive",
-              },
-            },
-          ],
-        },
-      },
-      {
-        doctor: {
-          name: {
+    whereClause.AND.push({
+      OR: [
+        {
+          notes: {
             contains: searchTrimmed,
             mode: "insensitive",
           },
         },
-      },
-    ];
+        {
+          patient: {
+            OR: [
+              {
+                first_name: {
+                  contains: searchTrimmed,
+                  mode: "insensitive",
+                },
+              },
+              {
+                last_name: {
+                  contains: searchTrimmed,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+        },
+        {
+          doctor: {
+            name: {
+              contains: searchTrimmed,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          staff: {
+            name: {
+              contains: searchTrimmed,
+              mode: "insensitive",
+            },
+          },
+        },
+      ]
+    });
   }
 
   try {

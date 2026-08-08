@@ -66,7 +66,7 @@ export function LeadsWorkbenchClient({
   const [searchText, setSearchText] = useState(search);
   const debouncedSearch = useDebounce(searchText, 300);
 
-  const { accounts, leadSources, leadStatuses, leadTypes } = crmData;
+  const { leadSources, leadStatuses, leadTypes } = crmData;
 
   const updateFilters = (newQueue: string, newSearch: string, newAssigned: string) => {
     const params = new URLSearchParams();
@@ -135,18 +135,6 @@ export function LeadsWorkbenchClient({
     </Button>
   );
 
-  const resumeActions = (
-    <Button 
-      size="sm" 
-      variant="outline" 
-      onClick={() => handleQueueSelect("NEW")}
-      className="gap-1 cursor-pointer border-primary/20 text-primary hover:bg-primary/5"
-    >
-      <Play className="h-3.5 w-3.5 fill-current" />
-      <span>Resume Conversion</span>
-    </Button>
-  );
-
   const browseActions = (
     <Button size="sm" variant="ghost" asChild className="gap-1 cursor-pointer text-muted-foreground hover:text-foreground">
       <Link href="/crm/leads/registry">
@@ -163,7 +151,7 @@ export function LeadsWorkbenchClient({
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search within this queue..."
+            placeholder="Search leads"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pl-8 h-9 text-xs"
@@ -315,7 +303,6 @@ export function LeadsWorkbenchClient({
         activeQueue={activeQueue}
         onQueueSelect={handleQueueSelect}
         createActions={createActions}
-        resumeActions={resumeActions}
         browseActions={browseActions}
         filters={filters}
         recentActivity={recentActivity}
@@ -376,7 +363,6 @@ export function LeadsWorkbenchClient({
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <NewLeadForm
-              accounts={accounts}
               leadSources={leadSources}
               leadStatuses={leadStatuses}
               leadTypes={leadTypes}

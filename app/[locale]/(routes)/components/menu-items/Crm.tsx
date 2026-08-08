@@ -14,7 +14,6 @@ import { NavItem } from "../nav-main";
 type Props = {
   localizations: {
     title: string;
-    accounts: string;
     contacts: string;
     leads: string;
   };
@@ -36,10 +35,6 @@ export const getCrmMenuItem = ({ localizations }: Props): NavItem => {
       {
         title: "Overview",
         url: "/crm",
-      },
-      {
-        title: localizations.accounts,
-        url: "/crm/accounts",
       },
       {
         title: localizations.contacts,

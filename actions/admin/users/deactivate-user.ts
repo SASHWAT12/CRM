@@ -32,17 +32,8 @@ export const deactivateUser = async (userId: string) => {
     return { error: "User not found." };
   }
 
-  if (targetUser.role === "root" && actor.role !== "root") {
-    return { error: "Only Root accounts can manage other Root accounts." };
-  }
-
   if (targetUser.role === "root") {
-    const activeRootCount = await prismadb.users.count({
-      where: { role: "root", userStatus: "ACTIVE" },
-    });
-    if (activeRootCount <= 1) {
-      return { error: "Cannot deactivate the last Active Root account." };
-    }
+    return { error: "ROOT user is immutable and cannot be deactivated." };
   }
 
   try {

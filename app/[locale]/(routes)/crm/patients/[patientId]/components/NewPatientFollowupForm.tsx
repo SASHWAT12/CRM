@@ -40,7 +40,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { UserSearchCombobox } from "@/components/ui/user-search-combobox";
-import { createTask } from "@/actions/crm/accounts/create-task";
+import { createFollowup } from "@/actions/crm/followups/create-followup";
 import { PatientSearchCombobox } from "@/components/ui/patient-search-combobox";
 
 interface NewPatientFollowupFormProps {
@@ -79,7 +79,7 @@ const NewPatientFollowupForm = ({ contactId, onFinish }: NewPatientFollowupFormP
   const onSubmit = async (data: NewPatientTaskFormValues) => {
     setIsLoading(true);
     try {
-      const result = await createTask({
+      const result = await createFollowup({
         title: data.title,
         user: data.user,
         priority: data.priority,

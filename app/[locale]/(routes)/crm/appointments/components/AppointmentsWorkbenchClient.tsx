@@ -51,8 +51,7 @@ interface AppointmentsWorkbenchClientProps {
   doctors: any[];
   counts: {
     today: number;
-    startingSoon: number;
-    awaitingStaff: number;
+    tomorrow: number;
     completed: number;
     cancelled: number;
   };
@@ -151,19 +150,11 @@ export function AppointmentsWorkbenchClient({
       variant: "default" as const
     },
     { 
-      id: "STARTING_SOON", 
-      label: "Starting Soon", 
-      count: counts.startingSoon, 
+      id: "TOMORROW", 
+      label: "Tomorrow's Schedule", 
+      count: counts.tomorrow, 
       icon: <Clock className="h-4 w-4" />, 
-      description: "Starting in next 2 hours",
-      variant: "warning" as const
-    },
-    { 
-      id: "AWAITING_PRACTITIONER", 
-      label: "Awaiting Assistant", 
-      count: counts.awaitingStaff, 
-      icon: <User className="h-4 w-4" />, 
-      description: "Coordinator unassigned",
+      description: "All appointments scheduled tomorrow",
       variant: "warning" as const
     },
     { 
@@ -174,6 +165,14 @@ export function AppointmentsWorkbenchClient({
       description: "Needs callback scheduling",
       variant: "danger" as const
     },
+    { 
+      id: "COMPLETED", 
+      label: "Completed Today", 
+      count: counts.completed, 
+      icon: <CheckCircle className="h-4 w-4" />, 
+      description: "Completed consultations today",
+      variant: "success" as const
+    },
   ];
 
   // Actions
@@ -181,18 +180,6 @@ export function AppointmentsWorkbenchClient({
     <Button size="sm" onClick={() => setCreateOpen(true)} className="gap-1 cursor-pointer">
       <Plus className="h-3.5 w-3.5" />
       <span>Book Consultation</span>
-    </Button>
-  );
-
-  const resumeActions = (
-    <Button 
-      size="sm" 
-      variant="outline" 
-      onClick={() => handleQueueSelect("TODAY")}
-      className="gap-1 cursor-pointer border-primary/20 text-primary hover:bg-primary/5"
-    >
-      <Play className="h-3.5 w-3.5 fill-current" />
-      <span>Today's Schedule</span>
     </Button>
   );
 
@@ -212,7 +199,7 @@ export function AppointmentsWorkbenchClient({
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search active consults..."
+            placeholder="Search appointments"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pl-8 h-9 text-xs"
@@ -307,12 +294,21 @@ export function AppointmentsWorkbenchClient({
 
     if (activeQueue === "TODAY") {
       icon = <CheckCircle className="h-8 w-8 text-emerald-500 mx-auto" />;
-      title = "Schedule is Clear!";
-      description = "No patient consultations are scheduled for today.";
-    } else if (activeQueue === "AWAITING_PRACTITIONER") {
+      title = "No appointments scheduled today.";
+      description = "There are no patient consultations scheduled for today.";
+    } else if (activeQueue === "TOMORROW") {
+      icon = <CalendarDays className="h-8 w-8 text-muted-foreground/60 mx-auto" />;
+      title = "No appointments scheduled tomorrow.";
+      description = "There are no patient consultations scheduled for tomorrow.";
+    } else if (activeQueue === "NOSHOW_CANCELLED") {
       icon = <CheckCircle className="h-8 w-8 text-emerald-500 mx-auto" />;
-      title = "All Coordinator Assigned!";
-      description = "All scheduled patient visits have assistant coordinators assigned.";
+      title = "No appointments currently require rescheduling.";
+      description = "No missed or cancelled consultations require attention today.";
+      showAction = false;
+    } else if (activeQueue === "COMPLETED") {
+      icon = <CalendarDays className="h-8 w-8 text-muted-foreground/60 mx-auto" />;
+      title = "No appointments completed today.";
+      description = "No consultations have been marked as completed today.";
       showAction = false;
     }
 
@@ -342,7 +338,6 @@ export function AppointmentsWorkbenchClient({
         activeQueue={activeQueue}
         onQueueSelect={handleQueueSelect}
         createActions={createActions}
-        resumeActions={resumeActions}
         browseActions={browseActions}
         filters={filters}
         recentActivity={recentActivity}

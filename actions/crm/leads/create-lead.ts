@@ -59,7 +59,6 @@ export const createLead = async (data: {
         lead_type_id: lead_type_id || undefined,
         refered_by: refered_by || undefined,
         assigned_to: assigned_to || userId,
-        accountsIDs: accountIDs || undefined,
       },
     });
 

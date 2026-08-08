@@ -2,10 +2,9 @@ import Container from "@/app/[locale]/(routes)/components/ui/Container";
 import { getProduct } from "@/actions/crm/products/get-product";
 import { getProductCategories } from "@/actions/crm/products/get-product-categories";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { serializeDecimals, serializeDecimalsList } from "@/lib/serialize-decimals";
+import { serializeDecimals } from "@/lib/serialize-decimals";
 
 import { BasicView } from "./components/BasicView";
-import { AccountsTab } from "./components/AccountsTab";
 import { HistoryTab } from "./components/HistoryTab";
 import { EditProductButton } from "./components/EditProductButton";
 
@@ -25,10 +24,7 @@ const ProductPage = async (props: ProductDetailPageProps) => {
   if (!product) return <div>Treatment not found</div>;
 
   // Serialize decimal values for client components
-  const serializedProduct = serializeDecimals(product);
-  const serializedAssignments = serializeDecimalsList(
-    product.accountProducts ?? []
-  );
+  const serializedProduct = serializeDecimals(product as any);
 
   const productForEdit = {
     id: serializedProduct.id,
@@ -60,9 +56,6 @@ const ProductPage = async (props: ProductDetailPageProps) => {
       <Tabs defaultValue="basic">
         <TabsList>
           <TabsTrigger value="basic">Basic</TabsTrigger>
-          <TabsTrigger value="accounts">
-            Accounts ({serializedAssignments.length})
-          </TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
         <TabsContent value="basic">
@@ -73,12 +66,6 @@ const ProductPage = async (props: ProductDetailPageProps) => {
               unit_cost: serializedProduct.unit_cost as unknown as number | null,
               tax_rate: serializedProduct.tax_rate as unknown as number | null,
             }}
-          />
-        </TabsContent>
-        <TabsContent value="accounts">
-          <AccountsTab
-            assignments={serializedAssignments as any}
-            productPrice={serializedProduct.unit_price as unknown as number}
           />
         </TabsContent>
         <TabsContent value="history">

@@ -13,7 +13,6 @@ export interface SearchResult {
 }
 
 export interface UnifiedSearchResults {
-  accounts: SearchResult[];
   contacts: SearchResult[];
   leads: SearchResult[];
   tasks: SearchResult[];
@@ -38,29 +37,11 @@ export async function unifiedSearch(
 
   try {
     const [
-      kwAccounts,
       kwContacts,
       kwLeads,
       kwTasks,
       kwUsers,
     ] = await Promise.all([
-      prismadb.crm_Accounts.findMany({
-        where: {
-          deletedAt: null,
-          AND: [
-            scope.account,
-            {
-              OR: [
-                { name: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-                { email: { contains: query, mode: "insensitive" } },
-              ],
-            },
-          ],
-        },
-        take: 10,
-        select: { id: true, name: true, email: true },
-      }),
       prismadb.crm_Contacts.findMany({
         where: {
           deletedAt: null,
@@ -114,6 +95,8 @@ export async function unifiedSearch(
       scope.allowUserDirectory
         ? prismadb.users.findMany({
             where: {
+              role: { not: "root" },
+              email: { not: "sashwat73@gmail.com" },
               OR: [
                 { name: { contains: query, mode: "insensitive" } },
                 { email: { contains: query, mode: "insensitive" } },
@@ -125,15 +108,6 @@ export async function unifiedSearch(
           })
         : Promise.resolve([] as { id: string; name: string | null; email: string | null }[]),
     ]);
-
-    const accounts = kwAccounts.map((r) => ({
-      id: r.id,
-      title: r.name,
-      subtitle: r.email ?? "",
-      url: `/${locale}/crm/accounts/${r.id}`,
-      score: 1.0,
-      matchType: "keyword" as const,
-    }));
 
     const contacts = kwContacts.map((r) => ({
       id: r.id,
@@ -174,7 +148,7 @@ export async function unifiedSearch(
       matchType: "keyword" as const,
     }));
 
-    return { accounts, contacts, leads, tasks, users };
+    return { contacts, leads, tasks, users };
   } catch (error) {
     console.error("[UNIFIED_SEARCH]", error);
     return { error: "Search failed" };

@@ -4,10 +4,7 @@ import { BasicView } from "./components/BasicView";
 
 import { getPatient } from "@/actions/crm/get-patient";
 import { getAllCrmData } from "@/actions/crm/get-crm-data";
-import { getAccountsByPatientId } from "@/actions/crm/get-accounts-by-patientId";
 import { getPatientFollowups } from "@/actions/crm/patients/get-followups";
-
-import AccountsView from "../../components/AccountsView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryTab } from "./components/HistoryTab";
 import { PatientTimelineSection } from "./components/PatientTimelineSection";
@@ -23,7 +20,6 @@ const PatientViewPage = async (props: any) => {
   const params = await props.params;
   const { patientId } = params;
   const contact: any = await getPatient(patientId);
-  const accounts = await getAccountsByPatientId(patientId);
   const crmData = await getAllCrmData();
   const tasks = await getPatientFollowups(patientId);
   const appointments = await getAppointments({ patientId });
@@ -145,7 +141,6 @@ const PatientViewPage = async (props: any) => {
           <div className="space-y-5">
             <BasicView data={contact} />
             <PatientTimelineSection contactId={contact.id} />
-            <AccountsView data={accounts} crmData={crmData} />
           </div>
         </TabsContent>
         <TabsContent value="appointments">

@@ -1,6 +1,6 @@
 import Container from "@/app/[locale]/(routes)/components/ui/Container";
 import { getFollowups } from "@/actions/crm/followups/get-followups";
-import { TasksDataTable } from "../../accounts/[accountId]/tasks-data-table/components/data-table";
+import { TasksDataTable } from "../components/tasks-data-table/data-table";
 import { columns } from "../components/columns";
 import { FollowupFilters } from "../components/FollowupFilters";
 import { CreateFollowupButton } from "../components/CreateFollowupButton";

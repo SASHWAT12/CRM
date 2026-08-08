@@ -8,8 +8,6 @@ import {
   Pie,
   PieChart,
   CartesianGrid,
-  XAxis,
-  YAxis,
   Cell,
   LabelList,
 } from "recharts";
@@ -18,8 +16,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import {
   Card,
@@ -66,16 +62,17 @@ export function ReportChart({
 }: ReportChartProps) {
   const t = useTranslations("ReportsPage.charts");
   const chartConfig = buildChartConfig(categories);
-  const showLegend = categories.length > 1;
+
+  const title = t.has(titleKey as any) ? t(titleKey as any) : titleKey;
 
   if (!data || data.length === 0) {
     return (
-      <Card>
+      <Card className="border-border">
         <CardHeader>
-          <CardTitle className="text-base">{t(titleKey)}</CardTitle>
+          <CardTitle className="text-base font-bold">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-48 text-muted-foreground">
+          <div className="flex items-center justify-center h-48 text-muted-foreground text-xs">
             {t("noData")}
           </div>
         </CardContent>
@@ -84,9 +81,9 @@ export function ReportChart({
   }
 
   return (
-    <Card>
+    <Card className="border-border">
       <CardHeader>
-        <CardTitle className="text-base">{t(titleKey)}</CardTitle>
+        <CardTitle className="text-base font-bold">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-72 w-full">
@@ -97,73 +94,50 @@ export function ReportChart({
               margin={{ left: 12, right: 12 }}
             >
               <CartesianGrid vertical={false} />
-              {layout === "horizontal" ? (
-                <>
-                  <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={100} />
-                  <XAxis type="number" tickLine={false} axisLine={false} />
-                </>
-              ) : (
-                <>
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                  <YAxis tickLine={false} axisLine={false} width={48} />
-                </>
-              )}
-              <ChartTooltip content={<ChartTooltipContent />} />
-              {showLegend && <ChartLegend content={<ChartLegendContent />} />}
               {categories.map((cat, i) => (
                 <Bar
                   key={cat}
                   dataKey={cat}
                   fill={CHART_COLORS[i % CHART_COLORS.length]}
-                  radius={[4, 4, 0, 0]}
+                  radius={4}
                 />
               ))}
+              <ChartTooltip content={<ChartTooltipContent />} />
             </BarChart>
           ) : type === "area" ? (
             <AreaChart data={data} margin={{ left: 12, right: 12 }}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis tickLine={false} axisLine={false} width={48} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              {showLegend && <ChartLegend content={<ChartLegendContent />} />}
               {categories.map((cat, i) => (
                 <Area
                   key={cat}
-                  dataKey={cat}
                   type="monotone"
+                  dataKey={cat}
                   fill={CHART_COLORS[i % CHART_COLORS.length]}
-                  fillOpacity={0.2}
                   stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                  strokeWidth={2}
+                  fillOpacity={0.2}
                 />
               ))}
+              <ChartTooltip content={<ChartTooltipContent />} />
             </AreaChart>
           ) : (
             <PieChart>
-              <ChartTooltip content={<ChartTooltipContent />} />
               <Pie
                 data={data}
                 dataKey="Number"
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                strokeWidth={2}
+                outerRadius={80}
               >
-                {data.map((_, i) => (
+                {data.map((_, index) => (
                   <Cell
-                    key={i}
-                    fill={CHART_COLORS[i % CHART_COLORS.length]}
+                    key={`cell-${index}`}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
                   />
                 ))}
-                <LabelList
-                  dataKey="name"
-                  position="outside"
-                  className="fill-foreground text-xs"
-                />
+                <LabelList dataKey="name" position="outside" offset={15} />
               </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+              <ChartTooltip content={<ChartTooltipContent />} />
             </PieChart>
           )}
         </ChartContainer>

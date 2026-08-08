@@ -15,7 +15,7 @@ import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import getReportsMenuItem from "./menu-items/Reports";
 import getAdministrationMenuItem from "./menu-items/Administration";
-import { Home, LayoutDashboard, Eye, Users, CheckSquare, CalendarDays, Coins, Building2 } from "lucide-react";
+import { Home, LayoutDashboard, Eye, Users, CheckSquare, CalendarDays, Coins } from "lucide-react";
 
 /**
  * AppSidebar Component - Task Groups 1.2, 2.2-2.7, 3.1, 5.3, 5.4
@@ -114,11 +114,6 @@ export function AppSidebar({
       title: dict?.crm?.leads || "Leads",
       url: "/crm/leads",
       icon: Coins,
-    },
-    {
-      title: dict?.crm?.accounts || "Companies",
-      url: "/crm/accounts",
-      icon: Building2,
     },
     getReportsMenuItem({ title: dict?.reports || "Reports" }),
   ];
