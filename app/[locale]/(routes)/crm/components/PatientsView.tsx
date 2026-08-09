@@ -68,6 +68,7 @@ const PatientsView = ({ data, crmData }: PatientsViewProps) => {
                   <NewPatientForm
                     contactTypes={contactTypes}
                     leadSources={leadSources}
+                    users={crmData.users}
                     onFinish={() => setOpen(false)}
                   />
                 </div>

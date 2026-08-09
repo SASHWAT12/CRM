@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updatePatientStage } from "@/actions/crm/patients/update-patient-stage";
+import { getAllowedNextStages } from "@/lib/crm/pipeline-constants";
 import { cn } from "@/lib/utils";
 
 interface PatientPipelineTrackerProps {
@@ -41,6 +42,9 @@ export function PatientPipelineTracker({
   const isLost = currentStage === "CLOSED_LOST";
   const isConverted = currentStage === "CONVERTED";
 
+  const allowedNext = getAllowedNextStages(currentStage);
+  const canCloseLost = allowedNext.includes("CLOSED_LOST");
+
   const handleStageChange = async (nextStage: string, reason?: string) => {
     setIsLoading(true);
     try {
@@ -68,6 +72,7 @@ export function PatientPipelineTracker({
   };
 
   const onSelectStage = (val: string) => {
+    if (val === currentStage) return;
     if (val === "CLOSED_LOST") {
       setPendingNextStage("CLOSED_LOST");
       setShowLossInput(true);
@@ -82,7 +87,9 @@ export function PatientPipelineTracker({
     const nextIndex = currentStageIndex + 1;
     if (nextIndex < STAGES.length) {
       const nextStage = STAGES[nextIndex].key;
-      handleStageChange(nextStage);
+      if (allowedNext.includes(nextStage)) {
+        handleStageChange(nextStage);
+      }
     }
   };
 
@@ -137,36 +144,50 @@ export function PatientPipelineTracker({
           ) : (
             <>
               <Select
-                value={isLost ? "CLOSED_LOST" : currentStage}
+                value={currentStage}
                 onValueChange={onSelectStage}
                 disabled={isLoading}
               >
-                <SelectTrigger className="w-[180px] h-9">
-                  <SelectValue placeholder="Update Stage" />
+                <SelectTrigger className="w-[210px] h-9">
+                  <SelectValue placeholder="Move to Stage..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {STAGES.map((s) => (
-                    <SelectItem key={s.key} value={s.key}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="CLOSED_LOST" className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                    Closed Lost
+                  {STAGES.map((s) => {
+                    const isCurrent = s.key === currentStage;
+                    const isAllowed = allowedNext.includes(s.key);
+                    return (
+                      <SelectItem
+                        key={s.key}
+                        value={s.key}
+                        disabled={!isAllowed || isCurrent}
+                      >
+                        {s.label} {isCurrent ? " (Current)" : ""}
+                      </SelectItem>
+                    );
+                  })}
+                  <SelectItem
+                    value="CLOSED_LOST"
+                    disabled={!canCloseLost}
+                    className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  >
+                    Mark as Lost
                   </SelectItem>
                 </SelectContent>
               </Select>
 
-              {currentStageIndex < STAGES.length - 1 && (
-                <Button
-                  size="sm"
-                  className="h-9 gap-1"
-                  onClick={handleAdvance}
-                  disabled={isLoading}
-                >
-                  <span>Advance Stage</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
+              {currentStageIndex >= 0 &&
+                currentStageIndex < STAGES.length - 1 &&
+                allowedNext.some((stg) => stg !== "CLOSED_LOST") && (
+                  <Button
+                    size="sm"
+                    className="h-9 gap-1"
+                    onClick={handleAdvance}
+                    disabled={isLoading}
+                  >
+                    <span>Advance Stage</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
             </>
           )}
         </div>

@@ -11,6 +11,7 @@ import {
 const ENTITY_LABELS: Record<keyof UnifiedSearchResults, string> = {
   contacts: "Patients",
   leads: "Leads",
+  appointments: "Appointments",
   tasks: "Followups",
   users: "Users",
 };
@@ -18,6 +19,7 @@ const ENTITY_LABELS: Record<keyof UnifiedSearchResults, string> = {
 const ENTITY_ORDER: (keyof UnifiedSearchResults)[] = [
   "contacts",
   "leads",
+  "appointments",
   "tasks",
   "users",
 ];

@@ -2,7 +2,6 @@
 import { getSession } from "@/lib/auth-server";
 import { prismadb } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { inngest } from "@/inngest/client";
 import { writeAuditLog, diffObjects } from "@/lib/audit-log";
 
 export const updatePatient = async (data: {
@@ -12,6 +11,7 @@ export const updatePatient = async (data: {
   birthday_day?: string | null;
   birthday_month?: string | null;
   birthday_year?: string | null;
+  age?: number | null;
   description?: string | null;
   email?: string;
   personal_email?: string | null;
@@ -20,7 +20,9 @@ export const updatePatient = async (data: {
   office_phone?: string | null;
   mobile_phone?: string | null;
   website?: string | null;
+  position?: string | null;
   status?: boolean;
+  type?: string;
   social_twitter?: string | null;
   social_facebook?: string | null;
   social_linkedin?: string | null;
@@ -44,11 +46,29 @@ export const updatePatient = async (data: {
     birthday_day,
     birthday_month,
     birthday_year,
+    age,
     contact_type_id,
+    type,
     lead_source_id,
     lossReason,
     pipelineStage,
-    ...rest
+    first_name,
+    last_name,
+    description,
+    email,
+    personal_email,
+    office_phone,
+    mobile_phone,
+    website,
+    position,
+    status,
+    social_twitter,
+    social_facebook,
+    social_linkedin,
+    social_skype,
+    social_instagram,
+    social_youtube,
+    social_tiktok,
   } = data;
 
   if (!id) return { error: "id is required" };
@@ -58,30 +78,51 @@ export const updatePatient = async (data: {
     return val;
   };
 
+  const effectiveContactTypeId = contact_type_id || type;
   const cleanAssignedTo = sanitizeUuid(assigned_to);
   const cleanAssignedAccount = sanitizeUuid(assigned_account);
-  const cleanContactTypeId = sanitizeUuid(contact_type_id);
+  const cleanContactTypeId = sanitizeUuid(effectiveContactTypeId);
   const cleanLeadSourceId = sanitizeUuid(lead_source_id);
 
   try {
     const before = await prismadb.crm_Contacts.findFirst({ where: { id, deletedAt: null } });
+
+    const updatePayload: Record<string, any> = {
+      v: 0,
+      updatedBy: userId,
+    };
+
+    if (assigned_to !== undefined) updatePayload.assigned_to = cleanAssignedTo;
+    if (assigned_account !== undefined) updatePayload.account = cleanAssignedAccount;
+    if (contact_type_id !== undefined || type !== undefined) updatePayload.contact_type_id = cleanContactTypeId;
+    if (lead_source_id !== undefined) updatePayload.lead_source_id = cleanLeadSourceId;
+    if (age !== undefined) updatePayload.age = age;
+    if (first_name !== undefined) updatePayload.first_name = first_name;
+    if (last_name !== undefined) updatePayload.last_name = last_name;
+    if (description !== undefined) updatePayload.description = description;
+    if (email !== undefined) updatePayload.email = email;
+    if (personal_email !== undefined) updatePayload.personal_email = personal_email;
+    if (office_phone !== undefined) updatePayload.office_phone = office_phone;
+    if (mobile_phone !== undefined) updatePayload.mobile_phone = mobile_phone;
+    if (website !== undefined) updatePayload.website = website;
+    if (position !== undefined) updatePayload.position = position;
+    if (status !== undefined) updatePayload.status = status;
+    if (social_twitter !== undefined) updatePayload.social_twitter = social_twitter;
+    if (social_facebook !== undefined) updatePayload.social_facebook = social_facebook;
+    if (social_linkedin !== undefined) updatePayload.social_linkedin = social_linkedin;
+    if (social_skype !== undefined) updatePayload.social_skype = social_skype;
+    if (social_instagram !== undefined) updatePayload.social_instagram = social_instagram;
+    if (social_youtube !== undefined) updatePayload.social_youtube = social_youtube;
+    if (social_tiktok !== undefined) updatePayload.social_tiktok = social_tiktok;
+    if (lossReason !== undefined) updatePayload.lossReason = lossReason;
+    if (pipelineStage !== undefined) updatePayload.pipelineStage = pipelineStage;
+    if (birthday_day && birthday_month && birthday_year) {
+      updatePayload.birthday = birthday_day + "/" + birthday_month + "/" + birthday_year;
+    }
+
     const contact = await prismadb.crm_Contacts.update({
       where: { id },
-      data: {
-        v: 0,
-        updatedBy: userId,
-        accountsIDs: cleanAssignedAccount,
-        assigned_to: cleanAssignedTo,
-        contact_type_id: cleanContactTypeId,
-        lead_source_id: cleanLeadSourceId,
-        lossReason: lossReason !== undefined ? lossReason : undefined,
-        pipelineStage: pipelineStage !== undefined ? pipelineStage : undefined,
-        birthday:
-          birthday_day && birthday_month && birthday_year
-            ? birthday_day + "/" + birthday_month + "/" + birthday_year
-            : null,
-        ...rest,
-      } as any,
+      data: updatePayload,
     });
     const changes = before ? diffObjects(before as Record<string, unknown>, contact as Record<string, unknown>) : null;
     await writeAuditLog({
@@ -91,7 +132,6 @@ export const updatePatient = async (data: {
       changes,
       userId: session.user.id,
     });
-    void inngest.send({ name: "crm/contact.saved", data: { record_id: contact.id } });
     revalidatePath("/[locale]/(routes)/crm/patients", "page");
     return { data: contact };
   } catch (error) {

@@ -9,11 +9,19 @@ import { getTranslations } from "next-intl/server";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const PatientsRegistryPage = async () => {
+interface PageProps {
+  searchParams: Promise<{
+    search?: string;
+  }>;
+}
+
+const PatientsRegistryPage = async (props: PageProps) => {
+  const searchParams = await props.searchParams;
+  const search = searchParams.search || undefined;
   const t = await getTranslations("CrmPage");
   const crmData = await getAllCrmData();
-  // Fetch all patient records for full historical search
-  const contacts = await getPatients({ queue: "ALL" });
+  // Fetch patient records for full historical search
+  const contacts = await getPatients({ queue: "ALL", search });
 
   return (
     <Container

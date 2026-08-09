@@ -2,8 +2,6 @@
 import { getSession } from "@/lib/auth-server";
 import { prismadb } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import sendEmail from "@/lib/sendmail";
-import { inngest } from "@/inngest/client";
 import { writeAuditLog } from "@/lib/audit-log";
 
 export const createPatient = async (data: {
@@ -12,6 +10,7 @@ export const createPatient = async (data: {
   birthday_day?: string;
   birthday_month?: string;
   birthday_year?: string;
+  age?: number | null;
   description?: string;
   email?: string;
   personal_email?: string;
@@ -20,7 +19,9 @@ export const createPatient = async (data: {
   office_phone?: string;
   mobile_phone?: string;
   website?: string;
+  position?: string;
   status?: boolean;
+  type?: string;
   social_twitter?: string;
   social_facebook?: string;
   social_linkedin?: string;
@@ -41,9 +42,27 @@ export const createPatient = async (data: {
     birthday_day,
     birthday_month,
     birthday_year,
+    age,
     contact_type_id,
+    type,
     lead_source_id,
-    ...rest
+    first_name,
+    last_name,
+    description,
+    email,
+    personal_email,
+    office_phone,
+    mobile_phone,
+    website,
+    position,
+    status,
+    social_twitter,
+    social_facebook,
+    social_linkedin,
+    social_skype,
+    social_instagram,
+    social_youtube,
+    social_tiktok,
   } = data;
 
   const sanitizeUuid = (val: string | null | undefined): string | null => {
@@ -51,9 +70,10 @@ export const createPatient = async (data: {
     return val;
   };
 
+  const effectiveContactTypeId = contact_type_id || type;
   const cleanAssignedTo = sanitizeUuid(assigned_to);
   const cleanAssignedAccount = sanitizeUuid(assigned_account);
-  const cleanContactTypeId = sanitizeUuid(contact_type_id);
+  const cleanContactTypeId = sanitizeUuid(effectiveContactTypeId);
   const cleanLeadSourceId = sanitizeUuid(lead_source_id);
 
   try {
@@ -62,7 +82,25 @@ export const createPatient = async (data: {
         v: 0,
         createdBy: userId,
         updatedBy: userId,
-        accountsIDs: cleanAssignedAccount,
+        first_name: first_name || null,
+        last_name,
+        age: age !== undefined ? age : null,
+        description: description || null,
+        email: email || null,
+        personal_email: personal_email || null,
+        office_phone: office_phone || null,
+        mobile_phone: mobile_phone || null,
+        website: website || null,
+        position: position || null,
+        status: status !== undefined ? status : true,
+        social_twitter: social_twitter || null,
+        social_facebook: social_facebook || null,
+        social_linkedin: social_linkedin || null,
+        social_skype: social_skype || null,
+        social_instagram: social_instagram || null,
+        social_youtube: social_youtube || null,
+        social_tiktok: social_tiktok || null,
+        account: cleanAssignedAccount,
         assigned_to: cleanAssignedTo,
         contact_type_id: cleanContactTypeId,
         lead_source_id: cleanLeadSourceId,
@@ -70,30 +108,8 @@ export const createPatient = async (data: {
           birthday_day && birthday_month && birthday_year
             ? birthday_day + "/" + birthday_month + "/" + birthday_year
             : null,
-        ...rest,
-      } as any,
+      },
     });
-
-    if (assigned_to && assigned_to !== userId) {
-      const notifyRecipient = await prismadb.users.findFirst({
-        where: { id: assigned_to },
-      });
-
-      if (notifyRecipient) {
-        await sendEmail({
-          from: process.env.EMAIL_FROM as string,
-          to: notifyRecipient.email || "info@softbase.cz",
-          subject:
-            notifyRecipient.userLanguage === "en"
-              ? `New contact ${data.first_name} ${data.last_name} has been added to the system and assigned to you.`
-              : `Nový kontakt ${data.first_name} ${data.last_name} byla přidána do systému a přidělena vám.`,
-          text:
-            notifyRecipient.userLanguage === "en"
-              ? `New patient ${data.first_name} ${data.last_name} has been added to the system and assigned to you. You can click here for detail: ${process.env.NEXT_PUBLIC_APP_URL}/crm/patients/${contact.id}`
-              : `Nový kontakt ${data.first_name} ${data.last_name} byla přidán do systému a přidělena vám. Detaily naleznete zde: ${process.env.NEXT_PUBLIC_APP_URL}/crm/patients/${contact.id}`,
-        });
-      }
-    }
 
     await writeAuditLog({
       entityType: "contact",
@@ -102,7 +118,6 @@ export const createPatient = async (data: {
       changes: null,
       userId: session.user.id,
     });
-    void inngest.send({ name: "crm/contact.saved", data: { record_id: contact.id } });
     revalidatePath("/[locale]/crm/patients", "page");
     return { data: contact };
   } catch (error) {

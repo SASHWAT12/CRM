@@ -1,7 +1,6 @@
 import React, { Suspense } from "react";
 import Container from "../../components/ui/Container";
 import CrmTableSkeleton from "@/components/skeletons/crm-table-skeleton";
-import { getAllCrmData } from "@/actions/crm/get-crm-data";
 import { getProductsFull } from "@/actions/crm/products/get-products";
 import { getProductCategories } from "@/actions/crm/products/get-product-categories";
 import ProductsView from "../components/ProductsView";

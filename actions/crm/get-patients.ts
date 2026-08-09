@@ -93,14 +93,34 @@ export const getPatients = cache(async (params: {
 
   if (search && search.trim() !== "") {
     const s = search.trim();
-    where.AND.push({
-      OR: [
-        { first_name: { contains: s, mode: "insensitive" } },
-        { last_name: { contains: s, mode: "insensitive" } },
-        { email: { contains: s, mode: "insensitive" } },
-        { mobile_phone: { contains: s, mode: "insensitive" } },
-      ]
-    });
+    const parts = s.split(/\s+/).filter(Boolean);
+
+    if (parts.length > 1) {
+      const firstNamePart = parts[0];
+      const lastNamePart = parts.slice(1).join(" ");
+
+      where.AND.push({
+        OR: [
+          { first_name: { contains: s, mode: "insensitive" } },
+          { last_name: { contains: s, mode: "insensitive" } },
+          {
+            AND: [
+              { first_name: { contains: firstNamePart, mode: "insensitive" } },
+              { last_name: { contains: lastNamePart, mode: "insensitive" } },
+            ],
+          },
+        ],
+      });
+    } else {
+      where.AND.push({
+        OR: [
+          { first_name: { contains: s, mode: "insensitive" } },
+          { last_name: { contains: s, mode: "insensitive" } },
+          { email: { contains: s, mode: "insensitive" } },
+          { mobile_phone: { contains: s, mode: "insensitive" } },
+        ],
+      });
+    }
   }
 
   const data = await prismadb.crm_Contacts.findMany({

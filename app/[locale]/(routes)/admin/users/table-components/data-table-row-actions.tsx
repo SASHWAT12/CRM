@@ -25,6 +25,8 @@ import { Copy, Edit, MoreHorizontal, Shield, Trash, UserCheck, UserX } from "luc
 import { deleteUser } from "@/actions/admin/users/delete-user";
 import { activateUser } from "@/actions/admin/users/activate-user";
 import { deactivateUser } from "@/actions/admin/users/deactivate-user";
+import { setUserRole } from "@/actions/admin/users/set-role";
+import { AppRole } from "@/lib/authz";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -63,6 +65,23 @@ export function DataTableRowActions<TData>({
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
     toast.success("The URL has been copied to your clipboard.");
+  };
+
+  const onChangeRole = async (newRole: AppRole) => {
+    try {
+      setLoading(true);
+      const result = await setUserRole(data.id, newRole);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      router.refresh();
+      toast.success(`User role updated to ${newRole}`);
+    } catch (error) {
+      toast.error("Failed to update user role");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onDelete = async () => {
@@ -138,6 +157,37 @@ export function DataTableRowActions<TData>({
             <Copy className="mr-2 w-4 h-4" />
             Copy ID
           </DropdownMenuItem>
+          {!isTargetRoot && canManage && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Shield className="mr-2 w-4 h-4" />
+                  Change Role
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={() => onChangeRole("admin")}
+                    disabled={data.role === "admin"}
+                  >
+                    Admin
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onChangeRole("doctor")}
+                    disabled={data.role === "doctor"}
+                  >
+                    Doctor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onChangeRole("receptionist")}
+                    disabled={data.role === "receptionist"}
+                  >
+                    Receptionist
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            </>
+          )}
           {canActivate && data.userStatus !== "ACTIVE" && (
             <>
               <DropdownMenuSeparator />

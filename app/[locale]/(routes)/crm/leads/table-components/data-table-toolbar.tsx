@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
+import useDebounce from "@/hooks/useDebounce";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,32 +20,48 @@ interface DataTableToolbarProps<TData> {
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const urlSearch = searchParams?.get("search") || "";
+  const [searchText, setSearchText] = useState(urlSearch);
+  const debouncedSearch = useDebounce(searchText, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== urlSearch) {
+      const params = new URLSearchParams(searchParams?.toString());
+      if (debouncedSearch) {
+        params.set("search", debouncedSearch);
+      } else {
+        params.delete("search");
+      }
+      router.push(`?${params.toString()}`);
+    }
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    setSearchText(urlSearch);
+  }, [urlSearch]);
+
+  const isFiltered = Boolean(urlSearch) || table.getState().columnFilters.length > 0;
+
+  const handleReset = () => {
+    table.resetColumnFilters();
+    setSearchText("");
+    const params = new URLSearchParams(searchParams?.toString());
+    params.delete("search");
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filter leads ..."
-          value={(table.getColumn("company")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("company")?.setFilterValue(event.target.value)
-          }
-          className="h-8 w-[150px] lg:w-[250px]"
+          placeholder="Search leads by name, email, phone..."
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+          className="h-8 w-[150px] lg:w-[280px]"
         />
-        {/*         <Input
-          placeholder="Filter by assigned user ..."
-          value={
-            (table.getColumn("assigned_to_user")?.getFilterValue() as string) ??
-            ""
-          }
-          onChange={(event) =>
-            table
-              .getColumn("assigned_to_user")
-              ?.setFilterValue(event.target.value)
-          }
-          className="h-8 w-[150px] lg:w-[250px]"
-        /> */}
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
@@ -50,17 +69,10 @@ export function DataTableToolbar<TData>({
             options={statuses}
           />
         )}
-        {/*        {table.getColumn("priority") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("priority")}
-            title="Priority"
-            options={priorities}
-          />
-        )} */}
         {isFiltered && (
           <Button
             variant="ghost"
-            onClick={() => table.resetColumnFilters()}
+            onClick={handleReset}
             className="h-8 px-2 lg:px-3"
           >
             Reset

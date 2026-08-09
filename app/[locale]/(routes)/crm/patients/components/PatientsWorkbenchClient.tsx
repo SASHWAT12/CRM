@@ -66,7 +66,7 @@ export function PatientsWorkbenchClient({
 
   const updateFilters = (newQueue: string, newSearch: string, newAssigned: string) => {
     const params = new URLSearchParams();
-    if (newQueue && newQueue !== "ATTENTION") params.set("queue", newQueue);
+    if (newQueue) params.set("queue", newQueue);
     if (newSearch) params.set("search", newSearch);
     if (newAssigned && newAssigned !== "ALL") params.set("assignedTo", newAssigned);
     router.push(`/crm/patients?${params.toString()}`);
@@ -361,6 +361,7 @@ export function PatientsWorkbenchClient({
             <NewPatientForm
               contactTypes={contactTypes}
               leadSources={leadSources}
+              users={crmData.users}
               onFinish={() => setCreateOpen(false)}
             />
           </div>

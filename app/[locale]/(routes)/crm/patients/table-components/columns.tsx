@@ -35,19 +35,6 @@ export const createColumns = (contactTypes: ConfigItem[] = [], leadSources: Conf
     enableHiding: false,
   },
   {
-    accessorKey: "created_on",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date created" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[80px]">
-        {moment(row.getValue("created_on")).format("YY-MM-DD")}
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "assigned_to_user",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Assigned to" />
@@ -62,37 +49,18 @@ export const createColumns = (contactTypes: ConfigItem[] = [], leadSources: Conf
     enableHiding: true,
   },
   {
-    accessorKey: "assigned_account",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Assigned account" />
-    ),
-    cell: ({ row }) => (
-      <div className="min-w-[150px]">
-        {(row.original as any).assigned_accounts?.name ?? "Unassigned"}
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: true,
-  },
-  {
     accessorKey: "first_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => <div className="">{row.getValue("first_name")}</div>,
-    enableSorting: true,
-    enableHiding: true,
-  },
-  {
-    accessorKey: "last_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Last name" />
-    ),
-    cell: ({ row }) => (
-      <Link href={`/crm/patients/${row.original.id}`} data-testid="contact-row-name">
-        <div className="">{row.getValue("last_name")}</div>
-      </Link>
-    ),
+    cell: ({ row }) => {
+      const fullName = [row.original.first_name, row.original.last_name].filter(Boolean).join(" ");
+      return (
+        <Link href={`/crm/patients/${row.original.id}`} data-testid="contact-row-name">
+          <div className="font-medium text-primary hover:underline">{fullName || "Unnamed Patient"}</div>
+        </Link>
+      );
+    },
     enableSorting: true,
     enableHiding: true,
   },

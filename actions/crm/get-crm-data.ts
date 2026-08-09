@@ -1,19 +1,15 @@
 import { cache } from "react";
 import { prismadb } from "@/lib/prisma";
-import { serializeDecimalsList } from "@/lib/serialize-decimals";
 
 export const getAllCrmData = cache(async () => {
   const [
-    leads,
-    contacts,
     contactTypes,
     leadSources,
     leadStatuses,
     leadTypes,
     productCategories,
+    users,
   ] = await Promise.all([
-    prismadb.crm_Leads.findMany({ where: { deletedAt: null } }),
-    prismadb.crm_Contacts.findMany({ where: { deletedAt: null } }),
     prismadb.crm_Contact_Types.findMany({ orderBy: { name: "asc" } }),
     prismadb.crm_Lead_Sources.findMany({ orderBy: { name: "asc" } }),
     prismadb.crm_Lead_Statuses.findMany({ orderBy: { name: "asc" } }),
@@ -22,16 +18,22 @@ export const getAllCrmData = cache(async () => {
       where: { isActive: true },
       orderBy: { order: "asc" },
     }),
+    prismadb.users.findMany({
+      where: { userStatus: "ACTIVE" },
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const data = {
-    leads,
-    contacts,
+    leads: [],
+    contacts: [],
     contactTypes,
     leadSources,
     leadStatuses,
     leadTypes,
-    productCategories
+    productCategories,
+    users,
   };
 
   return data;

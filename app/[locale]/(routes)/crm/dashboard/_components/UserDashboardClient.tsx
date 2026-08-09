@@ -539,7 +539,7 @@ function AdminDashboardView({ data }: { data: any }) {
           <Button size="sm" variant="default" asChild className="text-xs gap-1.5">
             <Link href="/admin/users">
               <UserPlus className="h-3.5 w-3.5" />
-              <span>Manage Users</span>
+              <span>Manage & Invite Users</span>
             </Link>
           </Button>
           <Button size="sm" variant="outline" asChild className="text-xs gap-1.5">

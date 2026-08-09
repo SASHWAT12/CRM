@@ -31,13 +31,10 @@ export const inviteUser = async (data: {
   // Enforce creation hierarchy permissions:
   // - Root can create: admin, doctor, receptionist, counsellor
   // - Admin can create: doctor, receptionist, counsellor (cannot create root or admin)
-  if (actor.role === "admin" && (role === "root" || role === "admin")) {
-    return { error: "Administrators cannot create Root or Admin accounts." };
-  }
   if (role === "root") {
     return { error: "Root accounts cannot be created." };
   }
-  if (!["admin", "doctor", "receptionist", "counsellor"].includes(role)) {
+  if (!["admin", "doctor", "receptionist"].includes(role)) {
     return { error: "Invalid role selected." };
   }
 

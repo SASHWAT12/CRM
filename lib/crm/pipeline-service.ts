@@ -1,18 +1,7 @@
 import { prismadb } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit-log";
 import { revalidatePath } from "next/cache";
-
-// Transition matrix definition mapping allowed source states
-const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  NEW: ["CONTACTED", "CONSULTATION_BOOKED", "CLOSED_LOST"],
-  CONTACTED: ["INTERESTED", "CONSULTATION_BOOKED", "CLOSED_LOST"],
-  INTERESTED: ["CONSULTATION_BOOKED", "CLOSED_LOST"],
-  CONSULTATION_BOOKED: ["VISITED", "CLOSED_LOST"],
-  VISITED: ["TREATMENT_STARTED", "CLOSED_LOST"],
-  TREATMENT_STARTED: ["CONVERTED", "CLOSED_LOST"],
-  CONVERTED: [], // Terminal success
-  CLOSED_LOST: ["NEW"], // Recovery scenario
-};
+import { ALLOWED_TRANSITIONS } from "@/lib/crm/pipeline-constants";
 
 export async function transitionPatientStage(params: {
   patientId: string;

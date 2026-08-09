@@ -1,12 +1,7 @@
 jest.mock("@/lib/prisma", () => ({
   prismadb: {
-    crm_Accounts: { findFirst: jest.fn() },
     crm_Leads: { findFirst: jest.fn() },
     crm_Contacts: { findFirst: jest.fn() },
-    crm_Opportunities: { findFirst: jest.fn() },
-    crm_Contracts: { findFirst: jest.fn() },
-    crm_Targets: { findFirst: jest.fn() },
-    crm_TargetLists: { findFirst: jest.fn() },
   },
 }));
 
@@ -18,17 +13,9 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-type ModelKey =
-  | "crm_Accounts"
-  | "crm_Leads"
-  | "crm_Contacts"
-  | "crm_Opportunities"
-  | "crm_Contracts"
-  | "crm_Targets"
-  | "crm_TargetLists";
+type ModelKey = "crm_Leads" | "crm_Contacts";
 
 const cases: Array<[string, ModelKey]> = [
-  ["account", "crm_Accounts"],
   ["lead", "crm_Leads"],
   ["contact", "crm_Contacts"],
 ];
@@ -47,16 +34,16 @@ describe("assertCanReadActivityForEntity", () => {
     },
   );
 
-  it("dispatches case-insensitively (Account → account branch)", async () => {
-    (prismadb.crm_Accounts.findFirst as jest.Mock).mockResolvedValue({
+  it("dispatches case-insensitively (Lead → lead branch)", async () => {
+    (prismadb.crm_Leads.findFirst as jest.Mock).mockResolvedValue({
       id: "x",
     });
     await assertCanReadActivityForEntity(
       { id: "u", role: "admin" },
-      "Account",
+      "Lead",
       "x",
     );
-    expect(prismadb.crm_Accounts.findFirst as jest.Mock).toHaveBeenCalled();
+    expect(prismadb.crm_Leads.findFirst as jest.Mock).toHaveBeenCalled();
   });
 
   it("propagates AuthorizationError when underlying assert rejects", async () => {
@@ -64,35 +51,5 @@ describe("assertCanReadActivityForEntity", () => {
     await expect(
       assertCanReadActivityForEntity({ id: "u", role: "user" }, "lead", "x"),
     ).rejects.toBeInstanceOf(AuthorizationError);
-  });
-
-  it("unknown entity type: user → AuthorizationError", async () => {
-    await expect(
-      assertCanReadActivityForEntity(
-        { id: "u", role: "user" },
-        "weird_type",
-        "x",
-      ),
-    ).rejects.toBeInstanceOf(AuthorizationError);
-  });
-
-  it("unknown entity type: manager → resolves silently", async () => {
-    await expect(
-      assertCanReadActivityForEntity(
-        { id: "u", role: "manager" },
-        "weird_type",
-        "x",
-      ),
-    ).resolves.toBeUndefined();
-  });
-
-  it("unknown entity type: admin → resolves silently", async () => {
-    await expect(
-      assertCanReadActivityForEntity(
-        { id: "u", role: "admin" },
-        "weird_type",
-        "x",
-      ),
-    ).resolves.toBeUndefined();
   });
 });

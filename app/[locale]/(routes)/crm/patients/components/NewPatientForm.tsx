@@ -22,564 +22,201 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-
-import { Switch } from "@/components/ui/switch";
-import { UserSearchCombobox } from "@/components/ui/user-search-combobox";
 import { createPatient } from "@/actions/crm/patients/create-patient";
+import { parseFullName } from "@/lib/crm/patient-name-parser";
 
 type NewPatientFormProps = {
   contactTypes: { id: string; name: string }[];
-  leadSources: { id: string; name: string }[];
+  leadSources?: { id: string; name: string }[];
+  users?: { id: string; name: string | null; email: string | null; role?: string | null }[];
   onFinish: () => void;
 };
 
 export function NewPatientForm({
   contactTypes,
-  leadSources,
+  users = [],
   onFinish,
 }: NewPatientFormProps) {
   const t = useTranslations("CrmPatientForm");
   const c = useTranslations("Common");
 
-  const formSchema = z.object({
-    birthday_year: z.string().optional(),
-    birthday_month: z.string().optional(),
-    birthday_day: z.string().optional(),
-    first_name: z.string().optional(),
-    last_name: z.string().min(1, t("lastNameRequired")),
-    description: z.string().optional(),
-    email: z.union([z.string().email(t("emailInvalid")), z.literal("")]).optional(),
-    personal_email: z.string().optional(),
-    office_phone: z.string().optional(),
-    mobile_phone: z.string().optional(),
-    website: z.string().optional(),
-    position: z.string().optional(),
-    status: z.boolean(),
-    type: z.string(),
-    assigned_to: z.string(),
+  // Filter users to ONLY doctor role (if role is present; if not provided, show active list)
+  const doctorUsers = users.filter((u) => !u.role || u.role === "doctor");
 
-    social_twitter: z.string().optional(),
-    social_facebook: z.string().optional(),
-    social_linkedin: z.string().optional(),
-    social_skype: z.string().optional(),
-    social_youtube: z.string().optional(),
-    social_tiktok: z.string().optional(),
-    lead_source_id: z.string().optional(),
+  // Filter contact types to ONLY Kidney and IVF
+  const filteredContactTypes = contactTypes.filter(
+    (ct) =>
+      ct.name.toLowerCase() === "kidney" || ct.name.toLowerCase() === "ivf"
+  );
+
+  const formSchema = z.object({
+    name: z.string().trim().min(1, "Patient name is required"),
+    age: z.string().optional(),
+    phone: z.string().optional(),
+    assigned_to: z.string().optional(),
+    type: z.string().optional(),
   });
 
-  type NewAccountFormValues = z.infer<typeof formSchema>;
+  type FormValues = z.infer<typeof formSchema>;
 
-  const form = useForm<NewAccountFormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
     defaultValues: {
-      first_name: "",
-      last_name: "",
-      description: "",
-      email: "",
-      personal_email: "",
-      office_phone: "",
-      mobile_phone: "",
-      website: "",
-      position: "",
-      status: false,
-      type: "",
+      name: "",
+      age: "",
+      phone: "",
       assigned_to: "",
-
-      social_twitter: "",
-      social_facebook: "",
-      social_linkedin: "",
-      social_skype: "",
-      social_youtube: "",
-      social_tiktok: "",
-      birthday_year: undefined,
-      birthday_month: undefined,
-      birthday_day: undefined,
-      lead_source_id: "",
+      type: "",
     },
   });
 
+  const onSubmit = async (data: FormValues) => {
+    try {
+      const { first_name, last_name } = parseFullName(data.name);
+      const parsedAge = data.age && data.age.trim() !== "" ? parseInt(data.age, 10) : undefined;
 
+      const result = await createPatient({
+        first_name,
+        last_name,
+        age: isNaN(parsedAge as any) ? undefined : parsedAge,
+        mobile_phone: data.phone || undefined,
+        assigned_to: data.assigned_to || undefined,
+        contact_type_id: data.type || undefined,
+        status: true,
+      });
 
-  const onSubmit = async (data: NewAccountFormValues) => {
-    const { type, ...rest } = data;
-    const result = await createPatient({ ...rest, contact_type_id: type || undefined });
-    if (result?.error) {
-      form.setError("root.serverError", { message: result.error });
-    } else {
-      toast.success(t("createSuccess"));
-      form.reset();
-      onFinish();
+      if (result?.error) {
+        form.setError("root.serverError", { message: result.error });
+      } else {
+        toast.success(t("createSuccess"));
+        form.reset();
+        onFinish();
+      }
+    } catch (err: any) {
+      form.setError("root.serverError", { message: err?.message || "Failed to create patient" });
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="h-full">
-        <div className="w-full text-sm">
-          <div className="pb-5 space-y-2">
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("firstName")}</FormLabel>
-                  <FormControl>
-                    <Input disabled={form.formState.isSubmitting} placeholder="John" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("lastName")}</FormLabel>
-                  <FormControl>
-                    <Input disabled={form.formState.isSubmitting} placeholder="Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="mobile_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("mobilePhone")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={form.formState.isSubmitting}
-                      placeholder="+11 1236 77 55"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="w-full text-sm space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name *</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={form.formState.isSubmitting}
+                    placeholder="e.g. Rahul Sharma"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="office_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("officePhone")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={form.formState.isSubmitting}
-                      placeholder="+11 1236 77 55"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("email")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={form.formState.isSubmitting}
-                      placeholder="john@domain.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="personal_email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("personalEmail")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={form.formState.isSubmitting}
-                      placeholder="littlejohny@gmail.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("website")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={form.formState.isSubmitting}
-                      placeholder="https://www.domain.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div>
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{t("birthday")}</label>
-              <div className="flex space-x-3 w-full mt-2">
-                <FormField
-                  control={form.control}
-                  name="birthday_year"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("year")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="h-56">
-                          {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="birthday_month"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("month")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="h-56">
-                          {[
-                            { value: "1", label: t("january") },
-                            { value: "2", label: t("february") },
-                            { value: "3", label: t("march") },
-                            { value: "4", label: t("april") },
-                            { value: "5", label: t("may") },
-                            { value: "6", label: t("june") },
-                            { value: "7", label: t("july") },
-                            { value: "8", label: t("august") },
-                            { value: "9", label: t("september") },
-                            { value: "10", label: t("october") },
-                            { value: "11", label: t("november") },
-                            { value: "12", label: t("december") },
-                          ].map((month) => (
-                            <SelectItem key={month.value} value={month.value}>
-                              {month.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="birthday_day"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("day")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="h-56">
-                          {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                            <SelectItem key={day} value={day.toString()}>
-                              {day}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+          <FormField
+            control={form.control}
+            name="age"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Age</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    disabled={form.formState.isSubmitting}
+                    placeholder="e.g. 35"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{c("description")}</FormLabel>
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={form.formState.isSubmitting}
+                    placeholder="e.g. +1 555-0199"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="assigned_to"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Assign Doctor</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                  disabled={form.formState.isSubmitting}
+                >
                   <FormControl>
-                    <Textarea
-                      disabled={form.formState.isSubmitting}
-                      placeholder={t("descriptionPlaceholder")}
-                      {...field}
-                    />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select doctor" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="assigned_to"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("assignedUser")}</FormLabel>
-                    <FormControl>
-                      <UserSearchCombobox
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                        placeholder={t("assignedUserPlaceholder")}
-                        disabled={form.formState.isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("contactType")}</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("contactTypePlaceholder")} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="flex overflow-y-auto h-56">
-                        {contactTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lead_source_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("leadSource")}</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("leadSourcePlaceholder")} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="flex overflow-y-auto h-56">
-                        {(leadSources || []).map((source) => (
-                          <SelectItem key={source.id} value={source.id}>
-                            {source.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 col-span-2">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-sm">
-                        {t("isActive")}
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <SelectContent>
+                    {doctorUsers.map((doc) => (
+                      <SelectItem key={doc.id} value={doc.id}>
+                        {doc.name || doc.email || "Doctor"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <details className="group border rounded-lg p-4 bg-muted/20 mt-4">
-              <summary className="cursor-pointer font-medium text-sm text-muted-foreground select-none hover:text-foreground transition-colors">
-                Additional CRM Fields (Website, Position, Social links, etc.)
-              </summary>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <FormField
-                  control={form.control}
-                  name="position"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("position")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="CTO"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel>{t("website")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          disabled={form.formState.isSubmitting}
-                          placeholder="https://www.domain.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="col-span-2 space-y-3 mt-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Social Networks</h4>
-                  <FormField
-                    control={form.control}
-                    name="social_twitter"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("twitter")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={form.formState.isSubmitting}
-                            placeholder="https://www.twitter.com/john"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="social_facebook"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("facebook")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={form.formState.isSubmitting}
-                            placeholder="https://www.facebook.com/john"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="social_linkedin"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("linkedin")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={form.formState.isSubmitting}
-                            placeholder="https://www.linkedin.com/john"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="social_skype"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("skype")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={form.formState.isSubmitting}
-                            placeholder="https://www.skype.com/john"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="social_youtube"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("youtube")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={form.formState.isSubmitting}
-                            placeholder="https://www.youtube.com/nextcrmio"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="social_tiktok"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("tiktok")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={form.formState.isSubmitting}
-                            placeholder="https://www.domain.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </details>
-          </div>
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Patient Type</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                  disabled={form.formState.isSubmitting}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select patient type (Kidney / IVF)" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {filteredContactTypes.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <div className="grid gap-2 py-5">
+
+        <div className="grid gap-2 py-6">
           {form.formState.errors.root?.serverError && (
             <p className="text-sm text-destructive" aria-live="polite">
               {form.formState.errors.root.serverError.message}

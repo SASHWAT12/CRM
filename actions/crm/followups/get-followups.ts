@@ -1,7 +1,7 @@
 "use server";
 import { prismadb } from "@/lib/prisma";
 import { getSession } from "@/lib/auth-server";
-import { taskStatus } from "@prisma/client";
+import { taskStatus, Prisma } from "@prisma/client";
 
 export const getFollowups = async (params: {
   status?: string;
@@ -24,44 +24,48 @@ export const getFollowups = async (params: {
 
   const isManager = ["root", "admin", "manager"].includes(session.user.role || "");
   if (!isManager) {
-    where.AND.push({ user: session.user.id });
-  } else if (userId && userId !== "ALL") {
-    where.AND.push({ user: userId });
+    where.AND.push({
+      assigned_to: session.user.id
+    });
+  }
+
+  if (userId && userId !== "ALL") {
+    where.AND.push({ assigned_to: userId });
   }
 
   if (contactId) {
-    where.AND.push({ contact: contactId });
-  }
-
-  if (status && status !== "ALL") {
-    where.AND.push({ taskStatus: status as taskStatus });
+    where.AND.push({ crm_contact_id: contactId });
   }
 
   if (priority && priority !== "ALL") {
     where.AND.push({ priority });
   }
 
+  if (status && status !== "ALL") {
+    where.AND.push({ taskStatus: status as taskStatus });
+  }
+
+  const queueFilter: any = {};
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-  // Scoped Queues
-  const queueFilter: any = {};
   if (queue === "OVERDUE") {
     queueFilter.taskStatus = "ACTIVE";
     queueFilter.dueDateAt = { lt: todayStart };
-  } else if (queue === "DUE_TODAY") {
+  } else if (queue === "DUE_TODAY" || queue === "TODAY") {
     queueFilter.taskStatus = "ACTIVE";
     queueFilter.dueDateAt = { gte: todayStart, lte: todayEnd };
+  } else if (queue === "COMPLETED") {
+    queueFilter.taskStatus = "COMPLETE";
+    queueFilter.updatedAt = { gte: todayStart, lte: todayEnd };
   } else if (queue === "UPCOMING") {
     queueFilter.taskStatus = "ACTIVE";
     queueFilter.dueDateAt = { gt: todayEnd };
-  } else if (queue === "COMPLETED") {
-    queueFilter.taskStatus = "COMPLETE";
-  } else if (queue === "STALLED") {
+  } else if (queue === "UNSCHEDULED") {
     queueFilter.taskStatus = "ACTIVE";
     queueFilter.OR = [
-      { contact: null },
+      { content: null },
       { content: "" }
     ];
   }
@@ -69,24 +73,46 @@ export const getFollowups = async (params: {
 
   if (search && search.trim() !== "") {
     const s = search.trim();
+    const parts = s.split(/\s+/).filter(Boolean);
+
+    let contactNameWhere: Prisma.crm_ContactsWhereInput;
+    if (parts.length > 1) {
+      const firstNamePart = parts[0];
+      const lastNamePart = parts.slice(1).join(" ");
+      contactNameWhere = {
+        OR: [
+          { first_name: { contains: s, mode: "insensitive" } },
+          { last_name: { contains: s, mode: "insensitive" } },
+          {
+            AND: [
+              { first_name: { contains: firstNamePart, mode: "insensitive" } },
+              { last_name: { contains: lastNamePart, mode: "insensitive" } },
+            ],
+          },
+        ],
+      };
+    } else {
+      contactNameWhere = {
+        OR: [
+          { first_name: { contains: s, mode: "insensitive" } },
+          { last_name: { contains: s, mode: "insensitive" } },
+        ],
+      };
+    }
+
     where.AND.push({
       OR: [
         { title: { contains: s, mode: "insensitive" } },
         { content: { contains: s, mode: "insensitive" } },
         {
-          crm_contact: {
-            OR: [
-              { first_name: { contains: s, mode: "insensitive" } },
-              { last_name: { contains: s, mode: "insensitive" } }
-            ]
-          }
+          crm_contact: contactNameWhere,
         },
         {
           assigned_user: {
-            name: { contains: s, mode: "insensitive" }
-          }
-        }
-      ]
+            name: { contains: s, mode: "insensitive" },
+          },
+        },
+      ],
     });
   }
 

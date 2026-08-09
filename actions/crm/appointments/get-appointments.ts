@@ -2,6 +2,7 @@
 import { getSession } from "@/lib/auth-server";
 import { prismadb } from "@/lib/prisma";
 import { CRM_POLICY } from "@/lib/policies/crm-policy";
+import { Prisma } from "@prisma/client";
 
 interface GetAppointmentsParams {
   status?: string;
@@ -45,71 +46,71 @@ export const getAppointments = async (params: GetAppointmentsParams = {}) => {
     whereClause.AND.push({ status });
   }
 
-  // Scoped Queues based on CRM_POLICY
   const queueFilter: any = {};
-  if (queue === "TODAY") {
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+  const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  const endOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59, 999);
+
+  if (queue === "TODAY" || queue === "SCHEDULED_TODAY") {
     queueFilter.scheduledAt = { gte: startOfToday, lte: endOfToday };
   } else if (queue === "TOMORROW") {
-    const startOfTomorrow = new Date();
-    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
-    startOfTomorrow.setHours(0, 0, 0, 0);
-    const endOfTomorrow = new Date();
-    endOfTomorrow.setDate(endOfTomorrow.getDate() + 1);
-    endOfTomorrow.setHours(23, 59, 59, 999);
     queueFilter.scheduledAt = { gte: startOfTomorrow, lte: endOfTomorrow };
-  } else if (queue === "COMPLETED") {
-    queueFilter.status = "COMPLETED";
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
+  } else if (queue === "NOSHOW_CANCELLED" || queue === "MISSED") {
+    queueFilter.status = { in: ["CANCELLED", "NO_SHOW"] };
     queueFilter.updatedAt = { gte: startOfToday, lte: endOfToday };
-  } else if (queue === "NOSHOW_CANCELLED") {
-    queueFilter.status = { in: ["NO_SHOW", "CANCELLED"] };
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
+  } else if (queue === "COMPLETED" || queue === "COMPLETED_RECENT") {
+    queueFilter.status = "COMPLETED";
     queueFilter.updatedAt = { gte: startOfToday, lte: endOfToday };
   }
   whereClause.AND.push(queueFilter);
 
   if (search && search.trim() !== "") {
-    const searchTrimmed = search.trim();
+    const s = search.trim();
+    const parts = s.split(/\s+/).filter(Boolean);
+
+    let patientNameWhere: Prisma.crm_ContactsWhereInput;
+    if (parts.length > 1) {
+      const firstNamePart = parts[0];
+      const lastNamePart = parts.slice(1).join(" ");
+      patientNameWhere = {
+        OR: [
+          { first_name: { contains: s, mode: "insensitive" } },
+          { last_name: { contains: s, mode: "insensitive" } },
+          {
+            AND: [
+              { first_name: { contains: firstNamePart, mode: "insensitive" } },
+              { last_name: { contains: lastNamePart, mode: "insensitive" } },
+            ],
+          },
+        ],
+      };
+    } else {
+      patientNameWhere = {
+        OR: [
+          { first_name: { contains: s, mode: "insensitive" } },
+          { last_name: { contains: s, mode: "insensitive" } },
+        ],
+      };
+    }
+
     whereClause.AND.push({
       OR: [
         {
           notes: {
-            contains: searchTrimmed,
+            contains: s,
             mode: "insensitive",
           },
         },
         {
-          patient: {
-            OR: [
-              {
-                first_name: {
-                  contains: searchTrimmed,
-                  mode: "insensitive",
-                },
-              },
-              {
-                last_name: {
-                  contains: searchTrimmed,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          },
+          patient: patientNameWhere,
         },
         {
           doctor: {
             name: {
-              contains: searchTrimmed,
+              contains: s,
               mode: "insensitive",
             },
           },
@@ -117,12 +118,12 @@ export const getAppointments = async (params: GetAppointmentsParams = {}) => {
         {
           staff: {
             name: {
-              contains: searchTrimmed,
+              contains: s,
               mode: "insensitive",
             },
           },
         },
-      ]
+      ],
     });
   }
 

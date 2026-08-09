@@ -20,32 +20,6 @@ export const createColumns = (
   leadTypes: ConfigItem[],
 ): ColumnDef<Lead>[] => [
   {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Expected close" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[80px]">
-        {moment(row.getValue("createdAt")).format("YY-MM-DD")}
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "updatedAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Last update" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[80px]">
-        {moment(row.getValue("updatedAt")).format("YY-MM-DD")}
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "assigned_to_user",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Assigned to" />
@@ -61,24 +35,6 @@ export const createColumns = (
       </div>
     ),
     enableSorting: true,
-    enableHiding: true,
-  },
-  {
-    accessorKey: "company",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Company" />
-    ),
-
-    cell: ({ row }) => (
-      <div className="">
-        {
-          //@ts-ignore
-          //TODO: fix this
-          row.getValue("company") ?? "Unassigned"
-        }
-      </div>
-    ),
-    enableSorting: false,
     enableHiding: true,
   },
   {

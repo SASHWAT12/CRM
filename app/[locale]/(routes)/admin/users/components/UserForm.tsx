@@ -137,10 +137,9 @@ export function UserForm({ actorRole }: UserFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {isRoot && <SelectItem value="admin">Administrator</SelectItem>}
+                    <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="doctor">Doctor</SelectItem>
                     <SelectItem value="receptionist">Receptionist</SelectItem>
-                    <SelectItem value="counsellor">Counsellor</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -64,19 +64,39 @@ export const getLeads = cache(async (params: {
 
   if (search && search.trim() !== "") {
     const s = search.trim();
-    where.AND.push({
-      OR: [
-        { firstName: { contains: s, mode: "insensitive" } },
-        { lastName: { contains: s, mode: "insensitive" } },
-        { email: { contains: s, mode: "insensitive" } },
-        { phone: { contains: s, mode: "insensitive" } },
-        {
-          lead_source: {
-            name: { contains: s, mode: "insensitive" }
-          }
-        }
-      ]
-    });
+    const parts = s.split(/\s+/).filter(Boolean);
+
+    if (parts.length > 1) {
+      const firstNamePart = parts[0];
+      const lastNamePart = parts.slice(1).join(" ");
+
+      where.AND.push({
+        OR: [
+          { firstName: { contains: s, mode: "insensitive" } },
+          { lastName: { contains: s, mode: "insensitive" } },
+          {
+            AND: [
+              { firstName: { contains: firstNamePart, mode: "insensitive" } },
+              { lastName: { contains: lastNamePart, mode: "insensitive" } },
+            ],
+          },
+        ],
+      });
+    } else {
+      where.AND.push({
+        OR: [
+          { firstName: { contains: s, mode: "insensitive" } },
+          { lastName: { contains: s, mode: "insensitive" } },
+          { email: { contains: s, mode: "insensitive" } },
+          { phone: { contains: s, mode: "insensitive" } },
+          {
+            lead_source: {
+              name: { contains: s, mode: "insensitive" },
+            },
+          },
+        ],
+      });
+    }
   }
 
   const data = await prismadb.crm_Leads.findMany({

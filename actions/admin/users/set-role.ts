@@ -6,7 +6,7 @@ import { APP_ROLES, AppRole, requireRole, AuthorizationError } from "@/lib/authz
 export const setUserRole = async (userId: string, role: AppRole) => {
   let actor;
   try {
-    actor = await requireRole(["admin"]);
+    actor = await requireRole(["root", "admin"]);
   } catch (e) {
     if (e instanceof AuthorizationError) return { error: "Forbidden" };
     return { error: "Unauthorized" };

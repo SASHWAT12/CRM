@@ -11,47 +11,6 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { formatDistanceToNowStrict } from "date-fns";
 
 export const columns: ColumnDef<AdminUser>[] = [
-  /*   {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="id" />
-    ),
-    cell: ({ row }) => <div className="">{row.getValue("id")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  }, */
-  {
-    accessorKey: "created_on",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date created" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[130px]">
-        {moment(row.getValue("created_on")).format("YYYY/MM/DD-HH:mm")}
-      </div>
-    ),
-    enableSorting: true,
-    enableHiding: true,
-  },
-  {
-    accessorKey: "lastLoginAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Last login" />
-    ),
-    cell: ({ row }) => (
-      <div className="min-w-[150px]">
-        {/*   {moment(row.getValue("lastLoginAt")).format("YYYY/MM/DD-HH:mm")} */}
-        {formatDistanceToNowStrict(
-          new Date(row.original.lastLoginAt || new Date()),
-          {
-            addSuffix: true,
-          }
-        )}
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -82,12 +41,12 @@ export const columns: ColumnDef<AdminUser>[] = [
       const role = row.original.role;
       const roleMap: Record<string, string> = {
         root: "Root (System)",
-        admin: "Administrator",
+        admin: "Admin",
         doctor: "Doctor",
         receptionist: "Receptionist",
         counsellor: "Counsellor",
-        user: "Legacy User",
-        manager: "Legacy Manager",
+        user: "User",
+        manager: "Manager",
       };
       return <div className="">{role ? (roleMap[role] ?? role) : "Legacy User"}</div>;
     },
@@ -124,18 +83,6 @@ export const columns: ColumnDef<AdminUser>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
-  },
-  {
-    accessorKey: "created_by",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created by" />
-    ),
-    cell: ({ row }) => {
-      const creator = (row.original as any).created_by;
-      return <div className="">{creator?.name || "System"}</div>;
-    },
-    enableSorting: false,
-    enableHiding: true,
   },
   {
     id: "actions",

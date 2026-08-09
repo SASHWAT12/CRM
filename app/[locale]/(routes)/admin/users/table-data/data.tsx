@@ -24,8 +24,23 @@ export const roles = [
     icon: PlayIcon,
   },
   {
+    value: "doctor",
+    label: "Doctor",
+    icon: PlayIcon,
+  },
+  {
+    value: "counsellor",
+    label: "Counsellor",
+    icon: PlayIcon,
+  },
+  {
     value: "manager",
     label: "Manager",
+    icon: PauseIcon,
+  },
+  {
+    value: "receptionist",
+    label: "Receptionist",
     icon: PauseIcon,
   },
   {
