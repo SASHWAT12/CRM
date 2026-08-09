@@ -17,22 +17,24 @@ export function KPICard({ kpi, dateParams }: { kpi: KPIData; dateParams: string;
   const isZero = kpi.changePercent === 0;
 
   return (
-    <Link href={kpi.href ? (dateParams ? `${kpi.href}?${dateParams}` : kpi.href) : "#"}>
-      <Card className="cursor-pointer hover:shadow-md transition-shadow border-border">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-            <span>{kpi.label}</span>
-            <ExternalLink className="h-3 w-3 opacity-50" />
+    <Link href={kpi.href ? (dateParams ? `${kpi.href}?${dateParams}` : kpi.href) : "#"} className="block h-full">
+      <Card className="cursor-pointer hover:shadow-md transition-shadow border-border h-full flex flex-col justify-between">
+        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 gap-2">
+          <CardTitle className="text-xs font-semibold text-muted-foreground uppercase flex items-start gap-1 min-w-0 flex-1">
+            <span className="min-w-0 flex-1 break-words whitespace-normal leading-tight" title={kpi.label}>{kpi.label}</span>
           </CardTitle>
-          {kpi.changePercent !== 0 && (
-            <div className={`flex items-center text-xs font-bold ${isPositive ? "text-emerald-600" : "text-rose-600"}`}>
-              {isPositive ? <ArrowUpRight className="h-3.5 w-3.5" /> : isZero ? <Minus className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-              <span>{Math.abs(kpi.changePercent)}%</span>
-            </div>
-          )}
+          <ExternalLink className="h-3 w-3 opacity-50 shrink-0 mt-0.5" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formatValue(kpi.value, kpi.label)}</div>
+        <CardContent className="pt-0">
+          <div className="flex items-baseline justify-between gap-2 mt-auto">
+            <div className="text-2xl font-bold">{formatValue(kpi.value, kpi.label)}</div>
+            {kpi.changePercent !== 0 && (
+              <div className={`flex items-center text-xs font-bold shrink-0 whitespace-nowrap ${isPositive ? "text-emerald-600" : "text-rose-600"}`}>
+                {isPositive ? <ArrowUpRight className="h-3.5 w-3.5 shrink-0" /> : isZero ? <Minus className="h-3.5 w-3.5 shrink-0" /> : <ArrowDownRight className="h-3.5 w-3.5 shrink-0" />}
+                <span>{Math.abs(kpi.changePercent)}%</span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </Link>

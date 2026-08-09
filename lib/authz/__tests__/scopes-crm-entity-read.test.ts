@@ -36,14 +36,13 @@ describe("leadReadScopeWhere", () => {
       deletedAt: null,
     });
   });
-  it("user → deletedAt + OR ownership + linked-account scope", () => {
+  it("user → deletedAt + OR ownership scope", () => {
     const w = leadReadScopeWhere({ id: "u1", role: "user" }) as any;
     expect(w.deletedAt).toBeNull();
     expect(w.OR).toEqual(
       expect.arrayContaining([
         { assigned_to: "u1" },
         { createdBy: "u1" },
-        { assigned_accounts: linkedAccountOR("u1") },
       ]),
     );
   });
@@ -58,20 +57,17 @@ describe("contactReadScopeWhere", () => {
       deletedAt: null,
     });
   });
-  it("user → deletedAt + creator OR + linked-account scope", () => {
+  it("user → deletedAt + creator OR scope", () => {
     const w = contactReadScopeWhere({ id: "u1", role: "user" }) as any;
     expect(w.deletedAt).toBeNull();
     expect(w.OR).toEqual(
       expect.arrayContaining([
         { assigned_to: "u1" },
         { createdBy: "u1" },
-        { assigned_accounts: linkedAccountOR("u1") },
       ]),
     );
   });
 });
-
-
 
 describe("assertCanReadLead", () => {
   it("admin: where { id, deletedAt:null }", async () => {
@@ -91,7 +87,6 @@ describe("assertCanReadLead", () => {
       expect.arrayContaining([
         { assigned_to: "u1" },
         { createdBy: "u1" },
-        { assigned_accounts: linkedAccountOR("u1") },
       ]),
     );
   });

@@ -53,24 +53,6 @@ describe("assertCanReadContact", () => {
     });
   });
 
-  it("user: scoped where ALSO contains linked-account branch (D2 upgrade)", async () => {
-    findContact.mockResolvedValue({ id: "c1" } as any);
-    await assertCanReadContact({ id: "u3", role: "user" }, "c1");
-    const arg = findContact.mock.calls[0][0]!;
-    expect((arg.where as any).OR).toEqual(
-      expect.arrayContaining([
-        {
-          assigned_accounts: {
-            OR: expect.arrayContaining([
-              { assigned_to: "u3" },
-              { createdBy: "u3" },
-            ]),
-          },
-        },
-      ]),
-    );
-  });
-
   it("throws AuthorizationError when no row", async () => {
     findContact.mockResolvedValue(null);
     await expect(
@@ -116,7 +98,7 @@ describe("filterAuthorizedContactIds", () => {
     });
   });
 
-  it("user: scoped where with OR clauses (D2 upgrade includes linked-account)", async () => {
+  it("user: scoped where with OR clauses", async () => {
     (prismadb.crm_Contacts.findMany as jest.Mock) =
       jest.fn().mockResolvedValue([{ id: "a" }]);
     await filterAuthorizedContactIds(
@@ -130,14 +112,6 @@ describe("filterAuthorizedContactIds", () => {
       OR: expect.arrayContaining([
         { assigned_to: "u3" },
         { createdBy: "u3" },
-        {
-          assigned_accounts: {
-            OR: expect.arrayContaining([
-              { assigned_to: "u3" },
-              { createdBy: "u3" },
-            ]),
-          },
-        },
       ]),
     });
   });

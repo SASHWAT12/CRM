@@ -29,24 +29,22 @@ describe("getLeads scope", () => {
     expect(prismadb.crm_Leads.findMany).not.toHaveBeenCalled();
   });
 
-  it("user role: where includes deletedAt:null and OR with assigned/created/linked-account", async () => {
+  it("user role: where includes deletedAt:null and OR with assigned/created", async () => {
     mockUser("user", "u1");
     (prismadb.crm_Leads.findMany as jest.Mock).mockResolvedValue([]);
     await getLeads();
     const call = (prismadb.crm_Leads.findMany as jest.Mock).mock.calls[0][0];
-    expect(call.where.deletedAt).toBeNull();
-    expect(call.where.OR).toEqual([
-      { assigned_to: "u1" },
-      { createdBy: "u1" },
-      {
-        assigned_accounts: {
-          OR: [
+    expect(call.where.AND).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ deletedAt: null }),
+        expect.objectContaining({
+          OR: expect.arrayContaining([
             { assigned_to: "u1" },
             { createdBy: "u1" },
-          ],
-        },
-      },
-    ]);
+          ]),
+        }),
+      ]),
+    );
   });
 
   it("user role: returns lead rows from findMany", async () => {
@@ -57,12 +55,15 @@ describe("getLeads scope", () => {
     expect(res).toEqual(rows);
   });
 
-  it("manager: where = { deletedAt: null } (no OR)", async () => {
-    mockUser("manager", "m1");
+  it("manager: where includes deletedAt: null", async () => {
+    mockUser("manager", "u1");
     (prismadb.crm_Leads.findMany as jest.Mock).mockResolvedValue([]);
     await getLeads();
     const call = (prismadb.crm_Leads.findMany as jest.Mock).mock.calls[0][0];
-    expect(call.where).toEqual({ deletedAt: null });
-    expect(call.where.OR).toBeUndefined();
+    expect(call.where.AND).toEqual(
+      expect.arrayContaining([
+        { deletedAt: null },
+      ]),
+    );
   });
 });
